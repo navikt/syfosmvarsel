@@ -3,7 +3,8 @@ package no.nav.syfo.avvistsykmelding
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.delay
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.metrics.AVVIST_SYKMELDING_MOTTATT
+import no.nav.syfo.metrics.AVVIST_SM_MOTTATT
+import no.nav.syfo.metrics.AVVIST_SM_VARSEL_OPPRETTET
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.objectMapper
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -28,15 +29,21 @@ suspend fun opprettVarselForAvvisteSykmeldinger(
 ) {
     while (applicationState.running) {
         kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
-            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
+            try {
+                val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
-            log.info("Mottatt avvist sykmelding med id ${receivedSykmelding.msgId}")
-            AVVIST_SYKMELDING_MOTTATT.inc()
+                log.info("Mottatt avvist sykmelding med id ${receivedSykmelding.msgId}")
+                AVVIST_SM_MOTTATT.inc()
 
-            val oppgaveVarsel = receivedSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
+                val oppgaveVarsel = receivedSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
 
-            kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
-            log.info("Opprettet oppgavevarsel for avvist sykmelding med id ${receivedSykmelding.msgId}")
+                kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
+                AVVIST_SM_VARSEL_OPPRETTET.inc()
+                log.info("Opprettet oppgavevarsel for avvist sykmelding med id ${receivedSykmelding.msgId}")
+            } catch (e: Exception) {
+                log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
+                throw e
+            }
         }
         delay(100)
     }
