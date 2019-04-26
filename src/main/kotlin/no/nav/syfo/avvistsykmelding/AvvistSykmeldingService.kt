@@ -12,10 +12,9 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.time.LocalDate.now
 import java.time.LocalDateTime
+import java.time.LocalDateTime.now
 import java.util.Collections.singletonMap
-import java.util.concurrent.ThreadLocalRandom
 
 private val log: org.slf4j.Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
 
@@ -34,14 +33,14 @@ suspend fun opprettVarselForAvvisteSykmeldinger(
             try {
                 val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
-                log.info("Mottatt avvist sykmelding med id ${receivedSykmelding.msgId}")
+                log.info("Mottatt avvist sykmelding med id ${receivedSykmelding.sykmelding.id}")
                 AVVIST_SM_MOTTATT.inc()
 
                 val oppgaveVarsel = receivedSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
 
                 kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
                 AVVIST_SM_VARSEL_OPPRETTET.inc()
-                log.info("Opprettet oppgavevarsel for avvist sykmelding med id ${receivedSykmelding.msgId}")
+                log.info("Opprettet oppgavevarsel for avvist sykmelding med id ${receivedSykmelding.sykmelding.id}")
             } catch (e: Exception) {
                 log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
                 throw e
@@ -52,13 +51,13 @@ suspend fun opprettVarselForAvvisteSykmeldinger(
 }
 
 fun receivedSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
-    val utsendelsestidspunkt = now().plusDays(1).atTime(ThreadLocalRandom.current().nextInt(9, 14), ThreadLocalRandom.current().nextInt(0, 59))
+    val utsendelsestidspunkt = now()
     return OppgaveVarsel(
             "SYKMELDING_AVVIST",
             receivedSykmelding.sykmelding.id,
             receivedSykmelding.personNrPasient,
             parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
-            utsendelsestidspunkt.plusDays(10),
+            utsendelsestidspunkt.plusDays(5),// utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
             utsendelsestidspunkt,
             "NySykmelding",
             OPPGAVETYPE,
