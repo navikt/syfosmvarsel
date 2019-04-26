@@ -10,7 +10,7 @@ data class Environment(
         val oppgavevarselTopic: String = getEnvVar("KAFKA_OPPGAVEVARSEL_TOPIC", "aapen-syfo-oppgavevarsel-v1"),
         override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
         val tjenesterUrl: String = getEnvVar("TJENESTER_URL"),
-        val cluster: String = getEnvVar("CLUSTER")
+        val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) : KafkaConfig
 
 data class VaultSecrets(
