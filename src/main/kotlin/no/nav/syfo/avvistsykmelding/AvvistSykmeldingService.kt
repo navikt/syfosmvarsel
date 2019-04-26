@@ -15,9 +15,11 @@ import java.time.Duration
 import java.time.LocalDate.now
 import java.time.LocalDateTime
 import java.util.Collections.singletonMap
+import java.util.concurrent.ThreadLocalRandom
 
 private val log: org.slf4j.Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
 
+// Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"
 
 suspend fun opprettVarselForAvvisteSykmeldinger(
@@ -50,7 +52,7 @@ suspend fun opprettVarselForAvvisteSykmeldinger(
 }
 
 fun receivedSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
-    val utsendelsestidspunkt = now().plusDays(1).atTime(9, 0)
+    val utsendelsestidspunkt = now().plusDays(1).atTime(ThreadLocalRandom.current().nextInt(9, 14), ThreadLocalRandom.current().nextInt(0, 59))
     return OppgaveVarsel(
             "SYKMELDING_AVVIST",
             receivedSykmelding.sykmelding.id,
