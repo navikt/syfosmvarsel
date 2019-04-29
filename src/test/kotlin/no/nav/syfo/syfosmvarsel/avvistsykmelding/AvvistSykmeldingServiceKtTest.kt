@@ -60,7 +60,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
         embeddedEnvironment.tearDown()
     }
     describe("Mapping av sykmelding til oppgavevarsel fungerer som forventet") {
-        val sykmelding = receivedSykmelding(id = "123")
+        val sykmelding = opprettReceivedSykmelding(id = "123")
         it("Sykmelding mappes korrekt til oppgavevarsel") {
             val oppgavevarsel = receivedSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
 
