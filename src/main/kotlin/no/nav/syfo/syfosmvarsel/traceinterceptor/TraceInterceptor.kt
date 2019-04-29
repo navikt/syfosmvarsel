@@ -1,4 +1,4 @@
-package no.nav.syfo.traceinterceptor
+package no.nav.syfo.syfosmvarsel.traceinterceptor
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -6,7 +6,7 @@ import io.ktor.request.header
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelineInterceptor
 import kotlinx.coroutines.withContext
-import no.nav.syfo.CoroutineMDCContext
+import no.nav.syfo.syfosmvarsel.CoroutineMDCContext
 import org.slf4j.MDC
 import java.util.*
 

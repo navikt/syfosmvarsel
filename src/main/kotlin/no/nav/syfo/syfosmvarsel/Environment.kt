@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.syfosmvarsel
 
 import no.nav.syfo.kafka.KafkaConfig
 import no.nav.syfo.kafka.KafkaCredentials

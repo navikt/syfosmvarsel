@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.syfosmvarsel
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -11,9 +11,9 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
-import no.nav.syfo.api.registerNaisApi
-import no.nav.syfo.avvistsykmelding.OppgaveVarsel
-import no.nav.syfo.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
+import no.nav.syfo.syfosmvarsel.api.registerNaisApi
+import no.nav.syfo.syfosmvarsel.avvistsykmelding.OppgaveVarsel
+import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -23,6 +23,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executors
 
@@ -79,8 +80,13 @@ fun CoroutineScope.launchListeners(
 
                 val kafkaproducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
 
-                opprettVarselForAvvisteSykmeldinger(applicationState, kafkaconsumer, kafkaproducer,
-                        env.oppgavevarselTopic, env.tjenesterUrl)
+                while (applicationState.running) {
+                    kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
+                        opprettVarselForAvvisteSykmeldinger(it, kafkaproducer,
+                                env.oppgavevarselTopic, env.tjenesterUrl)
+                    }
+                    delay(100)
+                }
             }
         }.toList()
 
