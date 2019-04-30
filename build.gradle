@@ -1,10 +1,10 @@
 buildscript {
     ext.coroutines_version = '1.0.0'
     ext.kluent_version = '1.39'
-    ext.ktor_version = '1.1.1'
+    ext.ktor_version = '1.1.5'
     ext.logback_version = '1.2.3'
     ext.prometheus_version = '0.5.0'
-    ext.spek_version = "2.0.0-rc.1"
+    ext.spek_version = "2.0.2"
     ext.logstash_encoder_version = '5.1'
     ext.kafka_version = '2.0.0'
     ext.jackson_version = '2.9.7'
@@ -19,7 +19,7 @@ plugins {
 group 'no.nav.syfo'
 version '1.0-SNAPSHOT'
 
-jar.manifest.attributes("Main-Class" : "no.nav.syfo.BootstrapKt")
+jar.manifest.attributes("Main-Class" : "no.nav.syfo.syfosmvarsel.BootstrapKt")
 
 repositories {
     mavenCentral()
@@ -65,6 +65,10 @@ dependencies {
     testImplementation "org.amshove.kluent:kluent:$kluent_version"
     testImplementation "org.spekframework.spek2:spek-dsl-jvm:$spek_version"
     testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
+    testImplementation ("no.nav:kafka-embedded-env:1.0.0") {
+        exclude group: "io.confluent", module: "kafka-rest"
+        exclude group: "io.confluent", module: "kafka-schema-registry"
+    }
 
     testRuntimeOnly "org.spekframework.spek2:spek-runtime-jvm:$spek_version"
     testRuntimeOnly "org.spekframework.spek2:spek-runner-junit5:$spek_version"

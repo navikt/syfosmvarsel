@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.syfosmvarsel
 
 import kotlinx.coroutines.ThreadContextElement
 import org.slf4j.MDC

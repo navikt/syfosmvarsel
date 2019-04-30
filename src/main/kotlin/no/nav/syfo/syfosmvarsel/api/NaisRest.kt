@@ -1,4 +1,4 @@
-package no.nav.syfo.api
+package no.nav.syfo.syfosmvarsel.api
 
 import io.ktor.application.call
 import io.ktor.http.ContentType

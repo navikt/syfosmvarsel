@@ -1,0 +1,123 @@
+{
+  "sykmelding": {
+    "id": "detteerensykmeldingid",
+    "msgId": "123124334",
+    "pasientAktoerId": "41234123",
+    "medisinskVurdering": {
+      "hovedDiagnose": {
+        "system": "2.16.578.1.12.4.1.1.7170",
+        "kode": "K24"
+      },
+      "biDiagnoser": [
+        {
+          "system": "2.16.578.1.12.4.1.1.7170",
+          "kode": "-57"
+        }
+      ],
+      "svangerskap": true,
+      "yrkesskade": false,
+      "yrkesskadeDato": null,
+      "annenFraversArsak": {
+        "beskrivelse": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+        "grunn": [
+          "NODVENDIG_KONTROLLUNDENRSOKELSE"
+        ]
+      }
+    },
+    "skjermesForPasient": false,
+    "arbeidsgiver": {
+      "harArbeidsgiver": "EN_ARBEIDSGIVER",
+      "navn": "TODO",
+      "yrkesbetegnelse": "TODO",
+      "stillingsprosent": 100
+    },
+    "perioder": [
+      {
+        "fom": "2018-10-18",
+        "tom": "2018-11-12",
+        "aktivitetIkkeMulig": null,
+        "avventendeInnspillTilArbeidsgiver": null,
+        "behandlingsdager": null,
+        "gradert": {
+          "reisetilskudd": true,
+          "grad": 56
+        },
+        "reisetilskudd": false
+      }
+    ],
+    "prognose": {
+      "arbeidsforEtterPeriode": false,
+      "hensynArbeidsplassen": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "erIArbeid": {
+        "egetArbeidPaSikt": false,
+        "annetArbeidPaSikt": true,
+        "arbeidFOM": "2018-11-21",
+        "vurderingsdato": "2018-10-30"
+      },
+      "erIkkeIArbeid": null
+    },
+    "utdypendeOpplysninger": {
+      "6.3": {
+        "6.3.1": {
+          "svar": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+          "restriksjoner": [
+            "SKJERMET_FOR_ARBEIDSGIVER"
+          ]
+        },
+        "6.3.2": {
+          "svar": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+          "restriksjoner": [
+            "SKJERMET_FOR_ARBEIDSGIVER"
+          ]
+        }
+      }
+    },
+    "tiltakArbeidsplassen": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+    "tiltakNAV": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+    "andreTiltak": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+    "meldingTilNAV": {
+      "bistandUmiddelbart": false,
+      "beskrivBistand": null
+    },
+    "meldingTilArbeidsgiver": null,
+    "kontaktMedPasient": {
+      "kontaktDato": "2018-10-04",
+      "begrunnelseIkkeKontakt": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word"
+    },
+    "behandletTidspunkt": "2018-10-14T14:52:35",
+    "behandler": {
+      "fornavn": "Fornavn",
+      "mellomnavn": null,
+      "etternavn": "Etternavn",
+      "aktoerId": "1234",
+      "fnr": "99999999999",
+      "hpr": "321",
+      "her": "123",
+      "adresse": {
+        "gate": "Gateveien 4",
+        "postnummer": 1001,
+        "kommune": "Oslo",
+        "postboks": "1212 Gateveien",
+        "land": "NO"
+      },
+      "tlf": "900 00 000"
+    },
+    "avsenderSystem": {
+      "navn": "NAV Test generator",
+      "versjon": "1.0"
+    },
+    "syketilfelleStartDato": "2018-10-10",
+    "signaturDato": "2019-04-29T08:34:16.861476"
+  },
+  "personNrPasient": "1231231",
+  "personNrLege": "123134",
+  "navLogId": "4d3fad98-6c40-47ec-99b6-6ca7c98aa5ad",
+  "msgId": "06b2b55f-c2c5-4ee0-8e0a-6e252ec2a550",
+  "legekontorOrgNr": "444333",
+  "legekontorHerId": "33",
+  "legekontorReshId": "1313",
+  "legekontorOrgName": "Helse sentar",
+  "mottattDato": "2019-04-29T08:34:16.861601",
+  "rulesetVersion": "2",
+  "fellesformat": "{\"any\":[{\"msgInfo\":{\"type\":{\"v\":\"SYKMELD\",\"dn\":\"Medisinsk vurdering av arbeidsmulighet ved sykdom, sykmelding\"},\"genDate\":\"2018-07-31T10:26:10\",\"msgId\":\"msgId\",\"processingStatus\":null,\"requestedPriority\":null,\"ack\":{\"v\":\"J\",\"dn\":\"Ja\"},\"conversationRef\":null,\"sender\":{\"comMethod\":{\"v\":\"EDI\",\"dn\":\"EDI\"},\"organisation\":{\"organisationName\":\"Kule helsetjenester AS\",\"typeOrganisation\":null,\"ident\":[{\"id\":\"id\",\"typeId\":{\"v\":\"HER\",\"s\":\"2.16.578.1.12.4.1.1.9051\",\"dn\":\"HER-id\",\"ot\":null}},{\"id\":\"id\",\"typeId\":{\"v\":\"ENH\",\"s\":\"1.16.578.1.12.3.1.1.9051\",\"dn\":\"Organisasjonsnummeret i Enhetsregister (Brønnøysund)\",\"ot\":null}},{\"id\":\"0123\",\"typeId\":{\"v\":\"HER\",\"s\":\"1.23.456.7.89.1.2.3.4567.8912\",\"dn\":\"Identifikator fra Helsetjenesteenhetsregisteret (HER-id)\",\"ot\":null}}],\"address\":{\"type\":{\"v\":\"PST\",\"dn\":\"Postadresse\"},\"streetAdr\":\"TESTVEIEN 1\",\"postalCode\":\"1337\",\"city\":\"SANDVIKA\",\"postbox\":null,\"county\":null,\"country\":null},\"teleCom\":[],\"organisation\":null,\"healthcareProfessional\":{\"typeHealthcareProfessional\":null,\"roleToPatient\":null,\"familyName\":\"Etternavn\",\"middleName\":\"Mellomnavn\",\"givenName\":\"Fornavn\",\"dateOfBirth\":null,\"sex\":null,\"nationality\":null,\"ident\":[{\"id\":\"id\",\"typeId\":{\"v\":\"HER\",\"s\":\"2.16.578.1.12.4.1.1.8268\",\"dn\":\"HER-id\",\"ot\":null}},{\"id\":\"id\",\"typeId\":{\"v\":\"FNR\",\"s\":\"2.16.578.1.12.4.1.1.8327\",\"dn\":\"Fødselsnummer\",\"ot\":null}},{\"id\":\"id\",\"typeId\":{\"v\":\"HPR\",\"s\":\"6.87.654.3.21.9.8.7.6543.2198\",\"dn\":\"HPR-nummer\",\"ot\":null}}],\"address\":null,\"teleCom\":[{\"typeTelecom\":{\"v\":\"WD\",\"dn\":\"Arbeidsplass, direktenummer\"},\"teleAddress\":{\"v\":\"tel:33333333\"}}]}}},\"receiver\":{\"comMethod\":{\"v\":\"EDI\",\"dn\":\"EDI\"},\"organisation\":{\"organisationName\":\"NAV IKT\",\"typeOrganisation\":null,\"ident\":[{\"id\":\"id\",\"typeId\":{\"v\":\"HER\",\"s\":\"2.16.578.1.12.4.1.1.9051\",\"dn\":\"HER-id\",\"ot\":null}},{\"id\":\"id\",\"typeId\":{\"v\":\"HER\",\"s\":\"1.23.456.7.89.1.2.3.4567.8912\",\"dn\":\"Identifikator fra Helsetjenesteenhetsregisteret\",\"ot\":null}}],\"address\":{\"type\":{\"v\":\"PST\",\"dn\":\"Postadresse\"},\"streetAdr\":\"Postboks 5 St Olavs plass\",\"postalCode\":\"0130\",\"city\":\"OSLO\",\"postbox\":null,\"county\":null,\"country\":null},\"teleCom\":[],\"organisation\":null,\"healthcareProfessional\":null}},\"otherReceiver\":[],\"patient\":{\"familyName\":\"ETTERNAVN\",\"middleName\":\"MELLOMNAVN\",\"givenName\":\"FORNAVN\",\"dateOfBirth\":\"1900-12-12\",\"sex\":null,\"nationality\":null,\"ident\":[{\"id\":\"999999999\",\"typeId\":{\"v\":\"FNR\",\"s\":\"2.16.578.1.12.4.1.1.8327\",\"dn\":\"Fødselsnummer\",\"ot\":null}}],\"address\":{\"type\":{\"v\":\"PST\",\"dn\":\"Postadresse\"},\"streetAdr\":\"Oppdiktet gate 32\",\"postalCode\":\"1349\",\"city\":\"RYKKINN\",\"postbox\":null,\"county\":null,\"country\":null},\"teleCom\":[]},\"migversion\":\"v1.2 2006-05-24\"},\"document\":[{\"documentConnection\":null,\"contentType\":null,\"contentDescription\":null,\"contentCategory\":null,\"consent\":null,\"annotation\":null,\"fromDate\":null,\"toDate\":null,\"oidRef\":null,\"enquiryRefId\":null,\"refDoc\":{\"issueDate\":null,\"msgType\":{\"v\":\"XML\",\"dn\":\"XML-instans\"},\"id\":null,\"mimeType\":null,\"description\":null,\"compression\":null,\"fileReference\":null,\"content\":{\"any\":[{\"regelSettVersjon\":\"2\",\"syketilfelleStartDato\":\"2018-07-30\",\"pasient\":{\"navn\":{\"etternavn\":\"ETTERNAVN\",\"mellomnavn\":\"MELLOMNAVN\",\"fornavn\":\"FORNAVN\"},\"fodselsnummer\":{\"id\":\"999999999\",\"typeId\":{\"v\":\"FNR\",\"s\":\"2.16.578.1.12.4.1.1.8116\",\"dn\":\"Fødselsnummer\",\"ot\":null}},\"kontaktInfo\":[],\"navnFastlege\":\"Doktor Legesen\",\"navkontor\":\"0219\"},\"arbeidsgiver\":{\"harArbeidsgiver\":{\"v\":\"1\",\"dn\":\"En arbeidsgiver\"},\"navnArbeidsgiver\":\"Arbeidsgiver As\",\"yrkesbetegnelse\":\"Test Yrke Pasient 9\",\"stillingsprosent\":100},\"medisinskVurdering\":{\"hovedDiagnose\":{\"diagnosekode\":{\"v\":\"R99\",\"s\":\"2.16.578.1.12.4.1.1.7170\",\"dn\":\"Luftveissykdom IKA\",\"ot\":null}},\"biDiagnoser\":null,\"annenFraversArsak\":null,\"svangerskap\":null,\"yrkesskade\":null,\"yrkesskadeDato\":null,\"skjermesForPasient\":null},\"aktivitet\":{\"periode\":[{\"periodeFOMDato\":\"2018-07-30\",\"periodeTOMDato\":\"2018-08-03\",\"avventendeSykmelding\":null,\"gradertSykmelding\":null,\"aktivitetIkkeMulig\":{\"medisinskeArsaker\":{\"arsakskode\":[{\"v\":\"1\",\"dn\":\"Helsetilstanden hindrer pasienten i å være i aktivitet\"}],\"beskriv\":null},\"arbeidsplassen\":{\"arsakskode\":[],\"beskriv\":null}},\"behandlingsdager\":null,\"reisetilskudd\":null}]},\"prognose\":{\"arbeidsforEtterEndtPeriode\":true,\"beskrivHensynArbeidsplassen\":null,\"erIArbeid\":{\"egetArbeidPaSikt\":null,\"arbeidFraDato\":null,\"annetArbeidPaSikt\":null,\"vurderingDato\":null},\"erIkkeIArbeid\":null},\"utdypendeOpplysninger\":null,\"tiltak\":{\"tiltakArbeidsplassen\":null,\"tiltakNAV\":null,\"andreTiltak\":null},\"oppfolgingsplan\":null,\"meldingTilNav\":{\"bistandNAVUmiddelbart\":true,\"beskrivBistandNAV\":\"Test ønsker Bistand\"},\"meldingTilArbeidsgiver\":null,\"kontaktMedPasient\":{\"behandletDato\":\"2018-07-30T22:00:00\",\"kontaktDato\":null,\"begrunnIkkeKontakt\":null},\"behandler\":{\"navn\":{\"etternavn\":\"Etternavn\",\"mellomnavn\":null,\"fornavn\":\"Fornavn\"},\"id\":[{\"id\":\"id\",\"typeId\":{\"v\":\"FNR\",\"s\":\"2.16.578.1.12.4.1.1.8116\",\"dn\":\"Fødselsnummer\",\"ot\":null}},{\"id\":\"id\",\"typeId\":{\"v\":\"HER\",\"s\":\"2.16.578.1.12.4.1.1.8116\",\"dn\":\"HER-id\",\"ot\":null}}],\"adresse\":{\"type\":null,\"streetAdr\":null,\"postalCode\":null,\"city\":null,\"postbox\":null,\"county\":null,\"country\":null},\"kontaktInfo\":[{\"typeTelecom\":{\"v\":\"HP\",\"dn\":\"Hovedtelefon\"},\"teleAddress\":{\"v\":\"tel:33333333\"}}]},\"avsenderSystem\":{\"systemNavn\":\"Flott EPJ\",\"systemVersjon\":\"1.0.0\"},\"strekkode\":\"00021071312003107999999999999\"}]}}}],\"patientReport\":[],\"signature\":{\"signedInfo\":{\"canonicalizationMethod\":{\"content\":[],\"algorithm\":\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"},\"signatureMethod\":{\"content\":[],\"algorithm\":\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"},\"reference\":[{\"transforms\":{\"transform\":[{\"content\":[],\"algorithm\":\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"}]},\"digestMethod\":{\"content\":[],\"algorithm\":\"http://www.w3.org/2001/04/xmlenc#sha256\"},\"digestValue\":\"QlR2pL73ef1VBxa0jRN3ECV6oi+HJIPP+8vETLlKjjU=\",\"id\":null,\"uri\":\"\",\"type\":null}],\"id\":null},\"signatureValue\":{\"value\":null,\"id\":null},\"keyInfo\":{\"content\":[\"\\n                \",{\"name\":\"{http://www.w3.org/2000/09/xmldsig#}X509Data\",\"declaredType\":\"org.w3._2000._09.xmldsig.XMLX509DataType\",\"scope\":\"javax.xml.bind.JAXBElement$GlobalScope\",\"value\":{\"x509IssuerSerialOrX509SKIOrX509SubjectName\":[{\"name\":\"{http://www.w3.org/2000/09/xmldsig#}X509Certificate\",\"declaredType\":\"[B\",\"scope\":\"org.w3._2000._09.xmldsig.XMLX509DataType\",\"value\":\"tersjndgfnjknjkdfgnjkdfgkndfsgnjkldfgkjndgfknjnjkfdgnmmxvmfjvcxjknjnkcvxjncvxjnxcvjkncxvjnkjkncvxjkfdgjkdfgjknjn\",\"nil\":false,\"globalScope\":false,\"typeSubstituted\":false}]},\"nil\":false,\"globalScope\":true,\"typeSubstituted\":false},\"\\n            \"],\"id\":null},\"object\":[],\"id\":null}},{\"ediLoggId\":\"1807311226joakim51343.1\",\"avsender\":\"123654\",\"ebXMLSamtaleId\":\"deb6d7d1-139c-4885-aa22-bhijjyg7\",\"mottaksId\":null,\"meldingsType\":\"xml\",\"avsenderRef\":\"SERIALNUMBER=2134125125, CN=TEST-Flott, OU=R&D, O=Flott AS, C=NO\",\"avsenderFnrFraDigSignatur\":\"99999999999\",\"mottattDatotid\":\"2018-07-31T10:26:26.000+0000\",\"orgNummer\":null,\"avsenderOrgNrFraDigSignatur\":null,\"partnerReferanse\":\"16524\",\"herIdentifikator\":\"\",\"ebRole\":\"Sykmelder\",\"ebService\":\"Sykmelding\",\"ebAction\":\"Registrering\"}]}"
+}
