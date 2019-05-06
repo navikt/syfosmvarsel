@@ -8,6 +8,7 @@ buildscript {
     ext.logstash_encoder_version = '5.1'
     ext.kafka_version = '2.0.0'
     ext.jackson_version = '2.9.7'
+    ext.syfosm_common_models_version = '1.0.18'
 }
 
 plugins {
@@ -55,8 +56,8 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
 
-    implementation "no.nav.syfo.sm:syfosm-common-models:1.0.12"
-    implementation "no.nav.syfo.sm:syfosm-common-kafka:1.0.12"
+    implementation "no.nav.syfo.sm:syfosm-common-models:$syfosm_common_models_version"
+    implementation "no.nav.syfo.sm:syfosm-common-kafka:$syfosm_common_models_version"
 
     implementation "ch.qos.logback:logback-classic:$logback_version"
     implementation "net.logstash.logback:logstash-logback-encoder:$logstash_encoder_version"

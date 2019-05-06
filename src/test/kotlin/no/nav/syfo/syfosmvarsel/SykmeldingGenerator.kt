@@ -9,6 +9,7 @@ import kotlin.random.Random
 fun opprettReceivedSykmelding(id: String, sykmelding: Sykmelding = opprettSykmelding()) = ReceivedSykmelding(
         sykmelding = sykmelding,
         personNrPasient = "123124",
+        tlfPasient = "123455",
         personNrLege = "123145",
         navLogId = "0412",
         msgId = id,
