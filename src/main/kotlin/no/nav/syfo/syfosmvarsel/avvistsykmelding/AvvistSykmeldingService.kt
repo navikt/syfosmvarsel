@@ -1,6 +1,7 @@
 package no.nav.syfo.syfosmvarsel.avvistsykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_MOTTATT
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_VARSEL_OPPRETTET
@@ -26,15 +27,25 @@ fun opprettVarselForAvvisteSykmeldinger(
 ) {
     try {
         val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(cr.value())
+        val logValues = arrayOf(
+                StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
+                StructuredArguments.keyValue("organizationNumber", receivedSykmelding.legekontorOrgNr),
+                StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
+                StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id)
+        )
 
-        log.info("Mottatt avvist sykmelding med id ${receivedSykmelding.sykmelding.id}")
+        val logKeys = logValues.joinToString(prefix = "(", postfix = ")", separator = ",") {
+            "{}"
+        }
+
+        log.info("Mottatt avvist sykmelding med id {}, $logKeys",receivedSykmelding.sykmelding.id, *logValues)
         AVVIST_SM_MOTTATT.inc()
 
         val oppgaveVarsel = receivedSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
-
-        kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
+        // TODO fjern etter prodsetting ser ok ut
+        // kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
         AVVIST_SM_VARSEL_OPPRETTET.inc()
-        log.info("Opprettet oppgavevarsel for avvist sykmelding med id ${receivedSykmelding.sykmelding.id}")
+        log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, $logKeys",receivedSykmelding.sykmelding.id, *logValues)
     } catch (e: Exception) {
         log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
         throw e
