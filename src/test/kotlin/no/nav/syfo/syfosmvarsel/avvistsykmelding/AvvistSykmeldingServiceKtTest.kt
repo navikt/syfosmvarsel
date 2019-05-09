@@ -76,7 +76,6 @@ object AvvistSykmeldingServiceKtTest : Spek({
         }
     }
 
-    /* // TODO fjern etter prodsetting ser ok ut
     describe("Ende til ende-test") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/gyldigAvvistSykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
@@ -104,5 +103,4 @@ object AvvistSykmeldingServiceKtTest : Spek({
         }
 
     }
-        */
 })
