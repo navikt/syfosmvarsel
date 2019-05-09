@@ -42,8 +42,7 @@ fun opprettVarselForAvvisteSykmeldinger(
         AVVIST_SM_MOTTATT.inc()
 
         val oppgaveVarsel = receivedSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
-        // TODO fjern etter prodsetting ser ok ut
-        // kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
+        kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
         AVVIST_SM_VARSEL_OPPRETTET.inc()
         log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, $logKeys",receivedSykmelding.sykmelding.id, *logValues)
     } catch (e: Exception) {
