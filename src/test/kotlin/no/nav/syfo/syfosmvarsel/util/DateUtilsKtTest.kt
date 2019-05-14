@@ -15,7 +15,7 @@ object DateUtilsKtTest : Spek({
 
         it("klokkeslett før 9 blir satt mellom 9 og 16") {
             val dato = LocalDate.now().atTime(0, 50).innenforArbeidstidEllerPaafolgendeDag()
-            dato shouldBeAfter LocalDate.now().atTime(9,0)
+            dato shouldBeAfter LocalDate.now().atTime(8,59)
             dato shouldBeBefore LocalDate.now().atTime(16,0)
         }
 
@@ -26,14 +26,14 @@ object DateUtilsKtTest : Spek({
 
         it("klokkslett etter 16 blir innenfor arbeidstid påfølgende dag") {
             val dato = LocalDate.now().atTime(18, 50).innenforArbeidstidEllerPaafolgendeDag()
-            dato shouldBeAfter iMorgen.atTime(9,0)
+            dato shouldBeAfter iMorgen.atTime(8,49)
             dato shouldBeBefore iMorgen.atTime(16,0)
         }
 
         describe("Edgecaser") {
             it( "Rett før 9 blir innenfor arbeidstid") {
                 val rettFor9 = LocalDate.now().atTime(8,59).innenforArbeidstidEllerPaafolgendeDag()
-                rettFor9 shouldBeAfter LocalDate.now().atTime(9,0)
+                rettFor9 shouldBeAfter LocalDate.now().atTime(8,59)
                 rettFor9 shouldBeBefore LocalDate.now().atTime(16,0)
             }
 
@@ -54,13 +54,13 @@ object DateUtilsKtTest : Spek({
 
             it( "Nøyaktig 4 blir neste dag innenfor arbeidstid") {
                 val noyaktig16 = LocalDate.now().atTime(16,0).innenforArbeidstidEllerPaafolgendeDag()
-                noyaktig16 shouldBeAfter iMorgen.atTime(9,0, 0)
+                noyaktig16 shouldBeAfter iMorgen.atTime(8,59, 0)
                 noyaktig16 shouldBeBefore iMorgen.atTime(16,0, 0)
             }
 
             it( "Rett etter 4 blir neste dag innenfor arbeidstid") {
                 val rettEtter16 = LocalDate.now().atTime(16,0, 1).innenforArbeidstidEllerPaafolgendeDag()
-                rettEtter16 shouldBeAfter iMorgen.atTime(9,0, 0)
+                rettEtter16 shouldBeAfter iMorgen.atTime(8,59, 0)
                 rettEtter16 shouldBeBefore iMorgen.atTime(16,0, 0)
             }
         }
