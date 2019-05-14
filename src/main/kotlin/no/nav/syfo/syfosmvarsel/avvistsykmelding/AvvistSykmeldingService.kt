@@ -6,12 +6,12 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_MOTTATT
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_VARSEL_OPPRETTET
 import no.nav.syfo.syfosmvarsel.objectMapper
+import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.time.LocalDateTime.now
 import java.util.Collections.singletonMap
 
 private val log: org.slf4j.Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
@@ -38,13 +38,13 @@ fun opprettVarselForAvvisteSykmeldinger(
             "{}"
         }
 
-        log.info("Mottatt avvist sykmelding med id {}, $logKeys",receivedSykmelding.sykmelding.id, *logValues)
+        log.info("Mottatt avvist sykmelding med id {}, $logKeys", receivedSykmelding.sykmelding.id, *logValues)
         AVVIST_SM_MOTTATT.inc()
 
         val oppgaveVarsel = receivedSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
         kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
         AVVIST_SM_VARSEL_OPPRETTET.inc()
-        log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, $logKeys",receivedSykmelding.sykmelding.id, *logValues)
+        log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, $logKeys", receivedSykmelding.sykmelding.id, *logValues)
     } catch (e: Exception) {
         log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
         throw e
@@ -52,7 +52,7 @@ fun opprettVarselForAvvisteSykmeldinger(
 }
 
 fun receivedSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
-    val utsendelsestidspunkt = now()
+    val utsendelsestidspunkt = LocalDateTime.now().innenforArbeidstidEllerPaafolgendeDag()
     return OppgaveVarsel(
             "SYKMELDING_AVVIST",
             receivedSykmelding.sykmelding.id,
