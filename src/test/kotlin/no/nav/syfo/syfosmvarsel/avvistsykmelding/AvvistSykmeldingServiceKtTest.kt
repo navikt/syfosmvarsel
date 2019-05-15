@@ -78,7 +78,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
             oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
             oppgavevarsel.repeterendeVarsel shouldEqual false
             oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8,59)
-            oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(16, 0)
+            oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
         }
     }
 
