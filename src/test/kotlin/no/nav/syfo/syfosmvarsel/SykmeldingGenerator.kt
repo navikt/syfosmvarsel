@@ -19,7 +19,8 @@ fun opprettReceivedSykmelding(id: String, sykmelding: Sykmelding = opprettSykmel
         legekontorOrgName = "Legevakt",
         mottattDato = LocalDateTime.now(),
         rulesetVersion = "",
-        fellesformat = ""
+        fellesformat = "",
+        tssid = ""
 )
 
 fun opprettSykmelding(
