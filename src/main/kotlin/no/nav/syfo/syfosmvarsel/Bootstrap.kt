@@ -10,6 +10,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
+import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.*
 import no.nav.syfo.syfosmvarsel.api.registerNaisApi
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.OppgaveVarsel
@@ -52,6 +53,8 @@ fun main() = runBlocking(Executors.newFixedThreadPool(2).asCoroutineDispatcher()
     val producerProperties = kafkaBaseConfig.toProducerConfig(
             "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
 
+    registrerJVMMetrikker()
+
     embeddedServer(Netty, env.applicationPort) {
         initRouting(applicationState)
     }.start(wait = false)
@@ -63,6 +66,10 @@ fun main() = runBlocking(Executors.newFixedThreadPool(2).asCoroutineDispatcher()
     })
 
     applicationState.initialized = true
+}
+
+private fun registrerJVMMetrikker() {
+    DefaultExports.initialize()
 }
 
 @KtorExperimentalAPI
