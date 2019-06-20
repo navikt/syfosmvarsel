@@ -17,6 +17,7 @@ val jacksonVersion = "2.9.7"
 val syfosmCommonModelsVersion = "1.0.20"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion= "0.9.0"
+val kafkaEmbeddedVersion = "2.1.1"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.31"
@@ -63,7 +64,7 @@ dependencies {
     testImplementation ("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation ("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation ("no.nav:kafka-embedded-env:2.0.2")
+    testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
 
     testRuntimeOnly ("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
     testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
