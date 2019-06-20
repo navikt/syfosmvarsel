@@ -21,7 +21,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertFailsWith
 
@@ -63,7 +62,6 @@ object AvvistSykmeldingServiceKtTest : Spek({
         embeddedEnvironment.tearDown()
     }
     describe("Mapping av sykmelding til oppgavevarsel fungerer som forventet") {
-        val timestamp = LocalDateTime.now()
         val sykmelding = opprettReceivedSykmelding(id = "123")
         it("Sykmelding mappes korrekt til oppgavevarsel") {
             val oppgavevarsel = receivedSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
@@ -77,7 +75,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
             oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
             oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
             oppgavevarsel.repeterendeVarsel shouldEqual false
-            oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8,59)
+            oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
             oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
         }
     }

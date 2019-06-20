@@ -11,9 +11,9 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
 
 fun Routing.registerNaisApi(
-        readynessCheck: () -> Boolean,
-        livenessCheck: () -> Boolean = { true },
-        collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
+    readynessCheck: () -> Boolean,
+    livenessCheck: () -> Boolean = { true },
+    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 ) {
     get("/isalive") {
         if (livenessCheck()) {
