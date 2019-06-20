@@ -91,10 +91,10 @@ fun main() = runBlocking(coroutineContext) {
     })
 }
 
-fun CoroutineScope.createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
+fun CoroutineScope.createListener(applicationState: ApplicationState, applicationLogic: suspend CoroutineScope.() -> Unit): Job =
         launch {
             try {
-                action()
+                applicationLogic()
             } finally {
                 applicationState.running = false
             }
