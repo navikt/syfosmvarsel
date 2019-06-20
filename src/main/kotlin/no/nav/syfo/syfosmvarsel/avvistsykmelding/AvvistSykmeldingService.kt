@@ -10,20 +10,21 @@ import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.Collections.singletonMap
 
-private val log: org.slf4j.Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
 
 // Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"
 
 fun opprettVarselForAvvisteSykmeldinger(
-        cr: ConsumerRecord<String, String>,
-        kafkaproducer: KafkaProducer<String, OppgaveVarsel>,
-        oppgavevarselTopic: String,
-        tjenesterUrl: String
+    cr: ConsumerRecord<String, String>,
+    kafkaproducer: KafkaProducer<String, OppgaveVarsel>,
+    oppgavevarselTopic: String,
+    tjenesterUrl: String
 ) {
     try {
         val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(cr.value())
@@ -58,7 +59,7 @@ fun receivedSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, t
             receivedSykmelding.sykmelding.id,
             receivedSykmelding.personNrPasient,
             parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
-            utsendelsestidspunkt.plusDays(5),// utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
+            utsendelsestidspunkt.plusDays(5), // utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
             utsendelsestidspunkt,
             "NySykmelding",
             OPPGAVETYPE,
@@ -80,14 +81,14 @@ private fun lagOppgavelenke(tjenesterUrl: String): String {
 }
 
 data class OppgaveVarsel(
-        val type: String,
-        val ressursId: String,
-        val mottaker: String,
-        val parameterListe: Map<String, String>,
-        val utlopstidspunkt: LocalDateTime,
-        val utsendelsestidspunkt: LocalDateTime,
-        val varseltypeId: String,
-        val oppgavetype: String,
-        val oppgaveUrl: String,
-        val repeterendeVarsel: Boolean
+    val type: String,
+    val ressursId: String,
+    val mottaker: String,
+    val parameterListe: Map<String, String>,
+    val utlopstidspunkt: LocalDateTime,
+    val utsendelsestidspunkt: LocalDateTime,
+    val varseltypeId: String,
+    val oppgavetype: String,
+    val oppgaveUrl: String,
+    val repeterendeVarsel: Boolean
 )

@@ -24,26 +24,26 @@ fun opprettReceivedSykmelding(id: String, sykmelding: Sykmelding = opprettSykmel
 )
 
 fun opprettSykmelding(
-        id: String = UUID.randomUUID().toString(),
-        pasientAktoerId: String = UUID.randomUUID().toString(),
-        medisinskVurdering: MedisinskVurdering = opprettMedisinskVurdering(),
-        skjermetForPasient: Boolean = false,
-        perioder: List<Periode> = listOf(opprettPeriode()),
-        prognose: Prognose = opprettPrognose(),
-        utdypendeOpplysninger: Map<String, Map<String, SporsmalSvar>> = mapOf(),
-        tiltakArbeidsplassen: String? = null,
-        tiltakNAV: String? = null,
-        andreTiltak: String? = null,
-        meldingTilNAV: MeldingTilNAV? = null,
-        meldingTilArbeidsgiver: String? = null,
-        kontaktMedPasient: KontaktMedPasient = opprettKontaktMedPasient(),
-        behandletTidspunkt: LocalDateTime = LocalDateTime.now(),
-        behandler: Behandler = opprettBehandler(),
-        avsenderSystem: AvsenderSystem = opprettAvsenderSystem(),
-        arbeidsgiver: Arbeidsgiver = opprettArbeidsgiver(),
-        msgid: String = UUID.randomUUID().toString(),
-        syketilfelleStartDato: LocalDate? = null,
-        signaturDato: LocalDateTime = LocalDateTime.now()
+    id: String = UUID.randomUUID().toString(),
+    pasientAktoerId: String = UUID.randomUUID().toString(),
+    medisinskVurdering: MedisinskVurdering = opprettMedisinskVurdering(),
+    skjermetForPasient: Boolean = false,
+    perioder: List<Periode> = listOf(opprettPeriode()),
+    prognose: Prognose = opprettPrognose(),
+    utdypendeOpplysninger: Map<String, Map<String, SporsmalSvar>> = mapOf(),
+    tiltakArbeidsplassen: String? = null,
+    tiltakNAV: String? = null,
+    andreTiltak: String? = null,
+    meldingTilNAV: MeldingTilNAV? = null,
+    meldingTilArbeidsgiver: String? = null,
+    kontaktMedPasient: KontaktMedPasient = opprettKontaktMedPasient(),
+    behandletTidspunkt: LocalDateTime = LocalDateTime.now(),
+    behandler: Behandler = opprettBehandler(),
+    avsenderSystem: AvsenderSystem = opprettAvsenderSystem(),
+    arbeidsgiver: Arbeidsgiver = opprettArbeidsgiver(),
+    msgid: String = UUID.randomUUID().toString(),
+    syketilfelleStartDato: LocalDate? = null,
+    signaturDato: LocalDateTime = LocalDateTime.now()
 ) = Sykmelding(
         id = id,
         msgId = msgid,
@@ -68,12 +68,12 @@ fun opprettSykmelding(
 )
 
 fun opprettMedisinskVurdering(
-        hovedDiagnose: Diagnose? = Diagnose("oid", "kode"),
-        bidiagnoser: List<Diagnose> = listOf(),
-        svangerskap: Boolean = false,
-        yrkesskade: Boolean = false,
-        yrkesskadeDato: LocalDate? = null,
-        annenFraversArsak: AnnenFraversArsak? = null
+    hovedDiagnose: Diagnose? = Diagnose("oid", "kode"),
+    bidiagnoser: List<Diagnose> = listOf(),
+    svangerskap: Boolean = false,
+    yrkesskade: Boolean = false,
+    yrkesskadeDato: LocalDate? = null,
+    annenFraversArsak: AnnenFraversArsak? = null
 ) = MedisinskVurdering(
         hovedDiagnose = hovedDiagnose,
         biDiagnoser = bidiagnoser,
@@ -84,13 +84,13 @@ fun opprettMedisinskVurdering(
 )
 
 fun opprettPeriode(
-        fom: LocalDate = LocalDate.now(),
-        tom: LocalDate = LocalDate.now().plusDays(10),
-        aktivitetIkkeMulig: AktivitetIkkeMulig? = opprettAktivitetIkkeMulig(),
-        avventendeInnspillTilArbeidsgiver: String? = null,
-        behandlingsdager: Int? = null,
-        gradert: Gradert? = null,
-        reisetilskudd: Boolean = false
+    fom: LocalDate = LocalDate.now(),
+    tom: LocalDate = LocalDate.now().plusDays(10),
+    aktivitetIkkeMulig: AktivitetIkkeMulig? = opprettAktivitetIkkeMulig(),
+    avventendeInnspillTilArbeidsgiver: String? = null,
+    behandlingsdager: Int? = null,
+    gradert: Gradert? = null,
+    reisetilskudd: Boolean = false
 ) = Periode(
         fom = fom,
         tom = tom,
@@ -102,26 +102,26 @@ fun opprettPeriode(
 )
 
 fun opprettAktivitetIkkeMulig(
-        medisinskArsak: MedisinskArsak? = opprettMedisinskArsak(),
-        arbeidsrelatertArsak: ArbeidsrelatertArsak? = null
+    medisinskArsak: MedisinskArsak? = opprettMedisinskArsak(),
+    arbeidsrelatertArsak: ArbeidsrelatertArsak? = null
 ) = AktivitetIkkeMulig(
         medisinskArsak = medisinskArsak,
         arbeidsrelatertArsak = arbeidsrelatertArsak
 )
 
 fun opprettMedisinskArsak(
-        beskrivelse: String = "test data",
-        arsak: List<MedisinskArsakType> = listOf(MedisinskArsakType.values()[Random.nextInt(MedisinskArsakType.values().size)])
+    beskrivelse: String = "test data",
+    arsak: List<MedisinskArsakType> = listOf(MedisinskArsakType.values()[Random.nextInt(MedisinskArsakType.values().size)])
 ) = MedisinskArsak(
         beskrivelse = beskrivelse,
         arsak = arsak
 )
 
 fun opprettPrognose(
-        arbeidsforEtterPeriode: Boolean = true,
-        hennsynArbeidsplassen: String? = null,
-        erIArbeid: ErIArbeid? = opprettErIArbeid(),
-        erIkkeIArbeid: ErIkkeIArbeid? = null
+    arbeidsforEtterPeriode: Boolean = true,
+    hennsynArbeidsplassen: String? = null,
+    erIArbeid: ErIArbeid? = opprettErIArbeid(),
+    erIkkeIArbeid: ErIkkeIArbeid? = null
 ) = Prognose(
         arbeidsforEtterPeriode = arbeidsforEtterPeriode,
         hensynArbeidsplassen = hennsynArbeidsplassen,
@@ -130,10 +130,10 @@ fun opprettPrognose(
 )
 
 fun opprettErIArbeid(
-        egetArbeidPaSikt: Boolean = true,
-        annetArbeidPaSikt: Boolean = true,
-        arbeidFOM: LocalDate = LocalDate.now().plusDays(30),
-        vurderingsdato: LocalDate = LocalDate.now()
+    egetArbeidPaSikt: Boolean = true,
+    annetArbeidPaSikt: Boolean = true,
+    arbeidFOM: LocalDate = LocalDate.now().plusDays(30),
+    vurderingsdato: LocalDate = LocalDate.now()
 ) = ErIArbeid(
         egetArbeidPaSikt = egetArbeidPaSikt,
         annetArbeidPaSikt = annetArbeidPaSikt,
@@ -142,20 +142,20 @@ fun opprettErIArbeid(
 )
 
 fun opprettKontaktMedPasient(
-        kontaktDato: LocalDate? = LocalDate.now(),
-        begrunnelseIkkeKontakt: String? = null
+    kontaktDato: LocalDate? = LocalDate.now(),
+    begrunnelseIkkeKontakt: String? = null
 ) = KontaktMedPasient(kontaktDato = kontaktDato, begrunnelseIkkeKontakt = begrunnelseIkkeKontakt)
 
 fun opprettBehandler(
-        fornavn: String = "Fornavn",
-        mellomnavn: String? = "Mellomnavn",
-        etternavn: String = "Etternavnsen",
-        aktoerId: String = "128731827",
-        fnr: String = "1234567891",
-        hpr: String? = null,
-        her: String? = null,
-        adresse: Adresse = opprettAdresse(),
-        tlf: String? = null
+    fornavn: String = "Fornavn",
+    mellomnavn: String? = "Mellomnavn",
+    etternavn: String = "Etternavnsen",
+    aktoerId: String = "128731827",
+    fnr: String = "1234567891",
+    hpr: String? = null,
+    her: String? = null,
+    adresse: Adresse = opprettAdresse(),
+    tlf: String? = null
 ) = Behandler(
         fornavn = fornavn,
         mellomnavn = mellomnavn,
@@ -169,11 +169,11 @@ fun opprettBehandler(
 )
 
 fun opprettAdresse(
-        gate: String? = "Gate",
-        postnummer: Int? = 557,
-        kommune: String? = "Oslo",
-        postboks: String? = null,
-        land: String? = "NO"
+    gate: String? = "Gate",
+    postnummer: Int? = 557,
+    kommune: String? = "Oslo",
+    postboks: String? = null,
+    land: String? = "NO"
 ) = Adresse(
         gate = gate,
         postnummer = postnummer,
@@ -183,18 +183,18 @@ fun opprettAdresse(
 )
 
 fun opprettAvsenderSystem(
-        navn: String = "test",
-        versjon: String = "1.2.3"
+    navn: String = "test",
+    versjon: String = "1.2.3"
 ) = AvsenderSystem(
         navn = navn,
         versjon = versjon
 )
 
 fun opprettArbeidsgiver(
-        harArbeidsgiver: HarArbeidsgiver = HarArbeidsgiver.EN_ARBEIDSGIVER,
-        legekontor: String = "HelseHus",
-        yrkesbetegnelse: String = "Maler",
-        stillingsprosent: Int = 100
+    harArbeidsgiver: HarArbeidsgiver = HarArbeidsgiver.EN_ARBEIDSGIVER,
+    legekontor: String = "HelseHus",
+    yrkesbetegnelse: String = "Maler",
+    stillingsprosent: Int = 100
 ) = Arbeidsgiver(
         harArbeidsgiver = harArbeidsgiver,
         navn = legekontor,
