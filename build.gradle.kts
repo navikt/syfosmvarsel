@@ -17,7 +17,7 @@ val jacksonVersion = "2.9.7"
 val syfosmCommonModelsVersion = "1.0.20"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion= "0.11.1"
-val kafkaEmbeddedVersion = "2.1.1"
+val kafkaEmbeddedVersion = "2.1.0"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.40"
