@@ -23,10 +23,13 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.*
+import net.logstash.logback.argument.StructuredArgument
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.api.registerNaisApi
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
@@ -37,6 +40,8 @@ import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
@@ -44,6 +49,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 data class ApplicationState(var running: Boolean = true, var initialized: Boolean = false)
+
+val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
 val objectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()
@@ -72,12 +79,12 @@ fun main() = runBlocking(coroutineContext) {
         install(MicrometerMetrics) {
             registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry.defaultRegistry, Clock.SYSTEM)
             meterBinders = listOf(
-                    ClassLoaderMetrics(),
-                    JvmMemoryMetrics(),
-                    JvmGcMetrics(),
-                    ProcessorMetrics(),
-                    JvmThreadMetrics(),
-                    LogbackMetrics()
+                ClassLoaderMetrics(),
+                JvmMemoryMetrics(),
+                JvmGcMetrics(),
+                ProcessorMetrics(),
+                JvmThreadMetrics(),
+                LogbackMetrics()
             )
         }
         initRouting(applicationState)
@@ -94,6 +101,10 @@ fun CoroutineScope.createListener(applicationState: ApplicationState, applicatio
         launch {
             try {
                 applicationLogic()
+            } catch (e: TrackableException) {
+                log.error("En uhåndtert feil oppstod, applikasjonen restartes. ${e.loggingMeta}",
+                        *e.loggingMeta.logValues,
+                        e.cause)
             } finally {
                 applicationState.running = false
             }
@@ -149,7 +160,17 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
 ) {
     while (applicationState.running) {
         kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
-            opprettVarselForAvvisteSykmeldinger(it, varselProducer, env.tjenesterUrl)
+            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
+
+            val logValues = arrayOf(
+                    StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
+                    StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
+                    StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id),
+                    StructuredArguments.keyValue("orgNr", receivedSykmelding.legekontorOrgNr)
+            )
+            val loggingMeta = LoggingMeta(logValues)
+
+            opprettVarselForAvvisteSykmeldinger(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
         }
         delay(100)
     }
@@ -163,7 +184,17 @@ suspend fun blockingApplicationLogicNySykmelding(
 ) {
     while (applicationState.running) {
         kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
-            opprettVarselForNySykmelding(it, varselProducer, env.tjenesterUrl)
+            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
+
+            val logValues = arrayOf(
+                    StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
+                    StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
+                    StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id),
+                    StructuredArguments.keyValue("orgNr", receivedSykmelding.legekontorOrgNr)
+            )
+            val loggingMeta = LoggingMeta(logValues)
+
+            opprettVarselForNySykmelding(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
         }
         delay(100)
     }
@@ -179,5 +210,22 @@ fun Application.initRouting(applicationState: ApplicationState) {
                     applicationState.running
                 }
         )
+    }
+}
+
+data class LoggingMeta(
+    val logValues: Array<StructuredArgument>
+) {
+    private val logFormat: String = logValues.joinToString(prefix = "(", postfix = ")", separator = ", ") { "{}" }
+    override fun toString() = logFormat
+}
+
+class TrackableException(override val cause: Throwable, val loggingMeta: LoggingMeta) : RuntimeException()
+
+suspend fun <T : Any, O> T.wrapExceptions(loggingMeta: LoggingMeta, block: suspend T.() -> O): O {
+    try {
+        return block()
+    } catch (e: Exception) {
+        throw TrackableException(e, loggingMeta)
     }
 }

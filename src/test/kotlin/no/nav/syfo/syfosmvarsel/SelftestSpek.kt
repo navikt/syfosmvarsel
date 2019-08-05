@@ -20,35 +20,35 @@ object SelftestSpek : Spek({
             start()
             application.initRouting(applicationState)
 
-            it("Returns ok on isalive") {
+            it("Returns ok on is_alive") {
                 applicationState.running = true
 
-                with(handleRequest(HttpMethod.Get, "/isalive")) {
+                with(handleRequest(HttpMethod.Get, "/is_alive")) {
                     response.status()?.isSuccess() shouldEqual true
                     response.content shouldNotEqual null
                 }
             }
-            it("Returns ok on isready") {
+            it("Returns ok on is_ready") {
                 applicationState.initialized = true
 
-                with(handleRequest(HttpMethod.Get, "/isready")) {
+                with(handleRequest(HttpMethod.Get, "/is_ready")) {
                     println(response.status())
                     response.status()?.isSuccess() shouldEqual true
                     response.content shouldNotEqual null
                 }
             }
-            it("Returns error on failed isalive") {
+            it("Returns error on failed is_alive") {
                 applicationState.running = false
 
-                with(handleRequest(HttpMethod.Get, "/isalive")) {
+                with(handleRequest(HttpMethod.Get, "/is_alive")) {
                     response.status()?.isSuccess() shouldNotEqual true
                     response.content shouldNotEqual null
                 }
             }
-            it("Returns error on failed isready") {
+            it("Returns error on failed is_ready") {
                 applicationState.initialized = false
 
-                with(handleRequest(HttpMethod.Get, "/isready")) {
+                with(handleRequest(HttpMethod.Get, "/is_ready")) {
                     response.status()?.isSuccess() shouldNotEqual true
                     response.content shouldNotEqual null
                 }
@@ -64,7 +64,7 @@ object SelftestSpek : Spek({
             }
 
             it("Returns internal server error when liveness check fails") {
-                with(handleRequest(HttpMethod.Get, "/isalive")) {
+                with(handleRequest(HttpMethod.Get, "/is_alive")) {
                     response.status() shouldEqual HttpStatusCode.InternalServerError
                     response.content shouldNotEqual null
                 }
@@ -80,7 +80,7 @@ object SelftestSpek : Spek({
             }
 
             it("Returns internal server error when readyness check fails") {
-                with(handleRequest(HttpMethod.Get, "/isready")) {
+                with(handleRequest(HttpMethod.Get, "/is_ready")) {
                     response.status() shouldEqual HttpStatusCode.InternalServerError
                     response.content shouldNotEqual null
                 }
