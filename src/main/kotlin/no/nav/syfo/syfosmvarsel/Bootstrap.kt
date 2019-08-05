@@ -28,6 +28,8 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import net.logstash.logback.argument.StructuredArgument
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.syfosmvarsel.api.registerNaisApi
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
@@ -35,6 +37,7 @@ import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.model.ReceivedSykmelding
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -43,8 +46,12 @@ import java.time.Duration
 import java.util.Properties
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 data class ApplicationState(var running: Boolean = true, var initialized: Boolean = false)
+
+val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
 val objectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()
@@ -95,6 +102,10 @@ fun CoroutineScope.createListener(applicationState: ApplicationState, applicatio
         launch {
             try {
                 applicationLogic()
+            } catch (e: TrackableException) {
+                log.error("En uhåndtert feil oppstod, applikasjonen restartes. ${e.loggingMeta}",
+                        *e.loggingMeta.logValues,
+                        e.cause)
             } finally {
                 applicationState.running = false
             }
@@ -129,9 +140,19 @@ suspend fun blockingApplicationLogic(
     env: Environment
 ) {
     while (applicationState.running) {
-        kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
-            opprettVarselForAvvisteSykmeldinger(it, kafkaproducer,
-                    env.oppgavevarselTopic, env.tjenesterUrl)
+        kafkaconsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
+            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(consumerRecord.value())
+
+            val logValues = arrayOf(
+                    StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
+                    StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
+                    StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id),
+                    StructuredArguments.keyValue("orgNr", receivedSykmelding.legekontorOrgNr)
+            )
+            val loggingMeta = LoggingMeta(logValues)
+
+            opprettVarselForAvvisteSykmeldinger(receivedSykmelding, kafkaproducer,
+                    env.oppgavevarselTopic, env.tjenesterUrl, loggingMeta)
         }
         delay(100)
     }
@@ -147,5 +168,22 @@ fun Application.initRouting(applicationState: ApplicationState) {
                     applicationState.running
                 }
         )
+    }
+}
+
+data class LoggingMeta(
+    val logValues: Array<StructuredArgument>
+) {
+    private val logFormat: String = logValues.joinToString(prefix = "(", postfix = ")", separator = ", ") { "{}" }
+    override fun toString() = logFormat
+}
+
+class TrackableException(override val cause: Throwable, val loggingMeta: LoggingMeta) : RuntimeException()
+
+suspend fun <T : Any, O> T.wrapExceptions(loggingMeta: LoggingMeta, block: suspend T.() -> O): O {
+    try {
+        return block()
+    } catch (e: Exception) {
+        throw TrackableException(e, loggingMeta)
     }
 }
