@@ -18,7 +18,6 @@ val syfosmCommonModelsVersion = "1.0.22"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion= "0.11.1"
 val kafkaEmbeddedVersion = "2.1.0"
-val diskresjonskodeServiceVersion = "1.0.0"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.40"
@@ -33,8 +32,8 @@ repositories {
     jcenter()
     maven ( url = "https://dl.bintray.com/kotlin/ktor")
     maven ( url = "http://packages.confluent.io/maven/")
-    maven ( url = "https://repo.adeo.no/repository/maven-releases/")
-    maven ( url =  "https://dl.bintray.com/spekframework/spek-dev")
+    maven ( url = "https://oss.sonatype.org/content/groups/staging/")
+    maven ( url = "https://dl.bintray.com/spekframework/spek-dev")
     maven ( url = "https://kotlin.bintray.com/kotlinx")
 }
 
@@ -60,7 +59,7 @@ dependencies {
 
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
-    implementation ("no.nav.sbl.dialogarena:diskresjonskodev1-tjenestespesifikasjon:$diskresjonskodeServiceVersion")
+    implementation ("no.nav.tjenestespesifikasjoner:diskresjonskodev1-tjenestespesifikasjon:1.2019.07.11-06.47-b55f47790a9d")
     compile ("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
     compile ("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
 
