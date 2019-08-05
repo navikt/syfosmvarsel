@@ -2,6 +2,7 @@ package no.nav.syfo.syfosmvarsel.avvistsykmelding
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -84,7 +85,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/gyldigAvvistSykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for avvist sykmelding") {
-            opprettVarselForAvvisteSykmeldinger(cr, kafkaproducer, topic, "tjenester")
+            opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), kafkaproducer, topic, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
             val messages = consumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 1
@@ -103,7 +104,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
         it("Kaster feil ved mottak av ugyldig avvist sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
 
-            assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(ugyldigCr, kafkaproducer, topic, "tjenester") }
+            assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), kafkaproducer, topic, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315")))) }
         }
     }
 })
