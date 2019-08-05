@@ -37,16 +37,16 @@ fun opprettVarselForAvvisteSykmeldinger(
 fun receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
     val utsendelsestidspunkt = LocalDateTime.now().innenforArbeidstidEllerPaafolgendeDag()
     return OppgaveVarsel(
-            "SYKMELDING_AVVIST",
-            receivedSykmelding.sykmelding.id,
-            receivedSykmelding.personNrPasient,
-            parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
-            utsendelsestidspunkt.plusDays(5), // utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
-            utsendelsestidspunkt,
-            "NySykmelding",
-            OPPGAVETYPE,
-            lagOppgavelenke(tjenesterUrl),
-            false
+            type = "SYKMELDING_AVVIST",
+            ressursId = receivedSykmelding.sykmelding.id,
+            mottaker = receivedSykmelding.personNrPasient,
+            parameterListe = parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
+            utlopstidspunkt = utsendelsestidspunkt.plusDays(5), // utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
+            utsendelsestidspunkt = utsendelsestidspunkt,
+            varseltypeId = "NySykmelding",
+            oppgavetype = OPPGAVETYPE,
+            oppgaveUrl = lagOppgavelenke(tjenesterUrl),
+            repeterendeVarsel = false
     )
 }
 
