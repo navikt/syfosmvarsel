@@ -67,7 +67,7 @@ dependencies {
     testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation ("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
-    testImplementation ("org.mockito:mockito-core:2.28.2")
+    testImplementation ("io.mockk:mockk:1.9.3")
 
     testRuntimeOnly ("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
     testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion")

@@ -2,6 +2,8 @@ package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.mockk.every
+import io.mockk.mockk
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
@@ -19,8 +21,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.mockito.BDDMockito
-import org.mockito.Mockito.mock
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.charset.StandardCharsets
@@ -55,7 +55,8 @@ object NySykmeldingServiceKtTest : Spek({
     val producerProperties = baseConfig.toProducerConfig(
             "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
     val kafkaproducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
-    val diskresjonskodeServiceMock = mock(DiskresjonskodePortType::class.java)
+    val diskresjonskodeServiceMock = mockk<DiskresjonskodePortType>()
+    every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse()
     val varselProducer = VarselProducer(diskresjonskodeServiceMock, kafkaproducer, topic)
 
     val consumerProperties = baseConfig
@@ -65,10 +66,6 @@ object NySykmeldingServiceKtTest : Spek({
 
     beforeGroup {
         embeddedEnvironment.start()
-    }
-
-    beforeEachTest {
-        BDDMockito.given(diskresjonskodeServiceMock.hentDiskresjonskode(any())).willReturn(WSHentDiskresjonskodeResponse())
     }
 
     afterGroup {
@@ -120,7 +117,7 @@ object NySykmeldingServiceKtTest : Spek({
         }
 
         it("Oppretter ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
-            BDDMockito.given(diskresjonskodeServiceMock.hentDiskresjonskode(any())).willReturn(WSHentDiskresjonskodeResponse().withDiskresjonskode("6"))
+            every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
             opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
             val messages = consumer.poll(Duration.ofMillis(5000)).toList()
 
