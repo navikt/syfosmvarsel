@@ -43,6 +43,8 @@ workflows:
     jobs:
       - build_jar:
           context: barkendeploy
+          environment:
+            GRADLE_OPTS: -Xmx2048m -Dorg.gradle.daemon=false
           filters:
             branches:
               only: master
@@ -67,6 +69,8 @@ workflows:
     jobs:
       - build_jar:
           context: barkendeploy
+          environment:
+            GRADLE_OPTS: -Xmx2048m -Dorg.gradle.daemon=false
           filters:
             branches:
               ignore: master
