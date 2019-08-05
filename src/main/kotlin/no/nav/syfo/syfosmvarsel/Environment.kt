@@ -7,9 +7,13 @@ data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationThreads: Int = getEnvVar("APPLICATION_THREADS", "1").toInt(),
     val avvistSykmeldingTopic: String = getEnvVar("KAFKA_AVVIST_SYKMELDING_TOPIC", "privat-syfo-sm2013-avvistBehandling"),
+    val sykmeldingManuellBehandlingTopic: String = getEnvVar("KAFKA_SM2013_MANUAL_TOPIC", "privat-syfo-sm2013-manuellBehandling"),
+    val sykmeldingAutomatiskBehandlingTopic: String = getEnvVar("KAFKA_SM2013_AUTOMATIC_TOPIC", "privat-syfo-sm2013-automatiskBehandling"),
     val oppgavevarselTopic: String = getEnvVar("KAFKA_OPPGAVEVARSEL_TOPIC", "aapen-syfo-oppgavevarsel-v1"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val tjenesterUrl: String = getEnvVar("TJENESTER_URL"),
+    val diskresjonskodeEndpointUrl: String = getEnvVar("DISKRESJONSKODE_ENDPOINT_URL"),
+    val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) : KafkaConfig
 

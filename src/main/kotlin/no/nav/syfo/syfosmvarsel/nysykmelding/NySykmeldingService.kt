@@ -1,11 +1,11 @@
-package no.nav.syfo.syfosmvarsel.avvistsykmelding
+package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
-import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_MOTTATT
-import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_VARSEL_OPPRETTET
+import no.nav.syfo.syfosmvarsel.metrics.NY_SM_MOTTATT
+import no.nav.syfo.syfosmvarsel.metrics.NY_SM_VARSEL_OPPRETTET
 import no.nav.syfo.syfosmvarsel.objectMapper
 import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
@@ -13,14 +13,14 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.util.Collections.singletonMap
+import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
 
 // Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"
 
-fun opprettVarselForAvvisteSykmeldinger(
+fun opprettVarselForNySykmelding(
     cr: ConsumerRecord<String, String>,
     varselProducer: VarselProducer,
     tjenesterUrl: String
@@ -38,23 +38,23 @@ fun opprettVarselForAvvisteSykmeldinger(
             "{}"
         }
 
-        log.info("Mottatt avvist sykmelding med id {}, $logKeys", receivedSykmelding.sykmelding.id, *logValues)
-        AVVIST_SM_MOTTATT.inc()
+        log.info("Mottatt ny sykmelding med id {}, $logKeys", receivedSykmelding.sykmelding.id, *logValues)
+        NY_SM_MOTTATT.inc()
 
-        val oppgaveVarsel = receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
+        val oppgaveVarsel = receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
         varselProducer.sendVarsel(oppgaveVarsel)
-        AVVIST_SM_VARSEL_OPPRETTET.inc()
-        log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, $logKeys", receivedSykmelding.sykmelding.id, *logValues)
+        NY_SM_VARSEL_OPPRETTET.inc()
+        log.info("Opprettet oppgavevarsel for ny sykmelding med {}, $logKeys", receivedSykmelding.sykmelding.id, *logValues)
     } catch (e: Exception) {
-        log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
+        log.error("Det skjedde en feil ved oppretting av varsel for ny sykmelding")
         throw e
     }
 }
 
-fun receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
+fun receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
     val utsendelsestidspunkt = LocalDateTime.now().innenforArbeidstidEllerPaafolgendeDag()
     return OppgaveVarsel(
-            "SYKMELDING_AVVIST",
+            "NY_SYKMELDING",
             receivedSykmelding.sykmelding.id,
             receivedSykmelding.personNrPasient,
             parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
@@ -68,7 +68,7 @@ fun receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmeld
 }
 
 private fun parameterListe(sykmeldingId: String, tjenesterUrl: String): Map<String, String> {
-    return singletonMap<String, String>("url", lagHenvendelselenke(sykmeldingId, tjenesterUrl))
+    return Collections.singletonMap<String, String>("url", lagHenvendelselenke(sykmeldingId, tjenesterUrl))
 }
 
 private fun lagHenvendelselenke(sykmeldingId: String, tjenesterUrl: String): String {

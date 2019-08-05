@@ -1,4 +1,4 @@
-package no.nav.syfo.syfosmvarsel.avvistsykmelding
+package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -30,7 +30,7 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertFailsWith
 
-object AvvistSykmeldingServiceKtTest : Spek({
+object NySykmeldingServiceKtTest : Spek({
 
     val topic = "oppgavevarsel-topic"
 
@@ -73,12 +73,12 @@ object AvvistSykmeldingServiceKtTest : Spek({
     afterGroup {
         embeddedEnvironment.tearDown()
     }
-    describe("Mapping av avvist sykmelding til oppgavevarsel fungerer som forventet") {
+    describe("Mapping av ny sykmelding til oppgavevarsel fungerer som forventet") {
         val sykmelding = opprettReceivedSykmelding(id = "123")
-        it("Avvist sykmelding mappes korrekt til oppgavevarsel") {
-            val oppgavevarsel = receivedAvvistSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
+        it("Ny sykmelding mappes korrekt til oppgavevarsel") {
+            val oppgavevarsel = receivedNySykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
 
-            oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
+            oppgavevarsel.type shouldEqual "NY_SYKMELDING"
             oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
             oppgavevarsel.mottaker shouldEqual "123124"
             oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/${sykmelding.sykmelding.id}"
@@ -92,16 +92,16 @@ object AvvistSykmeldingServiceKtTest : Spek({
         }
     }
 
-    describe("Ende til ende-test avvist sykmelding") {
+    describe("Ende til ende-test ny sykmelding") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
-        it("Oppretter varsel for avvist sykmelding") {
-            opprettVarselForAvvisteSykmeldinger(cr, varselProducer, "tjenester")
+        it("Oppretter varsel for ny sykmelding") {
+            opprettVarselForNySykmelding(cr, varselProducer, "tjenester")
             val messages = consumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 1
             val oppgavevarsel: OppgaveVarsel = objectMapper.readValue(messages[0].value())
-            oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
+            oppgavevarsel.type shouldEqual "NY_SYKMELDING"
             oppgavevarsel.ressursId shouldEqual "detteerensykmeldingid"
             oppgavevarsel.mottaker shouldEqual "1231231"
             oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/detteerensykmeldingid"
@@ -112,15 +112,15 @@ object AvvistSykmeldingServiceKtTest : Spek({
             oppgavevarsel.repeterendeVarsel shouldEqual false
         }
 
-        it("Kaster feil ved mottak av ugyldig avvist sykmelding") {
+        it("Kaster feil ved mottak av ugyldig ny sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
 
-            assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(ugyldigCr, varselProducer, "tjenester") }
+            assertFailsWith<JsonParseException> { opprettVarselForNySykmelding(ugyldigCr, varselProducer, "tjenester") }
         }
 
-        it("Oppretter ikke varsel for avvist sykmelding hvis bruker har diskresjonskode") {
+        it("Oppretter ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
             BDDMockito.given(diskresjonskodeServiceMock.hentDiskresjonskode(any())).willReturn(WSHentDiskresjonskodeResponse().withDiskresjonskode("6"))
-            opprettVarselForAvvisteSykmeldinger(cr, varselProducer, "tjenester")
+            opprettVarselForNySykmelding(cr, varselProducer, "tjenester")
             val messages = consumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 0

@@ -18,6 +18,7 @@ val syfosmCommonModelsVersion = "1.0.20"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion= "0.11.1"
 val kafkaEmbeddedVersion = "2.1.0"
+val diskresjonskodeServiceVersion = "1.0.0"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.40"
@@ -55,9 +56,11 @@ dependencies {
 
     implementation ("no.nav.syfo.sm:syfosm-common-models:$syfosmCommonModelsVersion")
     implementation ("no.nav.syfo.sm:syfosm-common-kafka:$syfosmCommonModelsVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-ws:$syfosmCommonModelsVersion")
 
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    implementation ("no.nav.sbl.dialogarena:diskresjonskodev1-tjenestespesifikasjon:$diskresjonskodeServiceVersion")
     compile ("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
     compile ("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
 
@@ -65,6 +68,7 @@ dependencies {
     testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation ("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
+    testImplementation ("org.mockito:mockito-core:2.28.2")
 
     testRuntimeOnly ("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
     testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
