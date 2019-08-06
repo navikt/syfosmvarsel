@@ -116,6 +116,7 @@ tasks {
         testLogging {
             showStandardStreams = true
         }
+        maxHeapSize = "512m"
     }
 
 }
