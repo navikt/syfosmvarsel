@@ -18,6 +18,8 @@ val syfosmCommonModelsVersion = "1.0.22"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion= "0.11.1"
 val kafkaEmbeddedVersion = "2.2.0"
+val jaxwsApiVersion = "2.3.1"
+val cxfVersion = "3.2.7"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.40"
@@ -56,6 +58,12 @@ dependencies {
     implementation ("no.nav.syfo.sm:syfosm-common-models:$syfosmCommonModelsVersion")
     implementation ("no.nav.syfo.sm:syfosm-common-kafka:$syfosmCommonModelsVersion")
     implementation("no.nav.syfo.sm:syfosm-common-ws:$syfosmCommonModelsVersion")
+
+    implementation ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
+    implementation ("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
+    implementation ("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
+    implementation ("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
+    implementation ("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
 
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
