@@ -54,15 +54,15 @@ object NySykmeldingServiceKtTest : Spek({
 
     val producerProperties = baseConfig.toProducerConfig(
             "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
-    val kafkaproducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
+    val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
     val diskresjonskodeServiceMock = mockk<DiskresjonskodePortType>()
     every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse()
-    val varselProducer = VarselProducer(diskresjonskodeServiceMock, kafkaproducer, topic)
+    val varselProducer = VarselProducer(diskresjonskodeServiceMock, kafkaProducer, topic)
 
     val consumerProperties = baseConfig
             .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
-    val consumer = KafkaConsumer<String, String>(consumerProperties)
-    consumer.subscribe(listOf(topic))
+    val kafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
+    kafkaConsumer.subscribe(listOf(topic))
 
     beforeGroup {
         embeddedEnvironment.start()
@@ -95,7 +95,7 @@ object NySykmeldingServiceKtTest : Spek({
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for ny sykmelding") {
             opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
-            val messages = consumer.poll(Duration.ofMillis(5000)).toList()
+            val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 1
             val oppgavevarsel: OppgaveVarsel = objectMapper.readValue(messages[0].value())
@@ -119,7 +119,7 @@ object NySykmeldingServiceKtTest : Spek({
         it("Oppretter ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
             opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
-            val messages = consumer.poll(Duration.ofMillis(5000)).toList()
+            val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 0
         }

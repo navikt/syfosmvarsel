@@ -122,25 +122,25 @@ fun CoroutineScope.launchListeners(
         port { withSTS(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL) }
     }
 
-    val kafkaproducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
-    val varselProducer = VarselProducer(diskresjonskodeService, kafkaproducer, env.oppgavevarselTopic)
+    val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
+    val varselProducer = VarselProducer(diskresjonskodeService, kafkaProducer, env.oppgavevarselTopic)
 
     val avvistSykmeldingListeners = 0.until(env.applicationThreads).map {
-        val avvistkafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
-        avvistkafkaconsumer.subscribe(listOf(env.avvistSykmeldingTopic))
+        val avvistKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
+        avvistKafkaConsumer.subscribe(listOf(env.avvistSykmeldingTopic))
 
         createListener(applicationState) {
-            blockingApplicationLogicAvvistSykmelding(applicationState, avvistkafkaconsumer, varselProducer, env)
+            blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, varselProducer, env)
         }
     }.toList()
 
     if (env.cluster == "dev-fss") {
         val nySykmeldingListeners = 0.until(env.applicationThreads).map {
-            val nykafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
-            nykafkaconsumer.subscribe(listOf(env.sykmeldingAutomatiskBehandlingTopic, env.sykmeldingManuellBehandlingTopic))
+            val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
+            nyKafkaConsumer.subscribe(listOf(env.sykmeldingAutomatiskBehandlingTopic, env.sykmeldingManuellBehandlingTopic))
 
             createListener(applicationState) {
-                blockingApplicationLogicNySykmelding(applicationState, nykafkaconsumer, varselProducer, env)
+                blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, varselProducer, env)
             }
         }.toList()
 
@@ -154,12 +154,12 @@ fun CoroutineScope.launchListeners(
 
 suspend fun blockingApplicationLogicAvvistSykmelding(
     applicationState: ApplicationState,
-    kafkaconsumer: KafkaConsumer<String, String>,
+    kafkaConsumer: KafkaConsumer<String, String>,
     varselProducer: VarselProducer,
     env: Environment
 ) {
     while (applicationState.running) {
-        kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
+        kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
             val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
             val logValues = arrayOf(
@@ -178,12 +178,12 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
 
 suspend fun blockingApplicationLogicNySykmelding(
     applicationState: ApplicationState,
-    kafkaconsumer: KafkaConsumer<String, String>,
+    kafkaConsumer: KafkaConsumer<String, String>,
     varselProducer: VarselProducer,
     env: Environment
 ) {
     while (applicationState.running) {
-        kafkaconsumer.poll(Duration.ofMillis(0)).forEach {
+        kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
             val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
             val logValues = arrayOf(
