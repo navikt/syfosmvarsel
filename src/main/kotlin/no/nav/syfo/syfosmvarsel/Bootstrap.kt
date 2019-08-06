@@ -71,6 +71,7 @@ fun main() = runBlocking(coroutineContext) {
     val consumerProperties = kafkaBaseConfig.toConsumerConfig(
             "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
     )
+    consumerProperties["auto.offset.reset"] = "latest"
 
     val producerProperties = kafkaBaseConfig.toProducerConfig(
             "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
