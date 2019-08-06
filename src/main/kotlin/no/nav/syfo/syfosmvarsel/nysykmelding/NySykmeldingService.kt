@@ -3,7 +3,6 @@ package no.nav.syfo.syfosmvarsel.nysykmelding
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
-import no.nav.syfo.syfosmvarsel.metrics.NY_SM_MOTTATT
 import no.nav.syfo.syfosmvarsel.metrics.NY_SM_VARSEL_OPPRETTET
 import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
@@ -25,8 +24,6 @@ fun opprettVarselForNySykmelding(
 ) {
     try {
         log.info("Mottatt ny sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
-        NY_SM_MOTTATT.inc()
-
         val oppgaveVarsel = receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
         varselProducer.sendVarsel(oppgaveVarsel)
         NY_SM_VARSEL_OPPRETTET.inc()

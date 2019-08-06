@@ -4,7 +4,6 @@ import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.log
-import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_MOTTATT
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_VARSEL_OPPRETTET
 import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
@@ -22,8 +21,6 @@ fun opprettVarselForAvvisteSykmeldinger(
 ) {
     try {
         log.info("Mottatt avvist sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
-        AVVIST_SM_MOTTATT.inc()
-
         val oppgaveVarsel = receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
         varselProducer.sendVarsel(oppgaveVarsel)
         AVVIST_SM_VARSEL_OPPRETTET.inc()
