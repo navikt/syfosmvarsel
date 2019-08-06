@@ -19,6 +19,7 @@ val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion= "0.11.1"
 val kafkaEmbeddedVersion = "2.2.0"
 val jaxwsApiVersion = "2.3.1"
+val jaxwsToolsVersion = "2.3.2"
 val cxfVersion = "3.2.7"
 
 plugins {
@@ -64,6 +65,9 @@ dependencies {
     implementation ("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation ("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
     implementation ("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
+    implementation ("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
+        exclude(group = "com.sun.xml.ws", module = "policy")
+    }
 
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
