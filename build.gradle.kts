@@ -20,6 +20,7 @@ val kotlinxSerializationVersion= "0.11.1"
 val kafkaEmbeddedVersion = "2.2.0"
 val jaxwsApiVersion = "2.3.1"
 val jaxwsToolsVersion = "2.3.2"
+val javaxActivationVersion = "1.1.1"
 val cxfVersion = "3.2.7"
 
 plugins {
@@ -61,6 +62,7 @@ dependencies {
     implementation("no.nav.syfo.sm:syfosm-common-ws:$syfosmCommonModelsVersion")
 
     implementation ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
+    implementation ("javax.activation:activation:$javaxActivationVersion")
     implementation ("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation ("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation ("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
