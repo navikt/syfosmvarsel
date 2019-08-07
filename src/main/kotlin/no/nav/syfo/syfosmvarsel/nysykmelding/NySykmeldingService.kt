@@ -1,5 +1,6 @@
 package no.nav.syfo.syfosmvarsel.nysykmelding
 
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
@@ -23,11 +24,11 @@ fun opprettVarselForNySykmelding(
     loggingMeta: LoggingMeta
 ) {
     try {
-        log.info("Mottatt ny sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+        log.info("Mottatt ny sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
         val oppgaveVarsel = receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
         varselProducer.sendVarsel(oppgaveVarsel)
         NY_SM_VARSEL_OPPRETTET.inc()
-        log.info("Opprettet oppgavevarsel for ny sykmelding med {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+        log.info("Opprettet oppgavevarsel for ny sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
     } catch (e: Exception) {
         log.error("Det skjedde en feil ved oppretting av varsel for ny sykmelding")
         throw e

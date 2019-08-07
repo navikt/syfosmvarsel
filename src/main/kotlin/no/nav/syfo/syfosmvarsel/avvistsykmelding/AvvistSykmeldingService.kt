@@ -1,5 +1,6 @@
 package no.nav.syfo.syfosmvarsel.avvistsykmelding
 
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
@@ -20,11 +21,11 @@ fun opprettVarselForAvvisteSykmeldinger(
     loggingMeta: LoggingMeta
 ) {
     try {
-        log.info("Mottatt avvist sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+        log.info("Mottatt avvist sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
         val oppgaveVarsel = receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
         varselProducer.sendVarsel(oppgaveVarsel)
         AVVIST_SM_VARSEL_OPPRETTET.inc()
-        log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+        log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
     } catch (e: Exception) {
         log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
         throw e
