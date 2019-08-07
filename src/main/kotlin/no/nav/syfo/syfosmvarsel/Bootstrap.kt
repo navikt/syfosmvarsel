@@ -71,7 +71,6 @@ fun main() = runBlocking(coroutineContext) {
     val consumerProperties = kafkaBaseConfig.toConsumerConfig(
             "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
     )
-    consumerProperties["auto.offset.reset"] = "latest"
 
     val producerProperties = kafkaBaseConfig.toProducerConfig(
             "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
@@ -135,22 +134,17 @@ fun CoroutineScope.launchListeners(
         }
     }.toList()
 
-    if (env.cluster == "dev-fss") {
-        val nySykmeldingListeners = 0.until(env.applicationThreads).map {
-            val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
-            nyKafkaConsumer.subscribe(listOf(env.sykmeldingAutomatiskBehandlingTopic, env.sykmeldingManuellBehandlingTopic))
+    val nySykmeldingListeners = 0.until(env.applicationThreads).map {
+        val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
+        nyKafkaConsumer.subscribe(listOf(env.sykmeldingAutomatiskBehandlingTopic, env.sykmeldingManuellBehandlingTopic))
 
-            createListener(applicationState) {
-                blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, varselProducer, env)
-            }
-        }.toList()
+        createListener(applicationState) {
+            blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, varselProducer, env)
+        }
+    }.toList()
 
-        applicationState.initialized = true
-        runBlocking { (avvistSykmeldingListeners + nySykmeldingListeners).forEach { it.join() } }
-    } else {
-        applicationState.initialized = true
-        runBlocking { (avvistSykmeldingListeners).forEach { it.join() } }
-    }
+    applicationState.initialized = true
+    runBlocking { (avvistSykmeldingListeners + nySykmeldingListeners).forEach { it.join() } }
 }
 
 suspend fun blockingApplicationLogicAvvistSykmelding(
@@ -195,7 +189,11 @@ suspend fun blockingApplicationLogicNySykmelding(
             )
             val loggingMeta = LoggingMeta(logValues)
 
-            opprettVarselForNySykmelding(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+            if (env.cluster == "dev-fss") {
+                opprettVarselForNySykmelding(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+            } else {
+                log.info("Oppretter ikke varsel for ny sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+            }
         }
         delay(100)
     }
