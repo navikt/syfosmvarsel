@@ -23,8 +23,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.*
-import net.logstash.logback.argument.StructuredArgument
-import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -102,9 +101,7 @@ fun CoroutineScope.createListener(applicationState: ApplicationState, applicatio
             try {
                 applicationLogic()
             } catch (e: TrackableException) {
-                log.error("En uhåndtert feil oppstod, applikasjonen restartes. ${e.loggingMeta}",
-                        *e.loggingMeta.logValues,
-                        e.cause)
+                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
             } finally {
                 applicationState.running = false
             }
@@ -157,15 +154,15 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
             val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
-            val logValues = arrayOf(
-                    StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
-                    StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
-                    StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id),
-                    StructuredArguments.keyValue("orgNr", receivedSykmelding.legekontorOrgNr)
+            val loggingMeta = LoggingMeta(
+                    mottakId = receivedSykmelding.navLogId,
+                    orgNr = receivedSykmelding.legekontorOrgNr,
+                    msgId = receivedSykmelding.msgId,
+                    sykmeldingId = receivedSykmelding.sykmelding.id
             )
-            val loggingMeta = LoggingMeta(logValues)
-
-            opprettVarselForAvvisteSykmeldinger(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+            wrapExceptions(loggingMeta) {
+                opprettVarselForAvvisteSykmeldinger(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+            }
         }
         delay(100)
     }
@@ -181,18 +178,19 @@ suspend fun blockingApplicationLogicNySykmelding(
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
             val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
-            val logValues = arrayOf(
-                    StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
-                    StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
-                    StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id),
-                    StructuredArguments.keyValue("orgNr", receivedSykmelding.legekontorOrgNr)
+            val loggingMeta = LoggingMeta(
+                mottakId = receivedSykmelding.navLogId,
+                orgNr = receivedSykmelding.legekontorOrgNr,
+                msgId = receivedSykmelding.msgId,
+                sykmeldingId = receivedSykmelding.sykmelding.id
             )
-            val loggingMeta = LoggingMeta(logValues)
 
             if (env.cluster == "dev-fss") {
+                wrapExceptions(loggingMeta) {
                 opprettVarselForNySykmelding(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+                }
             } else {
-                log.info("Oppretter ikke varsel for ny sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+                log.info("Oppretter ikke varsel for ny sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
             }
         }
         delay(100)
@@ -209,22 +207,5 @@ fun Application.initRouting(applicationState: ApplicationState) {
                     applicationState.running
                 }
         )
-    }
-}
-
-data class LoggingMeta(
-    val logValues: Array<StructuredArgument>
-) {
-    private val logFormat: String = logValues.joinToString(prefix = "(", postfix = ")", separator = ", ") { "{}" }
-    override fun toString() = logFormat
-}
-
-class TrackableException(override val cause: Throwable, val loggingMeta: LoggingMeta) : RuntimeException()
-
-suspend fun <T : Any, O> T.wrapExceptions(loggingMeta: LoggingMeta, block: suspend T.() -> O): O {
-    try {
-        return block()
-    } catch (e: Exception) {
-        throw TrackableException(e, loggingMeta)
     }
 }
