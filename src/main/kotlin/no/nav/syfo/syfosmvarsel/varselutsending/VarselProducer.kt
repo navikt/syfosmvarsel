@@ -1,6 +1,7 @@
 package no.nav.syfo.syfosmvarsel.varselutsending
 
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
+import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeRequest
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -16,6 +17,7 @@ class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType
             val diskresjonskode: String? = diskresjonskodeService.hentDiskresjonskode(WSHentDiskresjonskodeRequest().withIdent(oppgaveVarsel.mottaker)).diskresjonskode
             if (diskresjonskode == "6") {
                 log.info("Bruker har diskresjonskode, sender ikke varsel for sykmeldingId {}", oppgaveVarsel.ressursId)
+                SM_VARSEL_AVBRUTT.inc()
                 return
             }
             kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
