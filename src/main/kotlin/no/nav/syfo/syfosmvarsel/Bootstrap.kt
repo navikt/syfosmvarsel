@@ -22,32 +22,31 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.syfosmvarsel.api.registerNaisApi
-import no.nav.syfo.syfosmvarsel.avvistsykmelding.OppgaveVarsel
-import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.syfosmvarsel.api.registerNaisApi
+import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
+import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
+import no.nav.syfo.syfosmvarsel.nysykmelding.opprettVarselForNySykmelding
+import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
+import no.nav.syfo.ws.createPort
+import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
-import java.nio.file.Paths
-import java.time.Duration
-import java.util.Properties
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.nio.file.Paths
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 data class ApplicationState(var running: Boolean = true, var initialized: Boolean = false)
 
@@ -91,7 +90,7 @@ fun main() = runBlocking(coroutineContext) {
         initRouting(applicationState)
     }.start(wait = false)
 
-    launchListeners(env, applicationState, consumerProperties, producerProperties)
+    launchListeners(env, vaultSecrets, applicationState, consumerProperties, producerProperties)
 
     Runtime.getRuntime().addShutdownHook(Thread {
         applicationServer.stop(10, 10, TimeUnit.SECONDS)
@@ -112,36 +111,51 @@ fun CoroutineScope.createListener(applicationState: ApplicationState, applicatio
         }
 
 @KtorExperimentalAPI
-suspend fun CoroutineScope.launchListeners(
+fun CoroutineScope.launchListeners(
     env: Environment,
+    vaultSecrets: VaultSecrets,
     applicationState: ApplicationState,
     consumerProperties: Properties,
     producerProperties: Properties
 ) {
-    val listeners = 0.until(env.applicationThreads).map {
-                val kafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
-                kafkaconsumer.subscribe(listOf(env.avvistSykmeldingTopic))
+    val diskresjonskodeService = createPort<DiskresjonskodePortType>(env.diskresjonskodeEndpointUrl) {
+        port { withSTS(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL) }
+    }
 
-                val kafkaproducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
+    val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
+    val varselProducer = VarselProducer(diskresjonskodeService, kafkaProducer, env.oppgavevarselTopic)
 
-                createListener(applicationState) {
-                    blockingApplicationLogic(applicationState, kafkaconsumer, kafkaproducer, env)
-            }
-        }.toList()
+    val avvistSykmeldingListeners = 0.until(env.applicationThreads).map {
+        val avvistKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
+        avvistKafkaConsumer.subscribe(listOf(env.avvistSykmeldingTopic))
 
-        applicationState.initialized = true
-        listeners.forEach { it.join() }
+        createListener(applicationState) {
+            blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, varselProducer, env)
+        }
+    }.toList()
+
+    val nySykmeldingListeners = 0.until(env.applicationThreads).map {
+        val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
+        nyKafkaConsumer.subscribe(listOf(env.sykmeldingAutomatiskBehandlingTopic, env.sykmeldingManuellBehandlingTopic))
+
+        createListener(applicationState) {
+            blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, varselProducer, env)
+        }
+    }.toList()
+
+    applicationState.initialized = true
+    runBlocking { (avvistSykmeldingListeners + nySykmeldingListeners).forEach { it.join() } }
 }
 
-suspend fun blockingApplicationLogic(
+suspend fun blockingApplicationLogicAvvistSykmelding(
     applicationState: ApplicationState,
-    kafkaconsumer: KafkaConsumer<String, String>,
-    kafkaproducer: KafkaProducer<String, OppgaveVarsel>,
+    kafkaConsumer: KafkaConsumer<String, String>,
+    varselProducer: VarselProducer,
     env: Environment
 ) {
     while (applicationState.running) {
-        kafkaconsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
-            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(consumerRecord.value())
+        kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
+            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
             val logValues = arrayOf(
                     StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
@@ -151,8 +165,35 @@ suspend fun blockingApplicationLogic(
             )
             val loggingMeta = LoggingMeta(logValues)
 
-            opprettVarselForAvvisteSykmeldinger(receivedSykmelding, kafkaproducer,
-                    env.oppgavevarselTopic, env.tjenesterUrl, loggingMeta)
+            opprettVarselForAvvisteSykmeldinger(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+        }
+        delay(100)
+    }
+}
+
+suspend fun blockingApplicationLogicNySykmelding(
+    applicationState: ApplicationState,
+    kafkaConsumer: KafkaConsumer<String, String>,
+    varselProducer: VarselProducer,
+    env: Environment
+) {
+    while (applicationState.running) {
+        kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
+            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
+
+            val logValues = arrayOf(
+                    StructuredArguments.keyValue("msgId", receivedSykmelding.msgId),
+                    StructuredArguments.keyValue("mottakId", receivedSykmelding.navLogId),
+                    StructuredArguments.keyValue("sykmeldingId", receivedSykmelding.sykmelding.id),
+                    StructuredArguments.keyValue("orgNr", receivedSykmelding.legekontorOrgNr)
+            )
+            val loggingMeta = LoggingMeta(logValues)
+
+            if (env.cluster == "dev-fss") {
+                opprettVarselForNySykmelding(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+            } else {
+                log.info("Oppretter ikke varsel for ny sykmelding med id {}, $loggingMeta", receivedSykmelding.sykmelding.id, *loggingMeta.logValues)
+            }
         }
         delay(100)
     }

@@ -1,4 +1,4 @@
-package no.nav.syfo.syfosmvarsel.avvistsykmelding
+package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -31,7 +31,7 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertFailsWith
 
-object AvvistSykmeldingServiceKtTest : Spek({
+object NySykmeldingServiceKtTest : Spek({
 
     val topic = "oppgavevarsel-topic"
 
@@ -57,7 +57,6 @@ object AvvistSykmeldingServiceKtTest : Spek({
     val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
     val diskresjonskodeServiceMock = mockk<DiskresjonskodePortType>()
     every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse()
-
     val varselProducer = VarselProducer(diskresjonskodeServiceMock, kafkaProducer, topic)
 
     val consumerProperties = baseConfig
@@ -72,12 +71,12 @@ object AvvistSykmeldingServiceKtTest : Spek({
     afterGroup {
         embeddedEnvironment.tearDown()
     }
-    describe("Mapping av avvist sykmelding til oppgavevarsel fungerer som forventet") {
+    describe("Mapping av ny sykmelding til oppgavevarsel fungerer som forventet") {
         val sykmelding = opprettReceivedSykmelding(id = "123")
-        it("Avvist sykmelding mappes korrekt til oppgavevarsel") {
-            val oppgavevarsel = receivedAvvistSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
+        it("Ny sykmelding mappes korrekt til oppgavevarsel") {
+            val oppgavevarsel = receivedNySykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
 
-            oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
+            oppgavevarsel.type shouldEqual "NY_SYKMELDING"
             oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
             oppgavevarsel.mottaker shouldEqual "123124"
             oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/${sykmelding.sykmelding.id}"
@@ -91,16 +90,16 @@ object AvvistSykmeldingServiceKtTest : Spek({
         }
     }
 
-    describe("Ende til ende-test avvist sykmelding") {
+    describe("Ende til ende-test ny sykmelding") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
-        it("Oppretter varsel for avvist sykmelding") {
-            opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
+        it("Oppretter varsel for ny sykmelding") {
+            opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
             val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 1
             val oppgavevarsel: OppgaveVarsel = objectMapper.readValue(messages[0].value())
-            oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
+            oppgavevarsel.type shouldEqual "NY_SYKMELDING"
             oppgavevarsel.ressursId shouldEqual "detteerensykmeldingid"
             oppgavevarsel.mottaker shouldEqual "1231231"
             oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/detteerensykmeldingid"
@@ -111,15 +110,15 @@ object AvvistSykmeldingServiceKtTest : Spek({
             oppgavevarsel.repeterendeVarsel shouldEqual false
         }
 
-        it("Kaster feil ved mottak av ugyldig avvist sykmelding") {
+        it("Kaster feil ved mottak av ugyldig ny sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
 
-            assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315")))) }
+            assertFailsWith<JsonParseException> { opprettVarselForNySykmelding(objectMapper.readValue(ugyldigCr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315")))) }
         }
 
-        it("Oppretter ikke varsel for avvist sykmelding hvis bruker har diskresjonskode") {
+        it("Oppretter ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
-            opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
+            opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta(arrayOf(StructuredArguments.keyValue("mottakId", "12315"))))
             val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldEqual 0
