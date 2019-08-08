@@ -43,7 +43,8 @@ fun opprettSykmelding(
     arbeidsgiver: Arbeidsgiver = opprettArbeidsgiver(),
     msgid: String = UUID.randomUUID().toString(),
     syketilfelleStartDato: LocalDate? = null,
-    signaturDato: LocalDateTime = LocalDateTime.now()
+    signaturDato: LocalDateTime = LocalDateTime.now(),
+    navnFastlege: String? = null
 ) = Sykmelding(
         id = id,
         msgId = msgid,
@@ -64,7 +65,8 @@ fun opprettSykmelding(
         avsenderSystem = avsenderSystem,
         arbeidsgiver = arbeidsgiver,
         syketilfelleStartDato = syketilfelleStartDato,
-        signaturDato = signaturDato
+        signaturDato = signaturDato,
+        navnFastlege = navnFastlege
 )
 
 fun opprettMedisinskVurdering(

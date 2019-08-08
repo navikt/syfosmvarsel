@@ -59,12 +59,14 @@
     "utdypendeOpplysninger": {
       "6.3": {
         "6.3.1": {
+          "sporsmal" : "Er pasient frisk?",
           "svar": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
           "restriksjoner": [
             "SKJERMET_FOR_ARBEIDSGIVER"
           ]
         },
         "6.3.2": {
+          "sporsmal" : "Er pasient klar for å jobbe?",
           "svar": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
           "restriksjoner": [
             "SKJERMET_FOR_ARBEIDSGIVER"
@@ -107,7 +109,8 @@
       "versjon": "1.0"
     },
     "syketilfelleStartDato": "2018-10-10",
-    "signaturDato": "2019-04-29T08:34:16.861476"
+    "signaturDato": "2019-04-29T08:34:16.861476",
+    "navnFastlege": "Doktor Legesen"
   },
   "personNrPasient": "1231231",
   "personNrLege": "123134",
