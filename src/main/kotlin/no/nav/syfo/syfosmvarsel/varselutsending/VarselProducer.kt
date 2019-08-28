@@ -11,6 +11,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import javax.xml.ws.soap.SOAPFaultException
 
 class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType, private val kafkaproducer: KafkaProducer<String, OppgaveVarsel>, private val oppgavevarselTopic: String) {
     private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
@@ -20,7 +21,7 @@ class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType
             val diskresjonskode: String? = retry(
                     callName = "hent_diskresjonskode",
                     retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L, 60000L),
-                    legalExceptions = *arrayOf(IOException::class, WstxException::class)
+                    legalExceptions = *arrayOf(SOAPFaultException::class, WstxException::class)
             ) {
                 diskresjonskodeService.hentDiskresjonskode(WSHentDiskresjonskodeRequest().withIdent(oppgaveVarsel.mottaker)).diskresjonskode
             }
@@ -32,7 +33,7 @@ class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType
             kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
             log.info("Bestilt oppgavevarsel for sykmeldingId {}", oppgaveVarsel.ressursId)
         } catch (e: Exception) {
-            log.error("Det skjedde en feil ved bestilling av varsel for sykmeldingId ${e.message} {}", oppgaveVarsel.ressursId)
+            log.error("Det skjedde en feil ved bestilling av varsel for sykmeldingId {}, ${e.message}", oppgaveVarsel.ressursId)
             throw e
         }
     }
