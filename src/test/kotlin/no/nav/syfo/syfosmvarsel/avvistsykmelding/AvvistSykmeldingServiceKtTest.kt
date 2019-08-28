@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -94,34 +96,39 @@ object AvvistSykmeldingServiceKtTest : Spek({
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for avvist sykmelding") {
-            opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
-            val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
+            GlobalScope.launch {
+                opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
-            messages.size shouldEqual 1
-            val oppgavevarsel: OppgaveVarsel = objectMapper.readValue(messages[0].value())
-            oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
-            oppgavevarsel.ressursId shouldEqual "detteerensykmeldingid"
-            oppgavevarsel.mottaker shouldEqual "1231231"
-            oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/detteerensykmeldingid"
-            oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
-            oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
-            oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
-            oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
-            oppgavevarsel.repeterendeVarsel shouldEqual false
+                messages.size shouldEqual 1
+                val oppgavevarsel: OppgaveVarsel = objectMapper.readValue(messages[0].value())
+                oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
+                oppgavevarsel.ressursId shouldEqual "detteerensykmeldingid"
+                oppgavevarsel.mottaker shouldEqual "1231231"
+                oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/detteerensykmeldingid"
+                oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
+                oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
+                oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
+                oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
+                oppgavevarsel.repeterendeVarsel shouldEqual false
+            }
         }
 
         it("Kaster feil ved mottak av ugyldig avvist sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
-
-            assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
+            GlobalScope.launch {
+                assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
+            }
         }
 
         it("Oppretter ikke varsel for avvist sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
-            opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
-            val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
+            GlobalScope.launch {
+                opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
-            messages.size shouldEqual 0
+                messages.size shouldEqual 0
+            }
         }
     }
 })

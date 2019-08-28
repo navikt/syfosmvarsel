@@ -17,7 +17,7 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
 // Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"
 
-fun opprettVarselForNySykmelding(
+suspend fun opprettVarselForNySykmelding(
     receivedSykmelding: ReceivedSykmelding,
     varselProducer: VarselProducer,
     tjenesterUrl: String,

@@ -59,7 +59,8 @@ dependencies {
 
     implementation ("no.nav.syfo.sm:syfosm-common-models:$syfosmCommonModelsVersion")
     implementation ("no.nav.syfo.sm:syfosm-common-kafka:$syfosmCommonModelsVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-ws:$syfosmCommonModelsVersion")
+    implementation ("no.nav.syfo.sm:syfosm-common-ws:$syfosmCommonModelsVersion")
+    implementation ("no.nav.syfo.sm:syfosm-common-networking:$syfosmCommonModelsVersion")
 
     implementation ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
     implementation ("javax.activation:activation:$javaxActivationVersion")
