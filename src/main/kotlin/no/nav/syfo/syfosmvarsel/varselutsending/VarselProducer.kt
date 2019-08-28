@@ -32,7 +32,7 @@ class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType
             kafkaproducer.send(ProducerRecord(oppgavevarselTopic, oppgaveVarsel))
             log.info("Bestilt oppgavevarsel for sykmeldingId {}", oppgaveVarsel.ressursId)
         } catch (e: Exception) {
-            log.error("Det skjedde en feil ved bestilling av varsel for sykmeldingId {}", oppgaveVarsel.ressursId)
+            log.error("Det skjedde en feil ved bestilling av varsel for sykmeldingId ${e.message} {}", oppgaveVarsel.ressursId)
             throw e
         }
     }
