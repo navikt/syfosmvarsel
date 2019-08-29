@@ -14,7 +14,7 @@ import java.util.Collections.singletonMap
 // Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"
 
-fun opprettVarselForAvvisteSykmeldinger(
+suspend fun opprettVarselForAvvisteSykmeldinger(
     receivedSykmelding: ReceivedSykmelding,
     varselProducer: VarselProducer,
     tjenesterUrl: String,
