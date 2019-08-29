@@ -94,7 +94,7 @@ object NySykmeldingServiceKtTest : Spek({
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for ny sykmelding") {
-            runBlocking(coroutineContext) {
+            runBlocking {
                 opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
@@ -114,14 +114,14 @@ object NySykmeldingServiceKtTest : Spek({
 
         it("Kaster feil ved mottak av ugyldig ny sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
-            runBlocking(coroutineContext) {
+            runBlocking {
                 assertFailsWith<JsonParseException> { opprettVarselForNySykmelding(objectMapper.readValue(ugyldigCr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
             }
         }
 
         it("Oppretter ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
-            runBlocking(coroutineContext) {
+            runBlocking {
                 opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 

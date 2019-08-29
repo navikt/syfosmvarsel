@@ -10,7 +10,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.IOException
 import javax.xml.ws.soap.SOAPFaultException
 
 class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType, private val kafkaproducer: KafkaProducer<String, OppgaveVarsel>, private val oppgavevarselTopic: String) {
