@@ -24,7 +24,7 @@ jobs:
           ./gradlew shadowJar -x test
       - name: Create Docker tag
         env:
-          NAME: syfosmregister
+          NAME: syfosmvarsel
         run: |
           echo "docker.pkg.github.com"/"$GITHUB_REPOSITORY"/"$NAME" > .docker_image
           echo "$(date "+%Y.%m.%d")-$(git rev-parse --short HEAD)" > .docker_tag
@@ -40,18 +40,18 @@ jobs:
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
       - name: deploy to dev-fss
-        uses: navikt/deployment-cli/action@a260e84
+        uses: navikt/deployment-cli/action@0.4.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           cluster: dev-fss
           team: teamsykefravr
-          resource: naiserator-dev.yaml
+          resources: naiserator-dev.yaml
       - name: deploy to prod-fss
-        uses: navikt/deployment-cli/action@a260e84
+        uses: navikt/deployment-cli/action@0.4.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           cluster: prod-fss
           team: teamsykefravr
-          resource: naiserator-prod.yaml
+          resources: naiserator-prod.yaml
