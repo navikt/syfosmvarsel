@@ -6,12 +6,14 @@
     "medisinskVurdering": {
       "hovedDiagnose": {
         "system": "2.16.578.1.12.4.1.1.7170",
-        "kode": "K24"
+        "kode": "K24",
+        "tekst": "Vond i foten"
       },
       "biDiagnoser": [
         {
           "system": "2.16.578.1.12.4.1.1.7170",
-          "kode": "-57"
+          "kode": "-57",
+          "tekst": "Vond i foten"
         }
       ],
       "svangerskap": true,

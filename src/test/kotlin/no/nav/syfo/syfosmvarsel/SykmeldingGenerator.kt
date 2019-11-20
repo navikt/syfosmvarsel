@@ -1,10 +1,31 @@
 package no.nav.syfo.syfosmvarsel
 
-import no.nav.syfo.model.*
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 import kotlin.random.Random
+import no.nav.syfo.model.Adresse
+import no.nav.syfo.model.AktivitetIkkeMulig
+import no.nav.syfo.model.AnnenFraversArsak
+import no.nav.syfo.model.Arbeidsgiver
+import no.nav.syfo.model.ArbeidsrelatertArsak
+import no.nav.syfo.model.AvsenderSystem
+import no.nav.syfo.model.Behandler
+import no.nav.syfo.model.Diagnose
+import no.nav.syfo.model.ErIArbeid
+import no.nav.syfo.model.ErIkkeIArbeid
+import no.nav.syfo.model.Gradert
+import no.nav.syfo.model.HarArbeidsgiver
+import no.nav.syfo.model.KontaktMedPasient
+import no.nav.syfo.model.MedisinskArsak
+import no.nav.syfo.model.MedisinskArsakType
+import no.nav.syfo.model.MedisinskVurdering
+import no.nav.syfo.model.MeldingTilNAV
+import no.nav.syfo.model.Periode
+import no.nav.syfo.model.Prognose
+import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.SporsmalSvar
+import no.nav.syfo.model.Sykmelding
 
 fun opprettReceivedSykmelding(id: String, sykmelding: Sykmelding = opprettSykmelding()) = ReceivedSykmelding(
         sykmelding = sykmelding,
@@ -70,7 +91,7 @@ fun opprettSykmelding(
 )
 
 fun opprettMedisinskVurdering(
-    hovedDiagnose: Diagnose? = Diagnose("oid", "kode"),
+    hovedDiagnose: Diagnose? = Diagnose("oid", "kode", "tekst"),
     bidiagnoser: List<Diagnose> = listOf(),
     svangerskap: Boolean = false,
     yrkesskade: Boolean = false,

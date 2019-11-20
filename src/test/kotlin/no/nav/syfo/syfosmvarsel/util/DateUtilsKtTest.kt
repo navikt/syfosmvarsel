@@ -1,11 +1,11 @@
 package no.nav.syfo.syfosmvarsel.util
 
+import java.time.LocalDate
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeBefore
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
 
 object DateUtilsKtTest : Spek({
 
