@@ -4,13 +4,25 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.every
 import io.mockk.mockk
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.Duration
+import java.time.LocalDate
+import java.util.Properties
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
-import no.nav.syfo.syfosmvarsel.*
+import no.nav.syfo.syfosmvarsel.Environment
+import no.nav.syfo.syfosmvarsel.JacksonKafkaSerializer
+import no.nav.syfo.syfosmvarsel.LoggingMeta
+import no.nav.syfo.syfosmvarsel.VaultSecrets
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
+import no.nav.syfo.syfosmvarsel.objectMapper
+import no.nav.syfo.syfosmvarsel.opprettReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeResponse
@@ -23,13 +35,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.time.Duration
-import java.time.LocalDate
-import java.util.*
-import kotlin.test.assertFailsWith
 
 object NySykmeldingServiceKtTest : Spek({
 

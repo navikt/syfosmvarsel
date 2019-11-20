@@ -1,15 +1,15 @@
 package no.nav.syfo.syfosmvarsel.avvistsykmelding
 
+import java.time.LocalDateTime
+import java.util.Collections.singletonMap
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_VARSEL_OPPRETTET
 import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
-import java.time.LocalDateTime
-import java.util.Collections.singletonMap
 
 // Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"

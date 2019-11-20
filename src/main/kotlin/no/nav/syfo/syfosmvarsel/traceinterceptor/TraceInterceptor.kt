@@ -5,10 +5,10 @@ import io.ktor.application.call
 import io.ktor.request.header
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelineInterceptor
+import java.util.UUID
 import kotlinx.coroutines.withContext
 import no.nav.syfo.syfosmvarsel.CoroutineMDCContext
 import org.slf4j.MDC
-import java.util.*
 
 suspend fun <T : Any> PipelineContext<T, ApplicationCall>.withTraceInterceptor(body: PipelineInterceptor<T, ApplicationCall>) {
     withContext(CoroutineMDCContext()) {

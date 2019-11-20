@@ -1,6 +1,7 @@
 package no.nav.syfo.syfosmvarsel.varselutsending
 
 import com.ctc.wstx.exc.WstxException
+import javax.xml.ws.soap.SOAPFaultException
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
@@ -10,7 +11,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.xml.ws.soap.SOAPFaultException
 
 class VarselProducer(private val diskresjonskodeService: DiskresjonskodePortType, private val kafkaproducer: KafkaProducer<String, OppgaveVarsel>, private val oppgavevarselTopic: String) {
     private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")

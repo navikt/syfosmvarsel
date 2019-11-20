@@ -1,5 +1,7 @@
 package no.nav.syfo.syfosmvarsel.nysykmelding
 
+import java.time.LocalDateTime
+import java.util.Collections
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.LoggingMeta
@@ -9,8 +11,6 @@ import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
-import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")
 
