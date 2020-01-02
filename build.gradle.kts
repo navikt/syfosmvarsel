@@ -7,14 +7,14 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.2.2"
 val kluentVersion = "1.39"
-val ktorVersion = "1.2.5"
+val ktorVersion = "1.2.6"
 val logbackVersion = "1.2.3"
 val prometheusVersion = "0.5.0"
 val spekVersion = "2.0.8"
 val logstashEncoderVersion = "5.1"
 val kafkaVersion = "2.3.0"
 val jacksonVersion = "2.9.7"
-val smCommonVersion = "1.bba46d9"
+val smCommonVersion = "1.7bf5e6f"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion = "0.11.1"
 val kafkaEmbeddedVersion = "2.2.0"
@@ -24,10 +24,10 @@ val javaxActivationVersion = "1.1.1"
 val cxfVersion = "3.2.7"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.3.60"
-    id("org.jmailen.kotlinter") version "2.1.1"
+    id("org.jetbrains.kotlin.jvm") version "1.3.61"
+    id("org.jmailen.kotlinter") version "2.2.0"
     id("com.diffplug.gradle.spotless") version "3.14.0"
-    id("com.github.johnrengelman.shadow") version "4.0.3"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
 }
 
 val githubUser: String by project
@@ -47,7 +47,6 @@ repositories {
             password = githubPassword
         }
     }
-    maven(url = "https://oss.sonatype.org/content/groups/staging/")
 }
 
 
