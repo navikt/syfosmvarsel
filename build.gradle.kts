@@ -5,19 +5,19 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.2.2"
-val kluentVersion = "1.39"
-val ktorVersion = "1.2.6"
+val coroutinesVersion = "1.3.3"
+val kluentVersion = "1.49"
+val ktorVersion = "1.3.1"
 val logbackVersion = "1.2.3"
-val prometheusVersion = "0.5.0"
-val spekVersion = "2.0.8"
+val prometheusVersion = "0.8.0"
+val spekVersion = "2.0.9"
 val logstashEncoderVersion = "5.1"
-val kafkaVersion = "2.3.0"
+val kafkaVersion = "2.4.0"
 val jacksonVersion = "2.9.7"
-val smCommonVersion = "1.7bf5e6f"
+val smCommonVersion = "1.7cb158e"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion = "0.11.1"
-val kafkaEmbeddedVersion = "2.2.0"
+val kafkaEmbeddedVersion = "2.4.0"
 val jaxwsApiVersion = "2.3.1"
 val jaxwsToolsVersion = "2.3.2"
 val javaxActivationVersion = "1.1.1"
@@ -120,7 +120,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "12"
     }
 
     withType<ShadowJar> {

@@ -15,7 +15,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.kafka.envOverrides
@@ -23,6 +22,7 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.syfosmvarsel.application.ApplicationServer
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.nysykmelding.opprettVarselForNySykmelding
