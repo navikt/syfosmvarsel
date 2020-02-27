@@ -23,6 +23,9 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
+import no.nav.syfo.syfosmvarsel.application.RenewVaultService
+import no.nav.syfo.syfosmvarsel.application.db.Database
+import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.nysykmelding.opprettVarselForNySykmelding
@@ -48,6 +51,10 @@ fun main() {
     val env = Environment()
     val vaultSecrets =
             objectMapper.readValue<VaultSecrets>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+
+    val vaultCredentialService = VaultCredentialService()
+    val database = Database(env, vaultCredentialService)
+
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
             env,
@@ -55,6 +62,8 @@ fun main() {
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
+
+    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets)
             .envOverrides()

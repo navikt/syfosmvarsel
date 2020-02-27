@@ -22,6 +22,11 @@ val jaxwsApiVersion = "2.3.1"
 val jaxwsToolsVersion = "2.3.2"
 val javaxActivationVersion = "1.1.1"
 val cxfVersion = "3.2.7"
+val postgresVersion = "42.2.5"
+val h2Version = "1.4.197"
+val flywayVersion = "5.2.4"
+val hikariVersion = "3.3.0"
+val vaultJavaDriveVersion = "3.1.0"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.61"
@@ -79,6 +84,12 @@ dependencies {
     implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
+
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.h2database:h2:$h2Version")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
