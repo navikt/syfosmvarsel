@@ -46,3 +46,5 @@ spec:
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: DISKRESJONSKODE_ENDPOINT_URL
       value: https://wasapp.adeo.no/tpsws/Diskresjonskode
+    - name: MOUNT_PATH_VAULT
+      value: /postgresql/prod-fss

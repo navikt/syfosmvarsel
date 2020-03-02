@@ -14,7 +14,7 @@ data class Environment(
     val diskresjonskodeEndpointUrl: String = getEnvVar("DISKRESJONSKODE_ENDPOINT_URL"),
     val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmvarsel"),
-    val syfosmregisterDBURL: String = getEnvVar("SYFOSMVARSEL_DB_URL"),
+    val syfosmregisterDBURL: String = getEnvVar("DB_URL"),
     val mountPathVault: String = getEnvVar("MOUNT_PATH_VAULT"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) : KafkaConfig
