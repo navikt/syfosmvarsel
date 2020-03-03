@@ -18,7 +18,6 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.syfosmvarsel.Environment
-import no.nav.syfo.syfosmvarsel.JacksonKafkaSerializer
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.VaultSecrets
@@ -29,6 +28,7 @@ import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
 import no.nav.syfo.syfosmvarsel.objectMapper
 import no.nav.syfo.syfosmvarsel.opprettReceivedSykmelding
+import no.nav.syfo.syfosmvarsel.util.JacksonKafkaSerializer
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeResponse
