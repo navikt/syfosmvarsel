@@ -55,7 +55,7 @@ object NySykmeldingServiceKtTest : Spek({
 
     val credentials = VaultSecrets("", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmregisterDBURL = "url", mountPathVault = "path"
+            tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url", mountPathVault = "path"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

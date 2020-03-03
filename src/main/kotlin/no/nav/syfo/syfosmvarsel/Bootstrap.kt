@@ -63,8 +63,6 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
-
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
 
     val diskresjonskodeService = createPort<DiskresjonskodePortType>(env.diskresjonskodeEndpointUrl) {
@@ -83,6 +81,8 @@ fun main() {
     val statusendringService = StatusendringService(brukernotifikasjonService)
 
     applicationState.ready = true
+
+    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     launchListeners(
         env = env,
         applicationState = applicationState,

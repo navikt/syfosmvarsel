@@ -28,7 +28,7 @@ class Database(private val env: Environment, private val vaultCredentialService:
             role = Role.USER
         )
         dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = env.syfosmregisterDBURL
+            jdbcUrl = env.syfosmvarselDBURL
             username = initialCredentials.username
             password = initialCredentials.password
             maximumPoolSize = 3
@@ -54,7 +54,7 @@ class Database(private val env: Environment, private val vaultCredentialService:
             databaseName = env.databaseName,
             role = Role.ADMIN
         )
-        dataSource(env.syfosmregisterDBURL, credentials.username, credentials.password)
+        dataSource(env.syfosmvarselDBURL, credentials.username, credentials.password)
         initSql("SET ROLE \"${env.databaseName}-${Role.ADMIN}\"") // required for assigning proper owners for the tables
         load().migrate()
     }
