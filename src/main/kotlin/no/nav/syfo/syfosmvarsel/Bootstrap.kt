@@ -74,8 +74,7 @@ fun main() {
     val varselProducer = getVarselProducer(kafkaBaseConfig, env, diskresjonskodeService)
     val avvistKafkaConsumer = getAvvistKafkaConsumer(kafkaBaseConfig, env)
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
-
-    val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
+    val kafkaStatusConsumer = getKafkaStatusConsumer(vaultSecrets, env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(database)
 
