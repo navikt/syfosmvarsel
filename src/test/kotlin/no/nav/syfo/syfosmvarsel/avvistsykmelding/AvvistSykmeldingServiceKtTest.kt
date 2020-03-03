@@ -10,6 +10,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import java.time.LocalDate
 import java.util.Properties
+import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.common.KafkaEnvironment
@@ -19,8 +20,13 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.JacksonKafkaSerializer
 import no.nav.syfo.syfosmvarsel.LoggingMeta
+import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.VaultSecrets
+import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.syfo.syfosmvarsel.brukernotifikasjon.Notifikasjonstatus
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
+import no.nav.syfo.syfosmvarsel.dropData
+import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
 import no.nav.syfo.syfosmvarsel.objectMapper
 import no.nav.syfo.syfosmvarsel.opprettReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
@@ -37,6 +43,8 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 object AvvistSykmeldingServiceKtTest : Spek({
+    val database = TestDB()
+    val brukernotifikasjonService = BrukernotifikasjonService(database)
 
     val topic = "oppgavevarsel-topic"
 
@@ -70,17 +78,24 @@ object AvvistSykmeldingServiceKtTest : Spek({
     val kafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumer.subscribe(listOf(topic))
 
+    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, "dev-fss")
+
     beforeGroup {
         embeddedEnvironment.start()
     }
 
+    afterEachTest {
+        database.connection.dropData()
+    }
+
     afterGroup {
         embeddedEnvironment.tearDown()
+        database.stop()
     }
     describe("Mapping av avvist sykmelding til oppgavevarsel fungerer som forventet") {
         val sykmelding = opprettReceivedSykmelding(id = "123")
         it("Avvist sykmelding mappes korrekt til oppgavevarsel") {
-            val oppgavevarsel = receivedAvvistSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
+            val oppgavevarsel = avvistSykmeldingService.receivedAvvistSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
 
             oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
             oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
@@ -96,39 +111,59 @@ object AvvistSykmeldingServiceKtTest : Spek({
         }
     }
 
+    describe("Oppretter ikke brukernotifikasjon i prod") {
+        val avvistSykmeldingServiceProd = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, "prod-fss")
+        val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
+        val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
+        it("Oppretter ikke brukernotifikasjon hvis cluster er prod-fss") {
+            runBlocking {
+                avvistSykmeldingServiceProd.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
+
+                messages.size shouldEqual 1
+                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
+                brukernotifikasjoner.size shouldEqual 0
+            }
+        }
+    }
+
     describe("Ende til ende-test avvist sykmelding") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for avvist sykmelding") {
             runBlocking {
-                opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 1
                 val oppgavevarsel: OppgaveVarsel = objectMapper.readValue(messages[0].value())
                 oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
-                oppgavevarsel.ressursId shouldEqual "detteerensykmeldingid"
+                oppgavevarsel.ressursId shouldEqual "d6112773-9587-41d8-9a3f-c8cb42364936"
                 oppgavevarsel.mottaker shouldEqual "1231231"
-                oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/detteerensykmeldingid"
+                oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/d6112773-9587-41d8-9a3f-c8cb42364936"
                 oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
                 oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
                 oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
                 oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
                 oppgavevarsel.repeterendeVarsel shouldEqual false
+                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
+                brukernotifikasjoner.size shouldEqual 1
+                brukernotifikasjoner[0].event shouldEqual "APEN"
+                brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.OPPRETTET
             }
         }
 
         it("Kaster feil ved mottak av ugyldig avvist sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
             runBlocking {
-                assertFailsWith<JsonParseException> { opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
+                assertFailsWith<JsonParseException> { avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
             }
         }
 
         it("Oppretter ikke varsel for avvist sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
             runBlocking {
-                opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), varselProducer, "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 0

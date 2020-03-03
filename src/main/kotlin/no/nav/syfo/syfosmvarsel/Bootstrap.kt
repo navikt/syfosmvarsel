@@ -26,9 +26,10 @@ import no.nav.syfo.syfosmvarsel.application.ApplicationServer
 import no.nav.syfo.syfosmvarsel.application.RenewVaultService
 import no.nav.syfo.syfosmvarsel.application.db.Database
 import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
-import no.nav.syfo.syfosmvarsel.avvistsykmelding.opprettVarselForAvvisteSykmeldinger
+import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
+import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
-import no.nav.syfo.syfosmvarsel.nysykmelding.opprettVarselForNySykmelding
+import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
 import no.nav.syfo.ws.createPort
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
@@ -81,8 +82,13 @@ fun main() {
     val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
     val varselProducer = VarselProducer(diskresjonskodeService, kafkaProducer, env.oppgavevarselTopic)
 
+    val brukernotifikasjonService = BrukernotifikasjonService(database)
+
+    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService)
+    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, env.cluster)
+
     applicationState.ready = true
-    launchListeners(env, applicationState, consumerProperties, varselProducer)
+    launchListeners(env, applicationState, consumerProperties, nySykmeldingService, avvistSykmeldingService)
 }
 
 fun createListener(applicationState: ApplicationState, applicationLogic: suspend CoroutineScope.() -> Unit): Job =
@@ -101,28 +107,29 @@ fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,
     consumerProperties: Properties,
-    varselProducer: VarselProducer
+    nySykmeldingService: NySykmeldingService,
+    avvistSykmeldingService: AvvistSykmeldingService
 ) {
 
     val avvistKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
     avvistKafkaConsumer.subscribe(listOf(env.avvistSykmeldingTopic))
 
     createListener(applicationState) {
-        blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, varselProducer, env)
+        blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, avvistSykmeldingService, env)
     }
 
     val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
     nyKafkaConsumer.subscribe(listOf(env.sykmeldingAutomatiskBehandlingTopic, env.sykmeldingManuellBehandlingTopic))
 
     createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, varselProducer, env)
+        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, env)
     }
 }
 
 suspend fun blockingApplicationLogicAvvistSykmelding(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    varselProducer: VarselProducer,
+    avvistSykmeldingService: AvvistSykmeldingService,
     env: Environment
 ) {
     while (applicationState.ready) {
@@ -136,7 +143,7 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
                     sykmeldingId = receivedSykmelding.sykmelding.id
             )
             wrapExceptions(loggingMeta) {
-                opprettVarselForAvvisteSykmeldinger(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, env.tjenesterUrl, loggingMeta)
             }
         }
         delay(100)
@@ -146,7 +153,7 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
 suspend fun blockingApplicationLogicNySykmelding(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    varselProducer: VarselProducer,
+    nySykmeldingService: NySykmeldingService,
     env: Environment
 ) {
     while (applicationState.ready) {
@@ -162,7 +169,7 @@ suspend fun blockingApplicationLogicNySykmelding(
 
             if (env.cluster == "dev-fss") {
                 wrapExceptions(loggingMeta) {
-                    opprettVarselForNySykmelding(receivedSykmelding, varselProducer, env.tjenesterUrl, loggingMeta)
+                    nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, env.tjenesterUrl, loggingMeta)
                 }
             } else {
                 log.info("Oppretter ikke varsel for ny sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))

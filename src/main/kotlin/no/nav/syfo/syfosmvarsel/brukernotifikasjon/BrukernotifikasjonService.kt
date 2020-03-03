@@ -5,15 +5,19 @@ import java.util.UUID
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
+import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
+import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
 
 class BrukernotifikasjonService(private val database: DatabaseInterface) {
 
     fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, tekst: String) {
         val brukernotifikasjon = database.hentBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
         if (brukernotifikasjon != null) {
-            log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, inorerer")
+            log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer")
         } else {
             database.registrerBrukernotifikasjon(mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato))
+            log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId")
+            BRUKERNOT_OPPRETTET.inc()
             // skriv til kafka
         }
     }
@@ -26,6 +30,7 @@ class BrukernotifikasjonService(private val database: DatabaseInterface) {
         } else {
             database.registrerBrukernotifikasjon(mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, brukernotifikasjon))
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
+            BRUKERNOT_FERDIG.inc()
             // skriv til kafka
         }
     }
