@@ -1,5 +1,6 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -21,6 +22,7 @@ class BrukernotifikasjonServiceSpek : Spek({
 
     val sykmeldingId = UUID.randomUUID()
     val timestampOpprettet = OffsetDateTime.of(2020, 2, 10, 11, 0, 0, 0, ZoneOffset.UTC)
+    val timestampOpprettetLocalDateTime = LocalDateTime.of(2020, 2, 10, 11, 0, 0, 0)
     val eventIdOpprettet = UUID.randomUUID()
     val timestampFerdig = OffsetDateTime.of(2020, 2, 12, 11, 0, 0, 0, ZoneOffset.UTC)
     val grupperingsId = UUID.randomUUID()
@@ -46,7 +48,7 @@ class BrukernotifikasjonServiceSpek : Spek({
         it("opprettBrukernotifikasjon oppretter ny rad i databasen for oppretting av notifikasjon") {
             brukernotifikasjonService.opprettBrukernotifikasjon(
                 sykmeldingId = sykmeldingId.toString(),
-                mottattDato = getAdjustedToLocalDateTime(timestampOpprettet),
+                mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst"
             )
 
@@ -65,7 +67,7 @@ class BrukernotifikasjonServiceSpek : Spek({
 
             brukernotifikasjonService.opprettBrukernotifikasjon(
                 sykmeldingId = sykmeldingId.toString(),
-                mottattDato = getAdjustedToLocalDateTime(timestampOpprettet),
+                mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst"
             )
 

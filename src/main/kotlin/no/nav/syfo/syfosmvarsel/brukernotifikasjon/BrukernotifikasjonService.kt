@@ -1,6 +1,7 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
@@ -38,7 +39,7 @@ class BrukernotifikasjonService(private val database: DatabaseInterface) {
     private fun mapTilOpprettetBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime): BrukernotifikasjonDB =
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(sykmeldingId),
-            timestamp = getAdjustedOffsetDateTime(mottattDato),
+            timestamp = mottattDato.atOffset(ZoneOffset.UTC),
             event = "APEN",
             grupperingsId = UUID.randomUUID(),
             eventId = UUID.randomUUID(),

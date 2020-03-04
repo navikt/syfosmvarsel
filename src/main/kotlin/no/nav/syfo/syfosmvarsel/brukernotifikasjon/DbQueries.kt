@@ -3,9 +3,6 @@ package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
@@ -44,7 +41,7 @@ fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: Brukernotifikas
                 """
     ).use {
         it.setObject(1, brukernotifikasjonDB.sykmeldingId)
-        it.setTimestamp(2, Timestamp.valueOf(getAdjustedToLocalDateTime(brukernotifikasjonDB.timestamp)))
+        it.setTimestamp(2, Timestamp.from(brukernotifikasjonDB.timestamp.toInstant()))
         it.setString(3, brukernotifikasjonDB.event)
         it.setObject(4, brukernotifikasjonDB.grupperingsId)
         it.setObject(5, brukernotifikasjonDB.eventId)
@@ -69,7 +66,7 @@ private fun Connection.hentBrukernotifikasjon(sykmeldingId: UUID, event: String)
 fun ResultSet.tilBrukernotifikasjon(): BrukernotifikasjonDB =
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(getString("sykmelding_id")),
-            timestamp = getAdjustedOffsetDateTime(getTimestamp("timestamp").toLocalDateTime()),
+            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             event = getString("event"),
             grupperingsId = UUID.fromString(getString("grupperingsId")),
             eventId = UUID.fromString(getString("eventId")),
@@ -83,10 +80,3 @@ private fun tilNotifikasjonstatus(status: String): Notifikasjonstatus {
         else -> throw IllegalStateException("Sykmeldingen har ukjent notifikasjonstatus, skal ikke kunne skje")
     }
 }
-
-fun getAdjustedOffsetDateTime(localDateTime: LocalDateTime): OffsetDateTime {
-    return localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime()
-}
-
-fun getAdjustedToLocalDateTime(timestamp: OffsetDateTime) =
-    timestamp.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
