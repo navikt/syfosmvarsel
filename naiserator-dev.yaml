@@ -46,3 +46,5 @@ spec:
       value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
     - name: DISKRESJONSKODE_ENDPOINT_URL
       value: https://wasapp-q1.adeo.no/tpsws/Diskresjonskode
+    - name: MOUNT_PATH_VAULT
+      value: /postgresql/preprod-fss
