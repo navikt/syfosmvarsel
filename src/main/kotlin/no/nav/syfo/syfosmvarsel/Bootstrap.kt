@@ -29,6 +29,7 @@ import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getAvvistKafkaConsumer
+import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getVarselProducer
@@ -73,8 +74,9 @@ fun main() {
     val avvistKafkaConsumer = getAvvistKafkaConsumer(kafkaBaseConfig, env)
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
     val kafkaStatusConsumer = getKafkaStatusConsumer(vaultSecrets, env)
+    val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
-    val brukernotifikasjonService = BrukernotifikasjonService(database)
+    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
 
     val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, env.cluster)

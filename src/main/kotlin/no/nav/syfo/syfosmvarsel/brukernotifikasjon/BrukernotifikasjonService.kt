@@ -3,23 +3,42 @@ package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import no.nav.brukernotifikasjon.schemas.Done
+import no.nav.brukernotifikasjon.schemas.Nokkel
+import no.nav.brukernotifikasjon.schemas.Oppgave
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
 
-class BrukernotifikasjonService(private val database: DatabaseInterface) {
+class BrukernotifikasjonService(
+    private val database: DatabaseInterface,
+    private val brukernotifikasjonKafkaProducer: BrukernotifikasjonKafkaProducer,
+    private val servicebruker: String,
+    private val tjenesterUrl: String
+) {
 
-    fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, tekst: String) {
+    fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String, tekst: String) {
         val brukernotifikasjon = database.hentBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
         if (brukernotifikasjon != null) {
             log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer")
         } else {
-            database.registrerBrukernotifikasjon(mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato))
+            val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
+            database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
+            brukernotifikasjonKafkaProducer.sendOpprettmelding(
+                Nokkel(servicebruker, opprettBrukernotifikasjon.eventId.toString()),
+                Oppgave(
+                    opprettBrukernotifikasjon.timestamp.toEpochSecond(),
+                    fnr,
+                    opprettBrukernotifikasjon.grupperingsId.toString(),
+                    tekst,
+                    lagOppgavelenke(tjenesterUrl),
+                    4
+                )
+            )
             log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId")
             BRUKERNOT_OPPRETTET.inc()
-            // skriv til kafka
         }
     }
 
@@ -29,10 +48,18 @@ class BrukernotifikasjonService(private val database: DatabaseInterface) {
         if (brukernotifikasjon == null) {
             log.info("Fant ingen notifikasjon for sykmelding med id $sykmeldingId")
         } else {
-            database.registrerBrukernotifikasjon(mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, brukernotifikasjon))
+            val ferdigstiltBrukernotifikasjon = mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, brukernotifikasjon)
+            database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
+            brukernotifikasjonKafkaProducer.sendDonemelding(
+                Nokkel(servicebruker, brukernotifikasjon.eventId.toString()),
+                Done(
+                    ferdigstiltBrukernotifikasjon.timestamp.toEpochSecond(),
+                    sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr,
+                    ferdigstiltBrukernotifikasjon.grupperingsId.toString()
+                )
+            )
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
             BRUKERNOT_FERDIG.inc()
-            // skriv til kafka
         }
     }
 
@@ -55,4 +82,8 @@ class BrukernotifikasjonService(private val database: DatabaseInterface) {
             eventId = UUID.randomUUID(),
             notifikasjonstatus = Notifikasjonstatus.FERDIG
         )
+
+    private fun lagOppgavelenke(tjenesterUrl: String): String {
+        return "$tjenesterUrl/sykefravaer"
+    }
 }

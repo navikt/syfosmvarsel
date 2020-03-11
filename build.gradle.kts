@@ -13,11 +13,13 @@ val prometheusVersion = "0.8.0"
 val spekVersion = "2.0.9"
 val logstashEncoderVersion = "5.1"
 val kafkaVersion = "2.4.0"
-val jacksonVersion = "2.9.7"
+val jacksonVersion = "2.9.9"
 val smCommonVersion = "1.7cb158e"
 val micrometerVersion = "1.1.4"
 val kotlinxSerializationVersion = "0.11.1"
 val kafkaEmbeddedVersion = "2.4.0"
+val avroVersion = "1.8.2"
+val confluentVersion = "5.3.0"
 val jaxwsApiVersion = "2.3.1"
 val jaxwsToolsVersion = "2.3.2"
 val javaxActivationVersion = "1.1.1"
@@ -28,6 +30,7 @@ val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.1"
+val brukernotifikasjonAvroVersion = "1.2020.02.11-13.20-46252a031986"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.61"
@@ -68,6 +71,9 @@ dependencies {
     implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
+    implementation("org.apache.avro:avro:$avroVersion")
+    implementation("no.nav:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 

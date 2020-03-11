@@ -1,6 +1,10 @@
 package no.nav.syfo.syfosmvarsel.util
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer
 import java.util.Properties
+import no.nav.brukernotifikasjon.schemas.Done
+import no.nav.brukernotifikasjon.schemas.Nokkel
+import no.nav.brukernotifikasjon.schemas.Oppgave
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -8,6 +12,7 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.VaultSecrets
+import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
@@ -54,6 +59,18 @@ class KafkaFactory private constructor() {
             val kafkaStatusConsumer = KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusTopic))
             return kafkaStatusConsumer
+        }
+
+        fun getBrukernotifikasjonKafkaProducer(kafkaBaseConfig: Properties, environment: Environment): BrukernotifikasjonKafkaProducer {
+            val kafkaBrukernotifikasjonProducerConfig = kafkaBaseConfig.toProducerConfig(
+                "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class)
+
+            val kafkaproducerOpprett = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerConfig)
+            val kafkaproducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerConfig)
+            return BrukernotifikasjonKafkaProducer(kafkaproducerOpprett = kafkaproducerOpprett,
+                kafkaproducerDone = kafkaproducerDone,
+                brukernotifikasjonOpprettTopic = environment.brukernotifikasjonOpprettTopic,
+                brukernotifikasjonDoneTopic = environment.brukernotifikasjonDoneTopic)
         }
     }
 }
