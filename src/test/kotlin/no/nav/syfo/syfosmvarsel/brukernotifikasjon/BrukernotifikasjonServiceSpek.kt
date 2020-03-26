@@ -190,6 +190,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             val oppgave: Oppgave = messages[0].value()
 
             nokkel.getSystembruker() shouldEqual "srvsyfosmvarsel"
+            nokkel.getEventId() shouldEqual sykmeldingId.toString()
             oppgave.getFodselsnummer() shouldEqual "fnr"
             oppgave.getLink() shouldEqual "tjenester/sykefravaer"
             oppgave.getSikkerhetsnivaa() shouldEqual 4
