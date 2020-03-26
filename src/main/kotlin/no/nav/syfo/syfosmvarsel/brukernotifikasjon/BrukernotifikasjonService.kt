@@ -68,7 +68,7 @@ class BrukernotifikasjonService(
             sykmeldingId = UUID.fromString(sykmeldingId),
             timestamp = mottattDato.atOffset(ZoneOffset.UTC),
             event = "APEN",
-            grupperingsId = UUID.randomUUID(),
+            grupperingsId = UUID.fromString(sykmeldingId),
             eventId = UUID.randomUUID(),
             notifikasjonstatus = Notifikasjonstatus.OPPRETTET
         )

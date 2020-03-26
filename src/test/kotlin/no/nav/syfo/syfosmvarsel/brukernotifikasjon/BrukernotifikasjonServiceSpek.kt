@@ -75,13 +75,12 @@ class BrukernotifikasjonServiceSpek : Spek({
     val timestampOpprettetLocalDateTime = LocalDateTime.of(2020, 2, 10, 11, 0, 0, 0)
     val eventIdOpprettet = UUID.randomUUID()
     val timestampFerdig = OffsetDateTime.of(2020, 2, 12, 11, 0, 0, 0, ZoneOffset.UTC)
-    val grupperingsId = UUID.randomUUID()
 
     val brukernotifikasjonDB = BrukernotifikasjonDB(
         sykmeldingId = sykmeldingId,
         timestamp = timestampOpprettet,
         event = "APEN",
-        grupperingsId = grupperingsId,
+        grupperingsId = sykmeldingId,
         eventId = eventIdOpprettet,
         notifikasjonstatus = Notifikasjonstatus.OPPRETTET
     )
@@ -129,7 +128,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             brukernotifikasjoner[0].sykmeldingId shouldEqual sykmeldingId
             brukernotifikasjoner[0].timestamp shouldEqual timestampOpprettet
             brukernotifikasjoner[0].event shouldEqual "APEN"
-            brukernotifikasjoner[0].grupperingsId shouldNotBe null
+            brukernotifikasjoner[0].grupperingsId shouldEqual sykmeldingId
             brukernotifikasjoner[0].eventId shouldNotBe null
             brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.OPPRETTET
         }
@@ -160,7 +159,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             brukernotifikasjoner[0].sykmeldingId shouldEqual sykmeldingId
             brukernotifikasjoner[0].timestamp shouldEqual timestampFerdig
             brukernotifikasjoner[0].event shouldEqual "SENDT"
-            brukernotifikasjoner[0].grupperingsId shouldEqual grupperingsId
+            brukernotifikasjoner[0].grupperingsId shouldEqual sykmeldingId
             brukernotifikasjoner[0].eventId shouldNotBe null
             brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.FERDIG
             brukernotifikasjoner[1] shouldEqual brukernotifikasjonDB

@@ -27,7 +27,7 @@ class AvvistSykmeldingService(private val varselProducer: VarselProducer, privat
             val oppgaveVarsel = receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
             varselProducer.sendVarsel(oppgaveVarsel)
             if (cluster == "dev-fss") {
-                brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = "Mottatt ny avvist sykmelding", fnr = receivedSykmelding.personNrPasient)
+                brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av NAV", fnr = receivedSykmelding.personNrPasient)
             }
             AVVIST_SM_VARSEL_OPPRETTET.inc()
             log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
