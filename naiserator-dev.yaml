@@ -48,7 +48,3 @@ spec:
       value: https://wasapp-q1.adeo.no/tpsws/Diskresjonskode
     - name: MOUNT_PATH_VAULT
       value: /postgresql/preprod-fss
-    - name: BRUKERNOTIFIKASJON_OPPRETT_TOPIC
-      value: aapen-brukernotifikasjon-nyOppgave-v1-testing
-    - name: BRUKERNOTIFIKASJON_DONE_TOPIC
-      value: aapen-brukernotifikasjon-done-v1-testing
