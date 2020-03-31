@@ -15,7 +15,7 @@ import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
 // Henger sammen med tekster i mininnboks: http://stash.devillo.no/projects/FA/repos/mininnboks-tekster/browse/src/main/tekster/mininnboks/oppgavetekster
 const val OPPGAVETYPE = "0005"
 
-class AvvistSykmeldingService(private val varselProducer: VarselProducer, private val brukernotifikasjonService: BrukernotifikasjonService, private val cluster: String) {
+class AvvistSykmeldingService(private val varselProducer: VarselProducer, private val brukernotifikasjonService: BrukernotifikasjonService) {
 
     suspend fun opprettVarselForAvvisteSykmeldinger(
         receivedSykmelding: ReceivedSykmelding,
@@ -26,9 +26,7 @@ class AvvistSykmeldingService(private val varselProducer: VarselProducer, privat
             log.info("Mottatt avvist sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
             val oppgaveVarsel = receivedAvvistSykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
             varselProducer.sendVarsel(oppgaveVarsel)
-            if (cluster == "dev-fss") {
-                brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av NAV", fnr = receivedSykmelding.personNrPasient)
-            }
+            brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av NAV", fnr = receivedSykmelding.personNrPasient)
             AVVIST_SM_VARSEL_OPPRETTET.inc()
             log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
         } catch (e: Exception) {

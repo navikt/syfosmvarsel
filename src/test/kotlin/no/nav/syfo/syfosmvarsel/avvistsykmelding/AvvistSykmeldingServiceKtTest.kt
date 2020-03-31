@@ -85,7 +85,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
     val kafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumer.subscribe(listOf(topic))
 
-    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, "dev-fss")
+    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService)
 
     beforeGroup {
         embeddedEnvironment.start()
@@ -115,22 +115,6 @@ object AvvistSykmeldingServiceKtTest : Spek({
             oppgavevarsel.repeterendeVarsel shouldEqual false
             oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
             oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
-        }
-    }
-
-    describe("Oppretter ikke brukernotifikasjon i prod") {
-        val avvistSykmeldingServiceProd = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, "prod-fss")
-        val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
-        val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
-        it("Oppretter ikke brukernotifikasjon hvis cluster er prod-fss") {
-            runBlocking {
-                avvistSykmeldingServiceProd.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
-                val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
-
-                messages.size shouldEqual 1
-                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                brukernotifikasjoner.size shouldEqual 0
-            }
         }
     }
 
