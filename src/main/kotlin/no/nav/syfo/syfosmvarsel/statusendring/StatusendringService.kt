@@ -4,12 +4,10 @@ import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.log
-import no.nav.syfo.syfosmvarsel.objectMapper
 
 class StatusendringService(private val brukernotifikasjonService: BrukernotifikasjonService) {
 
     fun handterStatusendring(sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO) {
-        log.info("Statusendring for melding {}", objectMapper.writeValueAsString(sykmeldingStatusKafkaMessageDTO))
         if (skalFerdigstilleBrukernotifkasjon(sykmeldingStatusKafkaMessageDTO.event.statusEvent)) {
             brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
         } else {
