@@ -1,5 +1,6 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
+import net.logstash.logback.argument.StructuredArguments
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -7,6 +8,7 @@ import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
+import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
@@ -19,10 +21,10 @@ class BrukernotifikasjonService(
     private val tjenesterUrl: String
 ) {
 
-    fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String, tekst: String) {
+    fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String, tekst: String, loggingMeta: LoggingMeta) {
         val brukernotifikasjon = database.hentBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
         if (brukernotifikasjon != null) {
-            log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer")
+            log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer, {}", StructuredArguments.fields(loggingMeta))
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
@@ -37,7 +39,7 @@ class BrukernotifikasjonService(
                     4
                 )
             )
-            log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId")
+            log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId {}", StructuredArguments.fields(loggingMeta))
             BRUKERNOT_OPPRETTET.inc()
         }
     }

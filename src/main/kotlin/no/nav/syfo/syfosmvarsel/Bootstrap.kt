@@ -128,7 +128,7 @@ fun launchListeners(
     }
 
     createListener(applicationState) {
-        blockingApplicationLogicStatusendring(applicationState, kafkaStatusConsumer, statusendringService, env)
+        blockingApplicationLogicStatusendring(applicationState, kafkaStatusConsumer, statusendringService)
     }
 }
 
@@ -183,8 +183,7 @@ suspend fun blockingApplicationLogicNySykmelding(
 suspend fun blockingApplicationLogicStatusendring(
     applicationState: ApplicationState,
     kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
-    statusendringService: StatusendringService,
-    env: Environment
+    statusendringService: StatusendringService
 ) {
     while (applicationState.ready) {
         kafkaStatusConsumer.poll(Duration.ofMillis(0)).forEach {

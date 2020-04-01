@@ -34,7 +34,7 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
                 NY_SM_VARSEL_OPPRETTET.inc()
                 log.info("Opprettet oppgavevarsel for ny sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
             }
-            brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = lagBrukernotifikasjonstekst(receivedSykmelding.sykmelding.avsenderSystem), fnr = receivedSykmelding.personNrPasient)
+            brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = lagBrukernotifikasjonstekst(receivedSykmelding.sykmelding.avsenderSystem), fnr = receivedSykmelding.personNrPasient, loggingMeta = loggingMeta)
         } catch (e: Exception) {
             log.error("Det skjedde en feil ved oppretting av varsel for ny sykmelding")
             throw e

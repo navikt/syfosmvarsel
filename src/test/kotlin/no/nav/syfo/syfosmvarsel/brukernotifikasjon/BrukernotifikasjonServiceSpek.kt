@@ -21,6 +21,7 @@ import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
+import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.VaultSecrets
 import no.nav.syfo.syfosmvarsel.dropData
@@ -120,7 +121,8 @@ class BrukernotifikasjonServiceSpek : Spek({
                 sykmeldingId = sykmeldingId.toString(),
                 mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst",
-                fnr = "fnr"
+                fnr = "fnr",
+                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
             )
 
             val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
@@ -140,7 +142,8 @@ class BrukernotifikasjonServiceSpek : Spek({
                 sykmeldingId = sykmeldingId.toString(),
                 mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst",
-                fnr = "fnr"
+                fnr = "fnr",
+                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
             )
 
             val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
@@ -180,7 +183,8 @@ class BrukernotifikasjonServiceSpek : Spek({
                     sykmeldingId = sykmeldingId.toString(),
                     mottattDato = timestampOpprettetLocalDateTime,
                     tekst = "tekst",
-                    fnr = "fnr"
+                    fnr = "fnr",
+                    loggingMeta = LoggingMeta("mottakId", "12315", "", "")
                 )
             }
             val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()

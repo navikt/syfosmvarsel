@@ -5,9 +5,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.3.3"
+val coroutinesVersion = "1.3.4"
 val kluentVersion = "1.49"
-val ktorVersion = "1.3.1"
+val ktorVersion = "1.3.2"
 val logbackVersion = "1.2.3"
 val prometheusVersion = "0.8.0"
 val spekVersion = "2.0.9"
@@ -33,7 +33,7 @@ val postgresEmbeddedVersion = "0.13.1"
 val brukernotifikasjonAvroVersion = "1.2020.02.11-13.20-46252a031986"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.3.61"
+    id("org.jetbrains.kotlin.jvm") version "1.3.71"
     id("org.jmailen.kotlinter") version "2.2.0"
     id("com.diffplug.gradle.spotless") version "3.14.0"
     id("com.github.johnrengelman.shadow") version "5.2.0"
