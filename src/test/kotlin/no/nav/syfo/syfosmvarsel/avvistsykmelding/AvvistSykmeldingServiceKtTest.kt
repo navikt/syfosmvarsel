@@ -2,7 +2,9 @@ package no.nav.syfo.syfosmvarsel.avvistsykmelding
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -21,6 +23,7 @@ import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.VaultSecrets
+import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.Notifikasjonstatus
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
@@ -44,18 +47,22 @@ import org.spekframework.spek2.style.specification.describe
 
 object AvvistSykmeldingServiceKtTest : Spek({
     val database = TestDB()
-    val brukernotifikasjonService = BrukernotifikasjonService(database)
+    val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "tjenester")
+    every { brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), any()) } just Runs
+    every { brukernotifikasjonKafkaProducer.sendDonemelding(any(), any()) } just Runs
 
     val topic = "oppgavevarsel-topic"
 
     val embeddedEnvironment = KafkaEnvironment(
-            autoStart = false,
-            topicNames = listOf(topic)
+        autoStart = false,
+        topicNames = listOf(topic)
     )
 
     val credentials = VaultSecrets("", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url", mountPathVault = "path"
+        tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
+        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
@@ -66,7 +73,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
     val baseConfig = loadBaseConfig(config, credentials).overrideForTest()
 
     val producerProperties = baseConfig.toProducerConfig(
-            "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
+        "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
     val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(producerProperties)
     val diskresjonskodeServiceMock = mockk<DiskresjonskodePortType>()
     every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse()
@@ -74,11 +81,11 @@ object AvvistSykmeldingServiceKtTest : Spek({
     val varselProducer = VarselProducer(diskresjonskodeServiceMock, kafkaProducer, topic)
 
     val consumerProperties = baseConfig
-            .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+        .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
     val kafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumer.subscribe(listOf(topic))
 
-    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, "dev-fss")
+    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService)
 
     beforeGroup {
         embeddedEnvironment.start()
@@ -108,22 +115,6 @@ object AvvistSykmeldingServiceKtTest : Spek({
             oppgavevarsel.repeterendeVarsel shouldEqual false
             oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
             oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
-        }
-    }
-
-    describe("Oppretter ikke brukernotifikasjon i prod") {
-        val avvistSykmeldingServiceProd = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, "prod-fss")
-        val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
-        val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
-        it("Oppretter ikke brukernotifikasjon hvis cluster er prod-fss") {
-            runBlocking {
-                avvistSykmeldingServiceProd.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
-                val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
-
-                messages.size shouldEqual 1
-                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                brukernotifikasjoner.size shouldEqual 0
-            }
         }
     }
 

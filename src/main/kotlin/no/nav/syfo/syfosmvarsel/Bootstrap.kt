@@ -29,6 +29,7 @@ import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getAvvistKafkaConsumer
+import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getVarselProducer
@@ -73,11 +74,12 @@ fun main() {
     val avvistKafkaConsumer = getAvvistKafkaConsumer(kafkaBaseConfig, env)
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
     val kafkaStatusConsumer = getKafkaStatusConsumer(vaultSecrets, env)
+    val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
-    val brukernotifikasjonService = BrukernotifikasjonService(database)
+    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
 
-    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService)
-    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService, env.cluster)
+    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService, env.cluster)
+    val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService)
     val statusendringService = StatusendringService(brukernotifikasjonService)
 
     applicationState.ready = true
@@ -126,7 +128,7 @@ fun launchListeners(
     }
 
     createListener(applicationState) {
-        blockingApplicationLogicStatusendring(applicationState, kafkaStatusConsumer, statusendringService, env)
+        blockingApplicationLogicStatusendring(applicationState, kafkaStatusConsumer, statusendringService)
     }
 }
 
@@ -170,13 +172,8 @@ suspend fun blockingApplicationLogicNySykmelding(
                 msgId = receivedSykmelding.msgId,
                 sykmeldingId = receivedSykmelding.sykmelding.id
             )
-
-            if (env.cluster == "dev-fss") {
-                wrapExceptions(loggingMeta) {
-                    nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, env.tjenesterUrl, loggingMeta)
-                }
-            } else {
-                log.info("Oppretter ikke varsel for ny sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
+            wrapExceptions(loggingMeta) {
+                nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, env.tjenesterUrl, loggingMeta)
             }
         }
         delay(100)
@@ -186,22 +183,16 @@ suspend fun blockingApplicationLogicNySykmelding(
 suspend fun blockingApplicationLogicStatusendring(
     applicationState: ApplicationState,
     kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
-    statusendringService: StatusendringService,
-    env: Environment
+    statusendringService: StatusendringService
 ) {
     while (applicationState.ready) {
         kafkaStatusConsumer.poll(Duration.ofMillis(0)).forEach {
             val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
-
-            if (env.cluster == "dev-fss") {
-                try {
-                    statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
-                } catch (e: Exception) {
-                    log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
-                    throw e
-                }
-            } else {
-                log.info("Behandler ikke statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+            try {
+                statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
+            } catch (e: Exception) {
+                log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+                throw e
             }
         }
         delay(100)
