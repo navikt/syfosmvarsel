@@ -19,6 +19,7 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
@@ -176,6 +177,20 @@ object NySykmeldingServiceKtTest : Spek({
                 val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
                 brukernotifikasjoner.size shouldEqual 1
             }
+        }
+    }
+
+    describe("Får riktig tekst for brukernotifikasjon") {
+        it("Egenmeldt sykmelding skal gi egenmeldt-tekst") {
+            val avsenderSystem = AvsenderSystem("Egenmeldt", "1")
+
+            nySykmeldingService.lagBrukernotifikasjonstekst(avsenderSystem) shouldEqual "Egenmeldingen din er klar til bruk"
+        }
+
+        it("Vanlig sykmelding skal gi melding om ny sykmelding") {
+            val avsenderSystem = AvsenderSystem("Min EPJ", "1")
+
+            nySykmeldingService.lagBrukernotifikasjonstekst(avsenderSystem) shouldEqual "Du har mottatt en ny sykmelding"
         }
     }
 })

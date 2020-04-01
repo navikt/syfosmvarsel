@@ -3,6 +3,7 @@ package no.nav.syfo.syfosmvarsel.nysykmelding
 import java.time.LocalDateTime
 import java.util.Collections
 import net.logstash.logback.argument.StructuredArguments.fields
+import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
@@ -33,7 +34,7 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
                 NY_SM_VARSEL_OPPRETTET.inc()
                 log.info("Opprettet oppgavevarsel for ny sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
             }
-            brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = "Du har mottatt en ny sykmelding", fnr = receivedSykmelding.personNrPasient)
+            brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = lagBrukernotifikasjonstekst(receivedSykmelding.sykmelding.avsenderSystem), fnr = receivedSykmelding.personNrPasient)
         } catch (e: Exception) {
             log.error("Det skjedde en feil ved oppretting av varsel for ny sykmelding")
             throw e
@@ -54,6 +55,14 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
             oppgaveUrl = lagOppgavelenke(tjenesterUrl),
             repeterendeVarsel = false
         )
+    }
+
+    fun lagBrukernotifikasjonstekst(avsenderSystem: AvsenderSystem): String {
+        return if (avsenderSystem.navn == "Egenmeldt") {
+            "Egenmeldingen din er klar til bruk"
+        } else {
+            "Du har mottatt en ny sykmelding"
+        }
     }
 
     private fun parameterListe(sykmeldingId: String, tjenesterUrl: String): Map<String, String> {
