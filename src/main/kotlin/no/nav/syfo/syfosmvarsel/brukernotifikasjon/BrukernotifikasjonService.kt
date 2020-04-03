@@ -1,9 +1,9 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
-import net.logstash.logback.argument.StructuredArguments
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
