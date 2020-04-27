@@ -31,7 +31,7 @@ class BrukernotifikasjonService(
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
                 Nokkel(servicebruker, opprettBrukernotifikasjon.grupperingsId.toString()),
                 Oppgave(
-                    opprettBrukernotifikasjon.timestamp.toEpochSecond(),
+                    opprettBrukernotifikasjon.timestamp.toInstant().toEpochMilli(),
                     fnr,
                     opprettBrukernotifikasjon.grupperingsId.toString(),
                     tekst,
@@ -55,7 +55,7 @@ class BrukernotifikasjonService(
             brukernotifikasjonKafkaProducer.sendDonemelding(
                 Nokkel(servicebruker, brukernotifikasjon.grupperingsId.toString()),
                 Done(
-                    ferdigstiltBrukernotifikasjon.timestamp.toEpochSecond(),
+                    ferdigstiltBrukernotifikasjon.timestamp.toInstant().toEpochMilli(),
                     sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr,
                     ferdigstiltBrukernotifikasjon.grupperingsId.toString()
                 )
