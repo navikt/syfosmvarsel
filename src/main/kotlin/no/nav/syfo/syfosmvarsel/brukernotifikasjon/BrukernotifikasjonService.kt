@@ -81,7 +81,7 @@ class BrukernotifikasjonService(
             timestamp = sykmeldingStatusKafkaMessageDTO.event.timestamp,
             event = sykmeldingStatusKafkaMessageDTO.event.statusEvent.name,
             grupperingsId = opprettetBrukernotifikasjonDB.grupperingsId,
-            eventId = UUID.randomUUID(),
+            eventId = opprettetBrukernotifikasjonDB.eventId,
             notifikasjonstatus = Notifikasjonstatus.FERDIG
         )
 

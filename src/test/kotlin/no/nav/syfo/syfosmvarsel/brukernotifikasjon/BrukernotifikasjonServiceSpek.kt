@@ -163,7 +163,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             brukernotifikasjoner[0].timestamp shouldEqual timestampFerdig
             brukernotifikasjoner[0].event shouldEqual "SENDT"
             brukernotifikasjoner[0].grupperingsId shouldEqual sykmeldingId
-            brukernotifikasjoner[0].eventId shouldNotBe brukernotifikasjonDB.eventId
+            brukernotifikasjoner[0].eventId shouldEqual eventIdOpprettet
             brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.FERDIG
             brukernotifikasjoner[1] shouldEqual brukernotifikasjonDB
         }
