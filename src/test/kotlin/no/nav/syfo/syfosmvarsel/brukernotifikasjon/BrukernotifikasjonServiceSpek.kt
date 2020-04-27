@@ -163,7 +163,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             brukernotifikasjoner[0].timestamp shouldEqual timestampFerdig
             brukernotifikasjoner[0].event shouldEqual "SENDT"
             brukernotifikasjoner[0].grupperingsId shouldEqual sykmeldingId
-            brukernotifikasjoner[0].eventId shouldNotBe null
+            brukernotifikasjoner[0].eventId shouldNotBe brukernotifikasjonDB.eventId
             brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.FERDIG
             brukernotifikasjoner[1] shouldEqual brukernotifikasjonDB
         }
@@ -194,7 +194,8 @@ class BrukernotifikasjonServiceSpek : Spek({
             val oppgave: Oppgave = messages[0].value()
 
             nokkel.getSystembruker() shouldEqual "srvsyfosmvarsel"
-            nokkel.getEventId() shouldEqual sykmeldingId.toString()
+            nokkel.getEventId() shouldNotBe null
+            nokkel.getEventId() shouldNotBe sykmeldingId.toString()
             oppgave.getFodselsnummer() shouldEqual "fnr"
             oppgave.getLink() shouldEqual "tjenester/sykefravaer"
             oppgave.getSikkerhetsnivaa() shouldEqual 4

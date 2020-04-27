@@ -29,7 +29,7 @@ class BrukernotifikasjonService(
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
-                Nokkel(servicebruker, opprettBrukernotifikasjon.grupperingsId.toString()),
+                Nokkel(servicebruker, opprettBrukernotifikasjon.eventId.toString()),
                 Oppgave(
                     opprettBrukernotifikasjon.timestamp.toInstant().toEpochMilli(),
                     fnr,
@@ -53,7 +53,7 @@ class BrukernotifikasjonService(
             val ferdigstiltBrukernotifikasjon = mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, brukernotifikasjon)
             database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendDonemelding(
-                Nokkel(servicebruker, brukernotifikasjon.grupperingsId.toString()),
+                Nokkel(servicebruker, brukernotifikasjon.eventId.toString()),
                 Done(
                     ferdigstiltBrukernotifikasjon.timestamp.toInstant().toEpochMilli(),
                     sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr,
