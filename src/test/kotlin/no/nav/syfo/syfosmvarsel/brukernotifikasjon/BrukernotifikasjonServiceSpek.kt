@@ -199,7 +199,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             oppgave.getLink() shouldEqual "tjenester/sykefravaer"
             oppgave.getSikkerhetsnivaa() shouldEqual 4
             oppgave.getTekst() shouldEqual "tekst"
-            oppgave.getTidspunkt() shouldEqual timestampOpprettet.toEpochSecond()
+            oppgave.getTidspunkt() shouldEqual timestampOpprettet.toInstant().toEpochMilli()
         }
     }
 })
