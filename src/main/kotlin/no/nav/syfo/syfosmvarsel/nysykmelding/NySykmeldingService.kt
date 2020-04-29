@@ -46,7 +46,7 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
             ressursId = receivedSykmelding.sykmelding.id,
             mottaker = receivedSykmelding.personNrPasient,
             parameterListe = parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
-            utlopstidspunkt = utsendelsestidspunkt.plusDays(5), // utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
+            utlopstidspunkt = utsendelsestidspunkt.plusDays(10), // vil gi revarsling etter 7 dager
             utsendelsestidspunkt = utsendelsestidspunkt,
             varseltypeId = "NySykmelding",
             oppgavetype = OPPGAVETYPE,
