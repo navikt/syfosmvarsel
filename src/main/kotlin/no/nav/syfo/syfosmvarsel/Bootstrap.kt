@@ -2,9 +2,16 @@ package no.nav.syfo.syfosmvarsel
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
@@ -16,6 +23,7 @@ import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
@@ -34,6 +42,8 @@ import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsum
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getStoppRevarselProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getVarselProducer
+import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
+import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.syfo.ws.createPort
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -67,9 +77,27 @@ fun main() {
 
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
 
+    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
+    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
+        }
+        expectSuccess = false
+    }
+    val httpClient = HttpClient(Apache, config)
+
+    val dkifClient = DkifClient(stsClient = oidcClient, httpClient = httpClient)
+
     val diskresjonskodeService = createPort<DiskresjonskodePortType>(env.diskresjonskodeEndpointUrl) {
         port { withSTS(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL) }
     }
+
+    val varselService = VarselService(diskresjonskodeService, dkifClient)
 
     val varselProducer = getVarselProducer(kafkaBaseConfig, env, diskresjonskodeService)
     val stoppRevarselProducer = getStoppRevarselProducer(kafkaBaseConfig, env)
