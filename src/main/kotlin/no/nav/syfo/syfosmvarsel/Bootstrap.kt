@@ -28,6 +28,8 @@ import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
+import no.nav.syfo.mq.connectionFactory
+import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
 import no.nav.syfo.syfosmvarsel.application.RenewVaultService
 import no.nav.syfo.syfosmvarsel.application.db.Database
@@ -49,6 +51,7 @@ import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.jms.Session
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
@@ -66,6 +69,16 @@ fun main() {
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
+
+    val connectionBestillVarsel = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
+    connectionBestillVarsel.start()
+    val sessionBestillVarsel = connectionBestillVarsel.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    val bestillVarselMHandlingMQProducer = sessionBestillVarsel.producerForQueue(env.bestvarselmhandlingQueueName)
+
+    val connectionStoppRevarsel = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
+    connectionStoppRevarsel.start()
+    val sessionStoppRevarsel = connectionStoppRevarsel.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    val stoppRevarselMQProducer = sessionStoppRevarsel.producerForQueue(env.stoppRevarselQueueName)
 
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
@@ -97,7 +110,7 @@ fun main() {
         port { withSTS(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL) }
     }
 
-    val varselService = VarselService(diskresjonskodeService, dkifClient)
+    val varselService = VarselService(diskresjonskodeService, dkifClient, database)
 
     val varselProducer = getVarselProducer(kafkaBaseConfig, env, diskresjonskodeService)
     val stoppRevarselProducer = getStoppRevarselProducer(kafkaBaseConfig, env)

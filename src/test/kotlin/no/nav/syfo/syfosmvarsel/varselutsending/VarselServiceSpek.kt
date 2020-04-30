@@ -1,4 +1,4 @@
-package no.nav.syfo.syfosmvarsel.varselutsending.dkif
+package no.nav.syfo.syfosmvarsel.varselutsending
 
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
@@ -6,7 +6,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
+import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeResponse
 import org.amshove.kluent.shouldEqual

@@ -4,6 +4,7 @@ import com.ctc.wstx.exc.WstxException
 import io.ktor.util.KtorExperimentalAPI
 import javax.xml.ws.soap.SOAPFaultException
 import no.nav.syfo.helpers.retry
+import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
 import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_RESERVERT
@@ -12,9 +13,12 @@ import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeRequest
 
 @KtorExperimentalAPI
-class VarselService(private val diskresjonskodeService: DiskresjonskodePortType, private val dkifClient: DkifClient) {
+class VarselService(private val diskresjonskodeService: DiskresjonskodePortType, private val dkifClient: DkifClient, private val database: DatabaseInterface) {
 
     fun sendVarsel() {
+        // sjekk db
+        // legg på kø
+        // skriv til db
     }
 
     suspend fun skalSendeVarsel(mottaker: String, sykmeldingId: String): Boolean {
