@@ -80,9 +80,9 @@ fun main() {
 
     val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
 
-    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService)
+    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService, env.cluster)
     val avvistSykmeldingService = AvvistSykmeldingService(varselProducer, brukernotifikasjonService)
-    val statusendringService = StatusendringService(brukernotifikasjonService, stoppRevarselProducer)
+    val statusendringService = StatusendringService(brukernotifikasjonService, stoppRevarselProducer, env.cluster)
 
     applicationState.ready = true
 

@@ -85,7 +85,7 @@ object NySykmeldingServiceKtTest : Spek({
     val kafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumer.subscribe(listOf(topic))
 
-    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService)
+    val nySykmeldingService = NySykmeldingService(varselProducer, brukernotifikasjonService, "dev-fss")
 
     beforeGroup {
         embeddedEnvironment.start()
@@ -160,6 +160,22 @@ object NySykmeldingServiceKtTest : Spek({
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 0
+            }
+        }
+    }
+
+    describe("Oppretter ikke varsel i prod") {
+        val nySykmeldingServiceProd = NySykmeldingService(varselProducer, brukernotifikasjonService, "prod-fss")
+        val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
+        val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
+        it("Oppretter brukernotifikasjon, men ikke varsel hvis cluster er prod-fss") {
+            runBlocking {
+                nySykmeldingServiceProd.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
+
+                messages.size shouldEqual 0
+                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
+                brukernotifikasjoner.size shouldEqual 1
             }
         }
     }
