@@ -22,7 +22,7 @@ import org.spekframework.spek2.style.specification.describe
 class StatusendringServiceSpek : Spek({
     val brukernotifikasjonServiceMock = mockk<BrukernotifikasjonService>()
     val stoppRevarselProducer = mockk<StoppRevarselProducer>()
-    val statusendringService = StatusendringService(brukernotifikasjonServiceMock, stoppRevarselProducer)
+    val statusendringService = StatusendringService(brukernotifikasjonServiceMock, stoppRevarselProducer, "dev-fss")
 
     val sykmeldingId = UUID.randomUUID().toString()
     val timestamp = OffsetDateTime.of(2020, 2, 12, 11, 0, 0, 0, ZoneOffset.UTC)
@@ -87,6 +87,15 @@ class StatusendringServiceSpek : Spek({
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageApen)
 
             verify(exactly = 0) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(any()) }
+            verify(exactly = 0) { stoppRevarselProducer.sendStoppRevarsel(any()) }
+        }
+    }
+    describe("Test av statusendring for prod") {
+        val statusendringServiceProd = StatusendringService(brukernotifikasjonServiceMock, stoppRevarselProducer, "prod-fss")
+        it("handterStatusendring skal ikke stoppe revarsel i prod") {
+            statusendringServiceProd.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
+
+            verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO) }
             verify(exactly = 0) { stoppRevarselProducer.sendStoppRevarsel(any()) }
         }
     }

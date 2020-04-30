@@ -8,13 +8,15 @@ import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_STOPPET
 import no.nav.syfo.syfosmvarsel.statusendring.kafka.StoppRevarsel
 import no.nav.syfo.syfosmvarsel.statusendring.kafka.StoppRevarselProducer
 
-class StatusendringService(private val brukernotifikasjonService: BrukernotifikasjonService, private val stoppRevarselProducer: StoppRevarselProducer) {
+class StatusendringService(private val brukernotifikasjonService: BrukernotifikasjonService, private val stoppRevarselProducer: StoppRevarselProducer, private val cluster: String) {
 
     fun handterStatusendring(sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO) {
         if (skalFerdigstilleBrukernotifkasjonOgStoppeRevarsel(sykmeldingStatusKafkaMessageDTO.event.statusEvent)) {
             brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
-            stoppRevarselProducer.sendStoppRevarsel(StoppRevarsel(type = "NY_SYKMELDING", ressursId = sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId))
-            SM_VARSEL_STOPPET.inc()
+            if (cluster == "dev-fss") {
+                stoppRevarselProducer.sendStoppRevarsel(StoppRevarsel(type = "NY_SYKMELDING", ressursId = sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId))
+                SM_VARSEL_STOPPET.inc()
+            }
         } else {
             log.info("Ignorerer statusendring for sykmelding {}, status {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId, sykmeldingStatusKafkaMessageDTO.event.statusEvent.name)
         }
