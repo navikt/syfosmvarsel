@@ -16,12 +16,6 @@ val NY_SM_VARSEL_OPPRETTET: Counter = Counter.build()
         .help("Antall opprettede varsel for nye sykmeldinger")
         .register()
 
-val SM_VARSEL_STOPPET: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name("sykmelding_stoppetvarsel_count")
-    .help("Antall stoppede revarsel for nye sykmeldinger")
-    .register()
-
 val SM_VARSEL_AVBRUTT: Counter = Counter.build()
     .namespace(METRICS_NS)
     .name("sykmelding_avbruttvarsel_count")

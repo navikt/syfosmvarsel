@@ -14,15 +14,12 @@ import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
-import no.nav.syfo.syfosmvarsel.statusendring.kafka.StoppRevarsel
-import no.nav.syfo.syfosmvarsel.statusendring.kafka.StoppRevarselProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 class StatusendringServiceSpek : Spek({
     val brukernotifikasjonServiceMock = mockk<BrukernotifikasjonService>()
-    val stoppRevarselProducer = mockk<StoppRevarselProducer>()
-    val statusendringService = StatusendringService(brukernotifikasjonServiceMock, stoppRevarselProducer)
+    val statusendringService = StatusendringService(brukernotifikasjonServiceMock)
 
     val sykmeldingId = UUID.randomUUID().toString()
     val timestamp = OffsetDateTime.of(2020, 2, 12, 11, 0, 0, 0, ZoneOffset.UTC)
@@ -46,7 +43,6 @@ class StatusendringServiceSpek : Spek({
     beforeEachTest {
         clearAllMocks()
         every { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(any()) } just Runs
-        every { stoppRevarselProducer.sendStoppRevarsel(any()) } just Runs
     }
 
     describe("Test av statusendring") {
@@ -54,7 +50,6 @@ class StatusendringServiceSpek : Spek({
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
 
             verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO) }
-            verify(exactly = 1) { stoppRevarselProducer.sendStoppRevarsel(StoppRevarsel("NY_SYKMELDING", sykmeldingId)) }
         }
 
         it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er BEKREFTET") {
@@ -65,7 +60,6 @@ class StatusendringServiceSpek : Spek({
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageBekreftet)
 
             verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageBekreftet) }
-            verify(exactly = 1) { stoppRevarselProducer.sendStoppRevarsel(StoppRevarsel("NY_SYKMELDING", sykmeldingId)) }
         }
 
         it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er AVBRUTT") {
@@ -76,7 +70,6 @@ class StatusendringServiceSpek : Spek({
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageAvbrutt)
 
             verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageAvbrutt) }
-            verify(exactly = 1) { stoppRevarselProducer.sendStoppRevarsel(StoppRevarsel("NY_SYKMELDING", sykmeldingId)) }
         }
 
         it("handterStatusendring ferdigstiller ikke brukernotifikasjon hvis sykmelding er APEN") {
@@ -87,7 +80,6 @@ class StatusendringServiceSpek : Spek({
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageApen)
 
             verify(exactly = 0) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(any()) }
-            verify(exactly = 0) { stoppRevarselProducer.sendStoppRevarsel(any()) }
         }
     }
 })

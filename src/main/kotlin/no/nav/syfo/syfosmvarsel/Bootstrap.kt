@@ -43,7 +43,6 @@ import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getAvvistKafkaConsum
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
-import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getStoppRevarselProducer
 import no.nav.syfo.syfosmvarsel.varselutsending.BestillVarselMHandlingMqProducer
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
@@ -108,7 +107,6 @@ fun main() {
 
     val varselService = VarselService(diskresjonskodeService, dkifClient, database, bestillVarselMHandlingMqProducer)
 
-    val stoppRevarselProducer = getStoppRevarselProducer(kafkaBaseConfig, env)
     val avvistKafkaConsumer = getAvvistKafkaConsumer(kafkaBaseConfig, env)
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
     val kafkaStatusConsumer = getKafkaStatusConsumer(vaultSecrets, env)
@@ -118,7 +116,7 @@ fun main() {
 
     val nySykmeldingService = NySykmeldingService(varselService, brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(varselService, brukernotifikasjonService)
-    val statusendringService = StatusendringService(brukernotifikasjonService, stoppRevarselProducer)
+    val statusendringService = StatusendringService(brukernotifikasjonService)
 
     applicationState.ready = true
 
