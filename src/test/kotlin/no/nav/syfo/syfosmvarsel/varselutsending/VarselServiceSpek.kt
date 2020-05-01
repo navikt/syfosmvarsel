@@ -36,7 +36,6 @@ class VarselServiceSpek : Spek({
 
     val sykmeldingId = UUID.randomUUID()
     val oppgaveVarsel = OppgaveVarsel(
-        type = "NY_SYKMELDING",
         ressursId = sykmeldingId.toString(),
         mottaker = "fnr",
         utlopstidspunkt = LocalDateTime.now().plusDays(5),
