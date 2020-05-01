@@ -26,8 +26,7 @@ data class Environment(
     override val mqPort: Int = getEnvVar("MQ_PORT").toInt(),
     override val mqGatewayName: String = getEnvVar("MQ_GATEWAY_NAME"),
     override val mqChannelName: String = getEnvVar("MQ_CHANNEL_NAME"),
-    val bestvarselmhandlingQueueName: String = getEnvVar("BESTVARSELMHANDLING_QUEUENAME"),
-    val stoppRevarselQueueName: String = getEnvVar("STOPPREVARSEL_QUEUENAME")
+    val bestvarselmhandlingQueueName: String = getEnvVar("BESTVARSELMHANDLING_QUEUENAME")
 ) : MqConfig, KafkaConfig
 
 data class VaultSecrets(

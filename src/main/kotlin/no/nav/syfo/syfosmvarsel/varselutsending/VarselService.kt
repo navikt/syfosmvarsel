@@ -2,23 +2,45 @@ package no.nav.syfo.syfosmvarsel.varselutsending
 
 import com.ctc.wstx.exc.WstxException
 import io.ktor.util.KtorExperimentalAPI
+import java.time.OffsetDateTime
+import java.util.UUID
 import javax.xml.ws.soap.SOAPFaultException
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
+import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
 import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_RESERVERT
+import no.nav.syfo.syfosmvarsel.varselutsending.database.VarselDB
+import no.nav.syfo.syfosmvarsel.varselutsending.database.finnesFraFor
+import no.nav.syfo.syfosmvarsel.varselutsending.database.registrerVarsel
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeRequest
 
 @KtorExperimentalAPI
-class VarselService(private val diskresjonskodeService: DiskresjonskodePortType, private val dkifClient: DkifClient, private val database: DatabaseInterface) {
+class VarselService(
+    private val diskresjonskodeService: DiskresjonskodePortType,
+    private val dkifClient: DkifClient,
+    private val database: DatabaseInterface,
+    private val bestillVarselMHandlingMqProducer: BestillVarselMHandlingMqProducer
+) {
 
-    fun sendVarsel() {
-        // sjekk db
-        // legg på kø
-        // skriv til db
+    suspend fun sendVarsel(oppgaveVarsel: OppgaveVarsel, sykmeldingId: String) {
+        if (skalSendeVarsel(mottaker = oppgaveVarsel.mottaker, sykmeldingId = sykmeldingId)) {
+            if (database.finnesFraFor(UUID.fromString(sykmeldingId))) {
+                log.info("Har allerede bestilt varsel for sykmeldingId {}", sykmeldingId)
+            } else {
+                bestillVarselMHandlingMqProducer.sendOppgavevarsel(sykmeldingId, oppgaveVarsel)
+                database.registrerVarsel(VarselDB(
+                    sykmeldingId = UUID.fromString(sykmeldingId),
+                    opprettet = OffsetDateTime.now(),
+                    mottaker = oppgaveVarsel.mottaker,
+                    varselbestillingId = oppgaveVarsel.varselbestillingId
+                ))
+                log.info("Lagret varselbestilling for sykmeldingId {}", sykmeldingId)
+            }
+        }
     }
 
     suspend fun skalSendeVarsel(mottaker: String, sykmeldingId: String): Boolean {

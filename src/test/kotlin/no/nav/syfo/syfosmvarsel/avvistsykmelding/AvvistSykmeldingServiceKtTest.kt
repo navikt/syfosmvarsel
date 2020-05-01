@@ -38,6 +38,7 @@ import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeRespon
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeBefore
 import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -59,10 +60,11 @@ object AvvistSykmeldingServiceKtTest : Spek({
         topicNames = listOf(topic)
     )
 
-    val credentials = VaultSecrets("", "")
+    val credentials = VaultSecrets("", "", "", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
-        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic"
+        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic", mqHostname = "hostname", mqGatewayName = "gateway",
+        mqChannelName = "channel", mqPort = 1111, bestvarselmhandlingQueueName = "bestill-varsel"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
@@ -102,19 +104,16 @@ object AvvistSykmeldingServiceKtTest : Spek({
     describe("Mapping av avvist sykmelding til oppgavevarsel fungerer som forventet") {
         val sykmelding = opprettReceivedSykmelding(id = "123")
         it("Avvist sykmelding mappes korrekt til oppgavevarsel") {
-            val oppgavevarsel = avvistSykmeldingService.receivedAvvistSykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
+            val oppgavevarsel = avvistSykmeldingService.receivedAvvistSykmeldingTilOppgaveVarsel(sykmelding)
 
             oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
             oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
             oppgavevarsel.mottaker shouldEqual "123124"
-            oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/${sykmelding.sykmelding.id}"
             oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
             oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
-            oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
-            oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
-            oppgavevarsel.repeterendeVarsel shouldEqual false
             oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
             oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
+            oppgavevarsel.varselbestillingId shouldNotBe null
         }
     }
 
@@ -123,7 +122,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for avvist sykmelding") {
             runBlocking {
-                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 1
@@ -131,12 +130,9 @@ object AvvistSykmeldingServiceKtTest : Spek({
                 oppgavevarsel.type shouldEqual "SYKMELDING_AVVIST"
                 oppgavevarsel.ressursId shouldEqual "d6112773-9587-41d8-9a3f-c8cb42364936"
                 oppgavevarsel.mottaker shouldEqual "1231231"
-                oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/d6112773-9587-41d8-9a3f-c8cb42364936"
                 oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
                 oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
-                oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
-                oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
-                oppgavevarsel.repeterendeVarsel shouldEqual false
+                oppgavevarsel.varselbestillingId shouldNotBe null
                 val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
                 brukernotifikasjoner.size shouldEqual 1
                 brukernotifikasjoner[0].event shouldEqual "APEN"
@@ -147,14 +143,14 @@ object AvvistSykmeldingServiceKtTest : Spek({
         it("Kaster feil ved mottak av ugyldig avvist sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
             runBlocking {
-                assertFailsWith<JsonParseException> { avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
+                assertFailsWith<JsonParseException> { avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(ugyldigCr.value()), LoggingMeta("mottakId", "12315", "", "")) }
             }
         }
 
         it("Oppretter ikke varsel for avvist sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
             runBlocking {
-                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 0

@@ -39,6 +39,7 @@ import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeRespon
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeBefore
 import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -60,10 +61,11 @@ object NySykmeldingServiceKtTest : Spek({
         topicNames = listOf(topic)
     )
 
-    val credentials = VaultSecrets("", "")
+    val credentials = VaultSecrets("", "", "", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
-        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic"
+        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic", mqHostname = "hostname", mqGatewayName = "gateway",
+        mqChannelName = "channel", mqPort = 1111, bestvarselmhandlingQueueName = "bestill-varsel"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
@@ -104,17 +106,14 @@ object NySykmeldingServiceKtTest : Spek({
         val sykmelding = opprettReceivedSykmelding(id = UUID.randomUUID().toString())
         println(sykmelding.sykmelding.id)
         it("Ny sykmelding mappes korrekt til oppgavevarsel") {
-            val oppgavevarsel = nySykmeldingService.receivedNySykmeldingTilOppgaveVarsel(sykmelding, "tjenester")
+            val oppgavevarsel = nySykmeldingService.receivedNySykmeldingTilOppgaveVarsel(sykmelding)
 
             oppgavevarsel.type shouldEqual "NY_SYKMELDING"
             oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
             oppgavevarsel.mottaker shouldEqual "123124"
-            oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/${sykmelding.sykmelding.id}"
             oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
             oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
-            oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
-            oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
-            oppgavevarsel.repeterendeVarsel shouldEqual false
+            oppgavevarsel.varselbestillingId shouldNotBe null
             oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
             oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
         }
@@ -125,7 +124,7 @@ object NySykmeldingServiceKtTest : Spek({
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter varsel for ny sykmelding") {
             runBlocking {
-                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 1
@@ -133,12 +132,9 @@ object NySykmeldingServiceKtTest : Spek({
                 oppgavevarsel.type shouldEqual "NY_SYKMELDING"
                 oppgavevarsel.ressursId shouldEqual "d6112773-9587-41d8-9a3f-c8cb42364936"
                 oppgavevarsel.mottaker shouldEqual "1231231"
-                oppgavevarsel.parameterListe["url"] shouldEqual "tjenester/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/d6112773-9587-41d8-9a3f-c8cb42364936"
                 oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
                 oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
-                oppgavevarsel.oppgavetype shouldEqual OPPGAVETYPE
-                oppgavevarsel.oppgaveUrl shouldEqual "tjenester/sykefravaer"
-                oppgavevarsel.repeterendeVarsel shouldEqual false
+                oppgavevarsel.varselbestillingId shouldNotBe null
                 val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
                 brukernotifikasjoner.size shouldEqual 1
                 brukernotifikasjoner[0].event shouldEqual "APEN"
@@ -149,14 +145,14 @@ object NySykmeldingServiceKtTest : Spek({
         it("Kaster feil ved mottak av ugyldig ny sykmelding") {
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
             runBlocking {
-                assertFailsWith<JsonParseException> { nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(ugyldigCr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", "")) }
+                assertFailsWith<JsonParseException> { nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(ugyldigCr.value()), LoggingMeta("mottakId", "12315", "", "")) }
             }
         }
 
         it("Oppretter ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
             every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
             runBlocking {
-                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), "tjenester", LoggingMeta("mottakId", "12315", "", ""))
+                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
                 val messages = kafkaConsumer.poll(Duration.ofMillis(5000)).toList()
 
                 messages.size shouldEqual 0

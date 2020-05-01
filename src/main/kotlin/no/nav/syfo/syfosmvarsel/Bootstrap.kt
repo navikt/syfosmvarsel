@@ -15,6 +15,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
+import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -44,6 +45,7 @@ import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsum
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getStoppRevarselProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getVarselProducer
+import no.nav.syfo.syfosmvarsel.varselutsending.BestillVarselMHandlingMqProducer
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.syfo.ws.createPort
@@ -51,7 +53,6 @@ import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.jms.Session
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
@@ -70,15 +71,11 @@ fun main() {
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
 
-    val connectionBestillVarsel = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
-    connectionBestillVarsel.start()
-    val sessionBestillVarsel = connectionBestillVarsel.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    val bestillVarselMHandlingMQProducer = sessionBestillVarsel.producerForQueue(env.bestvarselmhandlingQueueName)
-
-    val connectionStoppRevarsel = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
-    connectionStoppRevarsel.start()
-    val sessionStoppRevarsel = connectionStoppRevarsel.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    val stoppRevarselMQProducer = sessionStoppRevarsel.producerForQueue(env.stoppRevarselQueueName)
+    val connection = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
+    connection.start()
+    val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    val bestillVarselMHandlingProducer = session.producerForQueue(env.bestvarselmhandlingQueueName)
+    val bestillVarselMHandlingMqProducer = BestillVarselMHandlingMqProducer(session, bestillVarselMHandlingProducer)
 
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
@@ -110,7 +107,7 @@ fun main() {
         port { withSTS(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL) }
     }
 
-    val varselService = VarselService(diskresjonskodeService, dkifClient, database)
+    val varselService = VarselService(diskresjonskodeService, dkifClient, database, bestillVarselMHandlingMqProducer)
 
     val varselProducer = getVarselProducer(kafkaBaseConfig, env, diskresjonskodeService)
     val stoppRevarselProducer = getStoppRevarselProducer(kafkaBaseConfig, env)
@@ -192,7 +189,7 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
                     sykmeldingId = receivedSykmelding.sykmelding.id
             )
             wrapExceptions(loggingMeta) {
-                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, env.tjenesterUrl, loggingMeta)
+                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
             }
         }
         delay(100)
@@ -216,7 +213,7 @@ suspend fun blockingApplicationLogicNySykmelding(
                 sykmeldingId = receivedSykmelding.sykmelding.id
             )
             wrapExceptions(loggingMeta) {
-                nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, env.tjenesterUrl, loggingMeta)
+                nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
             }
         }
         delay(100)

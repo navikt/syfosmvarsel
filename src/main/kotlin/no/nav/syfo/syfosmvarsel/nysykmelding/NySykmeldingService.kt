@@ -1,7 +1,7 @@
 package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import java.time.LocalDateTime
-import java.util.Collections
+import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.model.ReceivedSykmelding
@@ -23,12 +23,11 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
 
     suspend fun opprettVarselForNySykmelding(
         receivedSykmelding: ReceivedSykmelding,
-        tjenesterUrl: String,
         loggingMeta: LoggingMeta
     ) {
         try {
             log.info("Mottatt ny sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
-            val oppgaveVarsel = receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding, tjenesterUrl)
+            val oppgaveVarsel = receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding)
             varselProducer.sendVarsel(oppgaveVarsel)
             NY_SM_VARSEL_OPPRETTET.inc()
             log.info("Opprettet oppgavevarsel for ny sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
@@ -39,19 +38,16 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
         }
     }
 
-    fun receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding, tjenesterUrl: String): OppgaveVarsel {
+    fun receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding): OppgaveVarsel {
         val utsendelsestidspunkt = LocalDateTime.now().innenforArbeidstidEllerPaafolgendeDag()
         return OppgaveVarsel(
             type = "NY_SYKMELDING",
             ressursId = receivedSykmelding.sykmelding.id,
             mottaker = receivedSykmelding.personNrPasient,
-            parameterListe = parameterListe(receivedSykmelding.sykmelding.id, tjenesterUrl),
-            utlopstidspunkt = utsendelsestidspunkt.plusDays(10), // vil gi revarsling etter 7 dager
+            utlopstidspunkt = utsendelsestidspunkt.plusDays(5), // utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
             utsendelsestidspunkt = utsendelsestidspunkt,
             varseltypeId = "NySykmelding",
-            oppgavetype = OPPGAVETYPE,
-            oppgaveUrl = lagOppgavelenke(tjenesterUrl),
-            repeterendeVarsel = false
+            varselbestillingId = UUID.randomUUID()
         )
     }
 
@@ -61,17 +57,5 @@ class NySykmeldingService(private val varselProducer: VarselProducer, private va
         } else {
             "Du har mottatt en ny sykmelding"
         }
-    }
-
-    private fun parameterListe(sykmeldingId: String, tjenesterUrl: String): Map<String, String> {
-        return Collections.singletonMap<String, String>("url", lagHenvendelselenke(sykmeldingId, tjenesterUrl))
-    }
-
-    private fun lagHenvendelselenke(sykmeldingId: String, tjenesterUrl: String): String {
-        return "$tjenesterUrl/innloggingsinfo/type/oppgave/undertype/$OPPGAVETYPE/varselid/$sykmeldingId"
-    }
-
-    private fun lagOppgavelenke(tjenesterUrl: String): String {
-        return "$tjenesterUrl/sykefravaer"
     }
 }
