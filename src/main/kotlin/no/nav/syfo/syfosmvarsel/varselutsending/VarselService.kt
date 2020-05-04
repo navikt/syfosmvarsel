@@ -3,7 +3,7 @@ package no.nav.syfo.syfosmvarsel.varselutsending
 import com.ctc.wstx.exc.WstxException
 import io.ktor.util.KtorExperimentalAPI
 import java.time.OffsetDateTime
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.UUID
 import javax.xml.ws.soap.SOAPFaultException
 import no.nav.syfo.helpers.retry
@@ -35,7 +35,7 @@ class VarselService(
                 bestillVarselMHandlingMqProducer.sendOppgavevarsel(sykmeldingId, oppgaveVarsel)
                 database.registrerVarsel(VarselDB(
                     sykmeldingId = UUID.fromString(sykmeldingId),
-                    opprettet = OffsetDateTime.now(ZoneId.systemDefault()),
+                    opprettet = OffsetDateTime.now(ZoneOffset.UTC),
                     mottakerFnr = oppgaveVarsel.mottaker,
                     varselbestillingId = oppgaveVarsel.varselbestillingId
                 ))
