@@ -28,6 +28,7 @@ class DkifClient(
                 headers {
                     append("Authorization", "Bearer ${oidcToken.access_token}")
                     append("Nav-Consumer-Id", "syfosmvarsel")
+                    append("Nav-Call-Id", sykmeldingId)
                     append("Nav-Personidenter", mottaker)
                 }
             }.execute()
