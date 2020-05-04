@@ -35,7 +35,7 @@ class VarselService(
                 database.registrerVarsel(VarselDB(
                     sykmeldingId = UUID.fromString(sykmeldingId),
                     opprettet = OffsetDateTime.now(),
-                    mottaker = oppgaveVarsel.mottaker,
+                    mottakerFnr = oppgaveVarsel.mottaker,
                     varselbestillingId = oppgaveVarsel.varselbestillingId
                 ))
                 log.info("Lagret varselbestilling for sykmeldingId {}", sykmeldingId)

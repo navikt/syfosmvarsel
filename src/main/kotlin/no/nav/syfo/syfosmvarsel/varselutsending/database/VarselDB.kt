@@ -6,6 +6,6 @@ import java.util.UUID
 data class VarselDB(
     val sykmeldingId: UUID,
     val opprettet: OffsetDateTime,
-    val mottaker: String,
+    val mottakerFnr: String,
     val varselbestillingId: UUID
 )

@@ -99,7 +99,7 @@ object NySykmeldingServiceKtTest : Spek({
                 brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.OPPRETTET
 
                 val varselDB = database.hentVarsel(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                varselDB?.mottaker shouldEqual "1231231"
+                varselDB?.mottakerFnr shouldEqual "1231231"
                 varselDB?.sykmeldingId shouldEqual UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936")
                 verify(exactly = 1) { bestillVarselMHandlingMqProducerMock.sendOppgavevarsel("d6112773-9587-41d8-9a3f-c8cb42364936", any()) }
             }

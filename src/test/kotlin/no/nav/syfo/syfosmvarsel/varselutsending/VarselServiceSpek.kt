@@ -67,7 +67,7 @@ class VarselServiceSpek : Spek({
 
             val varselDB = database.hentVarsel(sykmeldingId)
             varselDB?.sykmeldingId shouldEqual sykmeldingId
-            varselDB?.mottaker shouldEqual "fnr"
+            varselDB?.mottakerFnr shouldEqual "fnr"
             varselDB?.opprettet shouldNotEqual null
             varselDB?.varselbestillingId shouldEqual oppgaveVarsel.varselbestillingId
 

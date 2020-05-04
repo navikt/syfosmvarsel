@@ -41,12 +41,12 @@ private fun Connection.finnesFraFor(sykmeldingId: UUID): Boolean =
 fun Connection.registrerVarsel(varselDB: VarselDB) {
     this.prepareStatement(
         """
-                INSERT INTO varselstatus(sykmelding_id, opprettet, mottaker, varselbestilling_id) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING
+                INSERT INTO varselstatus(sykmelding_id, opprettet, mottaker_fnr, varselbestilling_id) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING
                 """
     ).use {
         it.setObject(1, varselDB.sykmeldingId)
         it.setTimestamp(2, Timestamp.from(varselDB.opprettet.toInstant()))
-        it.setString(3, varselDB.mottaker)
+        it.setString(3, varselDB.mottakerFnr)
         it.setObject(4, varselDB.varselbestillingId)
         it.execute()
     }
@@ -68,6 +68,6 @@ fun ResultSet.tilVarsel(): VarselDB =
     VarselDB(
         sykmeldingId = UUID.fromString(getString("sykmelding_id")),
         opprettet = getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC),
-        mottaker = getString("mottaker"),
+        mottakerFnr = getString("mottaker_fnr"),
         varselbestillingId = UUID.fromString(getString("varselbestilling_id"))
     )
