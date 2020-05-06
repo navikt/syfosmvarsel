@@ -44,7 +44,7 @@ class NySykmeldingService(private val varselService: VarselService, private val 
             mottaker = receivedSykmelding.personNrPasient,
             utlopstidspunkt = utsendelsestidspunkt.plusDays(5), // utløpstidspunkt må være om mindre enn 7 dager for å unngå revarsling
             utsendelsestidspunkt = utsendelsestidspunkt,
-            varseltypeId = "NySykmelding",
+            varseltypeId = "NySykmeldingUtenLenke",
             varselbestillingId = UUID.randomUUID()
         )
     }

@@ -79,7 +79,7 @@ object NySykmeldingServiceKtTest : Spek({
             oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
             oppgavevarsel.mottaker shouldEqual "123124"
             oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
-            oppgavevarsel.varseltypeId shouldEqual "NySykmelding"
+            oppgavevarsel.varseltypeId shouldEqual "NySykmeldingUtenLenke"
             oppgavevarsel.varselbestillingId shouldNotBe null
             oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
             oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
