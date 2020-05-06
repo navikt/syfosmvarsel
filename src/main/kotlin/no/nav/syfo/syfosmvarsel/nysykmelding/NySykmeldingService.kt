@@ -10,6 +10,7 @@ import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.metrics.NY_SM_VARSEL_OPPRETTET
+import no.nav.syfo.syfosmvarsel.util.innenforArbeidstidEllerPaafolgendeDag
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -37,8 +38,7 @@ class NySykmeldingService(private val varselService: VarselService, private val 
     }
 
     fun receivedNySykmeldingTilOppgaveVarsel(receivedSykmelding: ReceivedSykmelding): OppgaveVarsel {
-        // val utsendelsestidspunkt = LocalDateTime.now().innenforArbeidstidEllerPaafolgendeDag()
-        val utsendelsestidspunkt = LocalDateTime.now() // for test
+        val utsendelsestidspunkt = LocalDateTime.now().innenforArbeidstidEllerPaafolgendeDag()
         return OppgaveVarsel(
             ressursId = receivedSykmelding.sykmelding.id,
             mottaker = receivedSykmelding.personNrPasient,

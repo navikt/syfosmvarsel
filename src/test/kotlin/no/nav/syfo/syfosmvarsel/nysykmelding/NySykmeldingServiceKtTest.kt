@@ -13,6 +13,7 @@ import io.mockk.verify
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
@@ -33,6 +34,7 @@ import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeResponse
 import org.amshove.kluent.shouldBeAfter
+import org.amshove.kluent.shouldBeBefore
 import org.amshove.kluent.shouldEqual
 import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -79,8 +81,8 @@ object NySykmeldingServiceKtTest : Spek({
             oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
             oppgavevarsel.varseltypeId shouldEqual "NySykmeldingUtenLenke"
             oppgavevarsel.varselbestillingId shouldNotBe null
-            // oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
-            // oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
+            oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
+            oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
         }
     }
 
