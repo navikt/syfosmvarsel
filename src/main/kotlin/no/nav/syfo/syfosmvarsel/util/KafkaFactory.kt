@@ -13,11 +13,6 @@ import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.VaultSecrets
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonKafkaProducer
-import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
-import no.nav.syfo.syfosmvarsel.statusendring.kafka.StoppRevarsel
-import no.nav.syfo.syfosmvarsel.statusendring.kafka.StoppRevarselProducer
-import no.nav.syfo.syfosmvarsel.varselutsending.VarselProducer
-import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -25,22 +20,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 
 class KafkaFactory private constructor() {
     companion object {
-        fun getVarselProducer(kafkaBaseConfig: Properties, environment: Environment, diskresjonskodeService: DiskresjonskodePortType): VarselProducer {
-            val kafkaVarselProducerConfig = kafkaBaseConfig.toProducerConfig(
-                "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
-
-            val kafkaProducer = KafkaProducer<String, OppgaveVarsel>(kafkaVarselProducerConfig)
-            return VarselProducer(diskresjonskodeService, kafkaProducer, environment.oppgavevarselTopic)
-        }
-
-        fun getStoppRevarselProducer(kafkaBaseConfig: Properties, environment: Environment): StoppRevarselProducer {
-            val kafkaVarselProducerConfig = kafkaBaseConfig.toProducerConfig(
-                "syfosmvarsel", valueSerializer = JacksonKafkaSerializer::class)
-
-            val kafkaProducer = KafkaProducer<String, StoppRevarsel>(kafkaVarselProducerConfig)
-            return StoppRevarselProducer(kafkaProducer, environment.stoppRevarselTopic)
-        }
-
         fun getAvvistKafkaConsumer(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, String> {
             val consumerProperties = kafkaBaseConfig.toConsumerConfig(
                 "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class

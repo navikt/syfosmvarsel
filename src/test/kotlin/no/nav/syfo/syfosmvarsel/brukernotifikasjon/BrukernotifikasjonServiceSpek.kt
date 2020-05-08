@@ -40,10 +40,11 @@ class BrukernotifikasjonServiceSpek : Spek({
         topicNames = topics,
         withSchemaRegistry = true
     )
-    val credentials = VaultSecrets("", "")
+    val credentials = VaultSecrets("", "", "", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
-        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic"
+        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic", mqHostname = "hostname", mqGatewayName = "gateway",
+        mqChannelName = "channel", mqPort = 1111, bestvarselmhandlingQueueName = "bestill-varsel"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
