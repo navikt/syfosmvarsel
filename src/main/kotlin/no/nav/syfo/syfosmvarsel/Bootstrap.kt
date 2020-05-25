@@ -122,7 +122,6 @@ fun main() {
 
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     launchListeners(
-        env = env,
         applicationState = applicationState,
         avvistKafkaConsumer = avvistKafkaConsumer,
         nyKafkaConsumer = nyKafkaConsumer,
@@ -146,7 +145,6 @@ fun createListener(applicationState: ApplicationState, applicationLogic: suspend
 
 @KtorExperimentalAPI
 fun launchListeners(
-    env: Environment,
     applicationState: ApplicationState,
     avvistKafkaConsumer: KafkaConsumer<String, String>,
     nyKafkaConsumer: KafkaConsumer<String, String>,
@@ -156,11 +154,11 @@ fun launchListeners(
     statusendringService: StatusendringService
 ) {
     createListener(applicationState) {
-        blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, avvistSykmeldingService, env)
+        blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, avvistSykmeldingService)
     }
 
     createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, env)
+        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService)
     }
 
     createListener(applicationState) {
@@ -168,11 +166,11 @@ fun launchListeners(
     }
 }
 
+@KtorExperimentalAPI
 suspend fun blockingApplicationLogicAvvistSykmelding(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    avvistSykmeldingService: AvvistSykmeldingService,
-    env: Environment
+    avvistSykmeldingService: AvvistSykmeldingService
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
@@ -192,11 +190,11 @@ suspend fun blockingApplicationLogicAvvistSykmelding(
     }
 }
 
+@KtorExperimentalAPI
 suspend fun blockingApplicationLogicNySykmelding(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    nySykmeldingService: NySykmeldingService,
-    env: Environment
+    nySykmeldingService: NySykmeldingService
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
