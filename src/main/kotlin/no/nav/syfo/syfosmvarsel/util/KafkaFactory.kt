@@ -42,8 +42,7 @@ class KafkaFactory private constructor() {
 
         fun getKafkaStatusConsumer(vaultSecrets: VaultSecrets, environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
             val kafkaBaseConfigForStatus = loadBaseConfig(environment, vaultSecrets).envOverrides()
-            kafkaBaseConfigForStatus["auto.offset.reset"] = "latest"
-            val properties = kafkaBaseConfigForStatus.toConsumerConfig("syfosmvarsel-consumer-2", JacksonKafkaDeserializer::class)
+            val properties = kafkaBaseConfigForStatus.toConsumerConfig("syfosmvarsel-consumer-3", JacksonKafkaDeserializer::class)
             properties.let { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1" }
             val kafkaStatusConsumer = KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusTopic))
