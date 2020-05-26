@@ -44,7 +44,7 @@ private fun Connection.finnesFraFor(sykmeldingId: UUID, event: String): Boolean 
 fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: BrukernotifikasjonDB) {
     this.prepareStatement(
         """
-                INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING
+                INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?)
                 """
     ).use {
         it.setObject(1, brukernotifikasjonDB.sykmeldingId)
