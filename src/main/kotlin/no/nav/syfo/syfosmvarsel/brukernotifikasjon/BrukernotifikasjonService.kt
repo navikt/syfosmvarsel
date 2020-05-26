@@ -22,8 +22,8 @@ class BrukernotifikasjonService(
 ) {
 
     fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String, tekst: String, loggingMeta: LoggingMeta) {
-        val brukernotifikasjon = database.hentBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
-        if (brukernotifikasjon != null) {
+        val brukernotifikasjonFinnesFraFor = database.brukernotifikasjonFinnesFraFor(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
+        if (brukernotifikasjonFinnesFraFor) {
             log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer, {}", StructuredArguments.fields(loggingMeta))
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
@@ -46,14 +46,14 @@ class BrukernotifikasjonService(
 
     fun ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO) {
         val sykmeldingId = sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId
-        val brukernotifikasjon = database.hentBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = sykmeldingStatusKafkaMessageDTO.event.statusEvent.name)
-        if (brukernotifikasjon == null) {
-            log.info("Fant ingen notifikasjon for sykmelding med id $sykmeldingId")
+        val apenBrukernotifikasjon = database.hentApenBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = sykmeldingStatusKafkaMessageDTO.event.statusEvent.name)
+        if (apenBrukernotifikasjon == null) {
+            log.info("Fant ingen notifikasjon for sykmelding med id $sykmeldingId som ikke er ferdigstilt")
         } else {
-            val ferdigstiltBrukernotifikasjon = mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, brukernotifikasjon)
+            val ferdigstiltBrukernotifikasjon = mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, apenBrukernotifikasjon)
             database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendDonemelding(
-                Nokkel(servicebruker, brukernotifikasjon.grupperingsId.toString()),
+                Nokkel(servicebruker, apenBrukernotifikasjon.grupperingsId.toString()),
                 Done(
                     ferdigstiltBrukernotifikasjon.timestamp.toInstant().toEpochMilli(),
                     sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr,

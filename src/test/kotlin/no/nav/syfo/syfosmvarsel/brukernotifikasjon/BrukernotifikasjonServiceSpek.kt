@@ -175,6 +175,23 @@ class BrukernotifikasjonServiceSpek : Spek({
             val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
             brukernotifikasjoner.size shouldEqual 0
         }
+
+        it("ferdigstillBrukernotifikasjon oppretter kun done en gang") {
+            database.registrerBrukernotifikasjon(brukernotifikasjonDB)
+
+            brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
+            brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
+
+            val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+            brukernotifikasjoner.size shouldEqual 2
+            brukernotifikasjoner[0].sykmeldingId shouldEqual sykmeldingId
+            brukernotifikasjoner[0].timestamp shouldEqual timestampFerdig
+            brukernotifikasjoner[0].event shouldEqual "SENDT"
+            brukernotifikasjoner[0].grupperingsId shouldEqual sykmeldingId
+            brukernotifikasjoner[0].eventId shouldNotBe null
+            brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.FERDIG
+            brukernotifikasjoner[1] shouldEqual brukernotifikasjonDB
+        }
     }
 
     describe("Ende til ende-test oppgave") {

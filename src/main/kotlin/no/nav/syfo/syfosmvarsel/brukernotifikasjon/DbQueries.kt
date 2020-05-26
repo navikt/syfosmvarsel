@@ -8,36 +8,43 @@ import java.util.UUID
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.application.db.toList
 
-fun DatabaseInterface.hentBrukernotifikasjon(sykmeldingId: UUID, event: String): BrukernotifikasjonDB? =
+fun DatabaseInterface.brukernotifikasjonFinnesFraFor(sykmeldingId: UUID, event: String): Boolean {
     connection.use { connection ->
-        val brukernotifikasjoner = connection.hentBrukernotifikasjon(sykmeldingId, event)
+        return connection.finnesFraFor(sykmeldingId, event)
+    }
+}
+
+fun DatabaseInterface.hentApenBrukernotifikasjon(sykmeldingId: UUID, event: String): BrukernotifikasjonDB? =
+    connection.use { connection ->
+        if (connection.finnesFraFor(sykmeldingId, event)) {
+            return null
+        }
+        val brukernotifikasjoner = connection.hentApenBrukernotifikasjon(sykmeldingId)
         return brukernotifikasjoner.firstOrNull()
     }
 
 fun DatabaseInterface.registrerBrukernotifikasjon(brukernotifikasjonDB: BrukernotifikasjonDB) {
     connection.use { connection ->
-        if (!connection.finnesFraFor(brukernotifikasjonDB)) {
-            connection.registrerBrukernotifikasjon(brukernotifikasjonDB)
+        connection.registrerBrukernotifikasjon(brukernotifikasjonDB)
         connection.commit()
-        }
     }
 }
 
-private fun Connection.finnesFraFor(brukernotifikasjonDB: BrukernotifikasjonDB): Boolean =
+private fun Connection.finnesFraFor(sykmeldingId: UUID, event: String): Boolean =
     this.prepareStatement(
         """
                 SELECT 1 FROM brukernotifikasjon WHERE sykmelding_id=? AND event=?;
                 """
     ).use {
-        it.setObject(1, brukernotifikasjonDB.sykmeldingId)
-        it.setString(2, brukernotifikasjonDB.event)
+        it.setObject(1, sykmeldingId)
+        it.setString(2, event)
         it.executeQuery().next()
     }
 
 fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: BrukernotifikasjonDB) {
     this.prepareStatement(
         """
-                INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING
+                INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?)
                 """
     ).use {
         it.setObject(1, brukernotifikasjonDB.sykmeldingId)
@@ -50,16 +57,15 @@ fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: Brukernotifikas
     }
 }
 
-private fun Connection.hentBrukernotifikasjon(sykmeldingId: UUID, event: String): List<BrukernotifikasjonDB> =
+private fun Connection.hentApenBrukernotifikasjon(sykmeldingId: UUID): List<BrukernotifikasjonDB> =
     this.prepareStatement(
         """
                  SELECT *
                    FROM brukernotifikasjon
-                  WHERE sykmelding_id = ? AND event != ?
+                  WHERE sykmelding_id = ? AND event = 'APEN'
             """
     ).use {
         it.setObject(1, sykmeldingId)
-        it.setString(2, event)
         it.executeQuery().toList { tilBrukernotifikasjon() }
     }
 
