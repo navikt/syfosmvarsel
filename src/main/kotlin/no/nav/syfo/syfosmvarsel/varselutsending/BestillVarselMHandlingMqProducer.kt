@@ -19,17 +19,11 @@ import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.VarselMe
 import no.nav.syfo.syfosmvarsel.domain.OppgaveVarsel
 import no.nav.syfo.syfosmvarsel.log
 
-// Not threadsafe
 class BestillVarselMHandlingMqProducer(
     private val session: Session,
     private val messageProducer: MessageProducer
 ) {
-    private val oppgavevarselMarshaller: Marshaller = JAXBContext.newInstance(VarselMedHandling::class.java).createMarshaller()
-        .apply {
-            setProperty(Marshaller.JAXB_ENCODING, "UTF-8")
-            setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-            setProperty(Marshaller.JAXB_FRAGMENT, true)
-        }
+    private val jaxbContext: JAXBContext = JAXBContext.newInstance(VarselMedHandling::class.java)
 
     fun sendOppgavevarsel(
         sykmeldingId: String,
@@ -59,6 +53,12 @@ class BestillVarselMHandlingMqProducer(
         )
 
     private fun marshalOppgaveVarsel(varselMedHandling: VarselMedHandling): String {
+        val oppgavevarselMarshaller: Marshaller = jaxbContext.createMarshaller()
+            .apply {
+                setProperty(Marshaller.JAXB_ENCODING, "UTF-8")
+                setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
+                setProperty(Marshaller.JAXB_FRAGMENT, true)
+            }
         return try {
             val writer = StringWriter()
             oppgavevarselMarshaller.marshal(ObjectFactory().createVarselMedHandling(varselMedHandling), StreamResult(writer))
