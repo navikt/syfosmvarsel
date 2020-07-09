@@ -14,7 +14,6 @@ data class Environment(
     val brukernotifikasjonDoneTopic: String = getEnvVar("BRUKERNOTIFIKASJON_DONE_TOPIC", "aapen-brukernotifikasjon-done-v1"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val tjenesterUrl: String = getEnvVar("TJENESTER_URL"),
-    val diskresjonskodeEndpointUrl: String = getEnvVar("DISKRESJONSKODE_ENDPOINT_URL"),
     val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmvarsel"),
     val syfosmvarselDBURL: String = getEnvVar("DB_URL"),
@@ -24,7 +23,8 @@ data class Environment(
     override val mqPort: Int = getEnvVar("MQ_PORT").toInt(),
     override val mqGatewayName: String = getEnvVar("MQ_GATEWAY_NAME"),
     override val mqChannelName: String = getEnvVar("MQ_CHANNEL_NAME"),
-    val bestvarselmhandlingQueueName: String = getEnvVar("BESTVARSELMHANDLING_QUEUENAME")
+    val bestvarselmhandlingQueueName: String = getEnvVar("BESTVARSELMHANDLING_QUEUENAME"),
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
 ) : MqConfig, KafkaConfig
 
 data class VaultSecrets(

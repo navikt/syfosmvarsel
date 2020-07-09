@@ -31,6 +31,7 @@ import no.nav.syfo.syfosmvarsel.varselutsending.BestillVarselMHandlingMqProducer
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
 import no.nav.syfo.syfosmvarsel.varselutsending.database.hentVarsel
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
+import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
 import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeResponse
 import org.amshove.kluent.shouldBeAfter
@@ -44,10 +45,10 @@ import org.spekframework.spek2.style.specification.describe
 @KtorExperimentalAPI
 object NySykmeldingServiceKtTest : Spek({
     val database = TestDB()
-    val diskresjonskodeServiceMock = mockk<DiskresjonskodePortType>()
+    val pdlPersonService = mockk<PdlPersonService>()
     val bestillVarselMHandlingMqProducerMock = mockk<BestillVarselMHandlingMqProducer>()
     val dkifClientMock = mockk<DkifClient>()
-    val varselService = VarselService(diskresjonskodeServiceMock, dkifClientMock, database, bestillVarselMHandlingMqProducerMock)
+    val varselService = VarselService(pdlPersonService, dkifClientMock, database, bestillVarselMHandlingMqProducerMock)
     val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
     val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "tjenester")
 
@@ -57,7 +58,7 @@ object NySykmeldingServiceKtTest : Spek({
         clearAllMocks()
         every { brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), any()) } just Runs
         every { brukernotifikasjonKafkaProducer.sendDonemelding(any(), any()) } just Runs
-        every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse()
+        coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
         coEvery { dkifClientMock.erReservert(any(), any()) } returns false
         every { bestillVarselMHandlingMqProducerMock.sendOppgavevarsel(any(), any()) } just Runs
     }
@@ -113,7 +114,7 @@ object NySykmeldingServiceKtTest : Spek({
         }
 
         it("Oppretter brukernotifikasjon, men ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
-            every { diskresjonskodeServiceMock.hentDiskresjonskode(any()) } returns WSHentDiskresjonskodeResponse().withDiskresjonskode("6")
+            coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns true
             runBlocking {
                 nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
 

@@ -58,3 +58,5 @@ spec:
       value: Q1_SYFOSMVARSEL
     - name: BESTVARSELMHANDLING_QUEUENAME
       value: QA.Q1_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.nais.preprod.local/graphql
