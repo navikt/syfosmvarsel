@@ -67,5 +67,4 @@ class PdlServiceTest : Spek({
             exception.message shouldEqual "Fant ikke person i PDL"
         }
     }
-
 })

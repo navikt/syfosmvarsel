@@ -20,8 +20,6 @@ import no.nav.syfo.syfosmvarsel.varselutsending.database.hentVarsel
 import no.nav.syfo.syfosmvarsel.varselutsending.database.registrerVarsel
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
-import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
-import no.nav.tjeneste.pip.diskresjonskode.meldinger.WSHentDiskresjonskodeResponse
 import org.amshove.kluent.shouldEqual
 import org.amshove.kluent.shouldNotEqual
 import org.spekframework.spek2.Spek

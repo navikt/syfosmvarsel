@@ -25,11 +25,10 @@ class PdlPersonService(private val pdlClient: PdlClient, private val stsOidcClie
         }
 
         val gradert = pdlResponse.data.hentPerson.adressebeskyttelse?.any { adressebeskyttelse ->
-            adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG
-                    || adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG_UTLAND
+            adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG ||
+                    adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG_UTLAND
         }
 
         return gradert ?: false
-
     }
 }

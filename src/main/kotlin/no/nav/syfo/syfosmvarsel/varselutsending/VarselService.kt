@@ -57,7 +57,6 @@ class VarselService(
     private suspend fun harDiskresjonskode(mottaker: String, sykmeldingId: String): Boolean {
         try {
             return pdlPersonService.harDiskresjonskode(mottaker, sykmeldingId)
-
         } catch (e: Exception) {
             log.error("Det skjedde en feil ved henting av diskresjonskode for sykmeldingId {}, ${e.message}", sykmeldingId)
             throw e

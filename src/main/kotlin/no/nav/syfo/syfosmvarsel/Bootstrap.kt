@@ -48,8 +48,6 @@ import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
 import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
-import no.nav.syfo.ws.createPort
-import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
