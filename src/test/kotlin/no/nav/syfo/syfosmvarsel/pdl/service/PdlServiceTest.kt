@@ -22,22 +22,22 @@ class PdlServiceTest : Spek({
     coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
     describe("PdlService") {
         it("hente person fra pdl uten fortrolig dresse") {
-            coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("UGRADERT"))
             runBlocking {
+                coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("UGRADERT"))
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual false
             }
         }
         it("skal gå gjennom om adressebeskyttelse er null") {
-            coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(null)
             runBlocking {
+                coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(null)
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual false
             }
         }
         it("hente person fra pdl fortrolig dresse") {
-            coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("FORTROLIG"))
             runBlocking {
+                coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("FORTROLIG"))
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual false
             }
@@ -50,17 +50,17 @@ class PdlServiceTest : Spek({
             }
         }
         it("hente person fra pdl strengt fortrolig dresse") {
-            coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("STRENGT_FORTROLIG_UTLAND"))
             runBlocking {
+                coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("STRENGT_FORTROLIG_UTLAND"))
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual true
             }
         }
 
         it("Skal feile når person ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(ResponseData(null), null)
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
+                    coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(ResponseData(null), null)
                     pdlService.harDiskresjonskode("01245678901", "123")
                 }
             }
