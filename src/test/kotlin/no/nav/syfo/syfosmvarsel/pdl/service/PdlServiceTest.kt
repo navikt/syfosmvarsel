@@ -1,5 +1,6 @@
 package no.nav.syfo.syfosmvarsel.pdl.service
 
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
 import kotlin.test.assertFailsWith
@@ -19,7 +20,12 @@ class PdlServiceTest : Spek({
     val pdlClient = mockkClass(PdlClient::class)
     val stsOidcClient = mockkClass(StsOidcClient::class)
     val pdlService = PdlPersonService(pdlClient, stsOidcClient)
-    coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
+
+    beforeEachTest {
+        clearAllMocks()
+        coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
+    }
+
     describe("PdlService") {
         it("hente person fra pdl uten fortrolig dresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("UGRADERT"))
