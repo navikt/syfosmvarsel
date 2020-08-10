@@ -15,7 +15,10 @@ class TestDB : DatabaseInterface {
         get() = pg!!.postgresDatabase.connection.apply { autoCommit = false }
 
     init {
-        pg = EmbeddedPostgres.start()
+        pg = EmbeddedPostgres
+                .builder()
+                .setLocaleConfig("locale", "en_US.UTF-8")
+                .start()
         Flyway.configure().run {
             dataSource(pg?.postgresDatabase).load().migrate()
         }
