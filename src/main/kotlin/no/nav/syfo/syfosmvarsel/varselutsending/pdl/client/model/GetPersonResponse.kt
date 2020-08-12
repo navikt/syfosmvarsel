@@ -1,7 +1,8 @@
 package no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model
 
 data class GetPersonResponse(
-    val data: ResponseData
+    val data: ResponseData,
+    val errors: List<ResponseError>?
 )
 
 data class ResponseData(

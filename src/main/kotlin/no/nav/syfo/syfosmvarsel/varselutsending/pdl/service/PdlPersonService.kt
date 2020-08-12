@@ -14,6 +14,11 @@ class PdlPersonService(private val pdlClient: PdlClient, private val stsOidcClie
         val stsToken = stsOidcClient.oidcToken().access_token
         val pdlResponse = pdlClient.getPerson(fnr, stsToken)
 
+        if (pdlResponse.errors != null) {
+            pdlResponse.errors.forEach {
+                log.error("PDL kastet error: {} ", it)
+            }
+        }
         if (pdlResponse.data.hentPerson == null) {
             log.error("Fant ikke person i PDL {}", sykmeldingsId)
             throw PersonNotFoundInPdl("Fant ikke person i PDL")
