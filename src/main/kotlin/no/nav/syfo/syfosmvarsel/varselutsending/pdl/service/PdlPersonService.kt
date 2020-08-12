@@ -16,7 +16,7 @@ class PdlPersonService(private val pdlClient: PdlClient, private val stsOidcClie
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
-                log.error("PDL kastet error: {} ", it)
+                log.error("PDL kastet error: {} for sykmeldingsId: {} ", it, sykmeldingsId)
             }
         }
         if (pdlResponse.data.hentPerson == null) {
