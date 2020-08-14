@@ -29,7 +29,7 @@ class AvvistSykmeldingService(private val varselService: VarselService, private 
             log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
         } catch (e: Exception) {
             log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
-            throw e
+            log.error("Ignorerer feil fordi dev..")
         }
     }
 

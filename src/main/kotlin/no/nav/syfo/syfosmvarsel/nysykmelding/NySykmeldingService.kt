@@ -33,7 +33,7 @@ class NySykmeldingService(private val varselService: VarselService, private val 
             brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = lagBrukernotifikasjonstekst(receivedSykmelding.sykmelding.avsenderSystem), fnr = receivedSykmelding.personNrPasient, loggingMeta = loggingMeta)
         } catch (e: Exception) {
             log.error("Det skjedde en feil ved oppretting av varsel for ny sykmelding")
-            throw e
+            log.error("Ignorerer feil fordi dev..")
         }
     }
 
