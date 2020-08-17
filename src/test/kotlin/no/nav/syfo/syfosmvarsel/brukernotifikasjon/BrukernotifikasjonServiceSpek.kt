@@ -42,9 +42,9 @@ class BrukernotifikasjonServiceSpek : Spek({
     )
     val credentials = VaultSecrets("", "", "", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-        tjenesterUrl = "tjenester", cluster = "local", diskresjonskodeEndpointUrl = "diskresjonskode-url", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
+        tjenesterUrl = "tjenester", cluster = "local", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
         mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic", mqHostname = "hostname", mqGatewayName = "gateway",
-        mqChannelName = "channel", mqPort = 1111, bestvarselmhandlingQueueName = "bestill-varsel"
+        mqChannelName = "channel", mqPort = 1111, bestvarselmhandlingQueueName = "bestill-varsel", pdlGraphqlPath = "pdl-sti"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

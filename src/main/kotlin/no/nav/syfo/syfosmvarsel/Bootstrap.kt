@@ -46,8 +46,8 @@ import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.syfosmvarsel.varselutsending.BestillVarselMHandlingMqProducer
 import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
 import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
-import no.nav.syfo.ws.createPort
-import no.nav.tjeneste.pip.diskresjonskode.DiskresjonskodePortType
+import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.PdlClient
+import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -101,11 +101,13 @@ fun main() {
 
     val dkifClient = DkifClient(stsClient = oidcClient, httpClient = httpClient)
 
-    val diskresjonskodeService = createPort<DiskresjonskodePortType>(env.diskresjonskodeEndpointUrl) {
-        port { withSTS(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL) }
-    }
+    val pdlClient = PdlClient(httpClient,
+            env.pdlGraphqlPath,
+            PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), ""))
 
-    val varselService = VarselService(diskresjonskodeService, dkifClient, database, bestillVarselMHandlingMqProducer)
+    val pdlService = PdlPersonService(pdlClient, oidcClient)
+
+    val varselService = VarselService(pdlService, dkifClient, database, bestillVarselMHandlingMqProducer)
 
     val avvistKafkaConsumer = getAvvistKafkaConsumer(kafkaBaseConfig, env)
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
