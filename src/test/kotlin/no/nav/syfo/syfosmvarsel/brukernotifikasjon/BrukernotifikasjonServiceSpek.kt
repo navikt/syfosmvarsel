@@ -17,7 +17,7 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
-import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
@@ -91,7 +91,7 @@ class BrukernotifikasjonServiceSpek : Spek({
         event = SykmeldingStatusKafkaEventDTO(
             sykmeldingId = sykmeldingId.toString(),
             timestamp = timestampFerdig,
-            statusEvent = StatusEventDTO.SENDT,
+            statusEvent = STATUS_SENDT,
             arbeidsgiver = null,
             sporsmals = null
         ),
