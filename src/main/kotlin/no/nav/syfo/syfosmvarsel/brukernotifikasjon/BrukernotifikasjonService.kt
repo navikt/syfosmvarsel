@@ -46,7 +46,7 @@ class BrukernotifikasjonService(
 
     fun ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO) {
         val sykmeldingId = sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId
-        val apenBrukernotifikasjon = database.hentApenBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = sykmeldingStatusKafkaMessageDTO.event.statusEvent.name)
+        val apenBrukernotifikasjon = database.hentApenBrukernotifikasjon(sykmeldingId = UUID.fromString(sykmeldingId), event = sykmeldingStatusKafkaMessageDTO.event.statusEvent)
         if (apenBrukernotifikasjon == null) {
             log.info("Fant ingen notifikasjon for sykmelding med id $sykmeldingId som ikke er ferdigstilt")
         } else {
@@ -79,7 +79,7 @@ class BrukernotifikasjonService(
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId),
             timestamp = sykmeldingStatusKafkaMessageDTO.event.timestamp,
-            event = sykmeldingStatusKafkaMessageDTO.event.statusEvent.name,
+            event = sykmeldingStatusKafkaMessageDTO.event.statusEvent,
             grupperingsId = opprettetBrukernotifikasjonDB.grupperingsId,
             eventId = UUID.randomUUID(),
             notifikasjonstatus = Notifikasjonstatus.FERDIG

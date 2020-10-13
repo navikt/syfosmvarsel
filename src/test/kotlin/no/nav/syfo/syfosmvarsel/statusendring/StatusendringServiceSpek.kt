@@ -10,7 +10,10 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
-import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
+import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
+import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
@@ -28,7 +31,7 @@ class StatusendringServiceSpek : Spek({
         event = SykmeldingStatusKafkaEventDTO(
             sykmeldingId = sykmeldingId,
             timestamp = timestamp,
-            statusEvent = StatusEventDTO.SENDT,
+            statusEvent = STATUS_SENDT,
             arbeidsgiver = null,
             sporsmals = null
         ),
@@ -54,7 +57,7 @@ class StatusendringServiceSpek : Spek({
 
         it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er BEKREFTET") {
             val sykmeldingStatusKafkaMessageBekreftet = SykmeldingStatusKafkaMessageDTO(
-                event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = StatusEventDTO.BEKREFTET),
+                event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_BEKREFTET),
                 kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata)
 
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageBekreftet)
@@ -64,7 +67,7 @@ class StatusendringServiceSpek : Spek({
 
         it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er AVBRUTT") {
             val sykmeldingStatusKafkaMessageAvbrutt = SykmeldingStatusKafkaMessageDTO(
-                event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = StatusEventDTO.AVBRUTT),
+                event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_AVBRUTT),
                 kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata)
 
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageAvbrutt)
@@ -74,7 +77,7 @@ class StatusendringServiceSpek : Spek({
 
         it("handterStatusendring ferdigstiller ikke brukernotifikasjon hvis sykmelding er APEN") {
             val sykmeldingStatusKafkaMessageApen = SykmeldingStatusKafkaMessageDTO(
-                event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = StatusEventDTO.APEN),
+                event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_APEN),
                 kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata)
 
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageApen)

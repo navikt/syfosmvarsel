@@ -39,7 +39,6 @@ import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
-import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getAvvistKafkaConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
@@ -109,7 +108,6 @@ fun main() {
 
     val varselService = VarselService(pdlService, dkifClient, database, bestillVarselMHandlingMqProducer)
 
-    val avvistKafkaConsumer = getAvvistKafkaConsumer(kafkaBaseConfig, env)
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
     val kafkaStatusConsumer = getKafkaStatusConsumer(vaultSecrets, env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
@@ -125,12 +123,12 @@ fun main() {
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     launchListeners(
         applicationState = applicationState,
-        avvistKafkaConsumer = avvistKafkaConsumer,
         nyKafkaConsumer = nyKafkaConsumer,
         nySykmeldingService = nySykmeldingService,
         avvistSykmeldingService = avvistSykmeldingService,
         kafkaStatusConsumer = kafkaStatusConsumer,
-        statusendringService = statusendringService
+        statusendringService = statusendringService,
+        environment = env
     )
 }
 
@@ -148,19 +146,15 @@ fun createListener(applicationState: ApplicationState, applicationLogic: suspend
 @KtorExperimentalAPI
 fun launchListeners(
     applicationState: ApplicationState,
-    avvistKafkaConsumer: KafkaConsumer<String, String>,
     nyKafkaConsumer: KafkaConsumer<String, String>,
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
     kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
-    statusendringService: StatusendringService
+    statusendringService: StatusendringService,
+    environment: Environment
 ) {
     createListener(applicationState) {
-        blockingApplicationLogicAvvistSykmelding(applicationState, avvistKafkaConsumer, avvistSykmeldingService)
-    }
-
-    createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService)
+        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, avvistSykmeldingService, environment)
     }
 
     createListener(applicationState) {
@@ -169,37 +163,15 @@ fun launchListeners(
 }
 
 @KtorExperimentalAPI
-suspend fun blockingApplicationLogicAvvistSykmelding(
-    applicationState: ApplicationState,
-    kafkaConsumer: KafkaConsumer<String, String>,
-    avvistSykmeldingService: AvvistSykmeldingService
-) {
-    while (applicationState.ready) {
-        kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
-            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
-
-            val loggingMeta = LoggingMeta(
-                    mottakId = receivedSykmelding.navLogId,
-                    orgNr = receivedSykmelding.legekontorOrgNr,
-                    msgId = receivedSykmelding.msgId,
-                    sykmeldingId = receivedSykmelding.sykmelding.id
-            )
-            wrapExceptions(loggingMeta) {
-                avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
-            }
-        }
-        delay(100)
-    }
-}
-
-@KtorExperimentalAPI
 suspend fun blockingApplicationLogicNySykmelding(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    nySykmeldingService: NySykmeldingService
+    nySykmeldingService: NySykmeldingService,
+    avvistSykmeldingService: AvvistSykmeldingService,
+    environment: Environment
 ) {
     while (applicationState.ready) {
-        kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
+        kafkaConsumer.poll(Duration.ofMillis(0)).filterNot { it.value() == null }.forEach {
             val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
             val loggingMeta = LoggingMeta(
@@ -209,7 +181,10 @@ suspend fun blockingApplicationLogicNySykmelding(
                 sykmeldingId = receivedSykmelding.sykmelding.id
             )
             wrapExceptions(loggingMeta) {
-                nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                when (it.topic()) {
+                    environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
+                    else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                }
             }
         }
         delay(100)
@@ -222,7 +197,7 @@ suspend fun blockingApplicationLogicStatusendring(
     statusendringService: StatusendringService
 ) {
     while (applicationState.ready) {
-        kafkaStatusConsumer.poll(Duration.ofMillis(0)).forEach {
+        kafkaStatusConsumer.poll(Duration.ofMillis(0)).filterNot { it.value() == null }.forEach {
             val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
             try {
                 statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)

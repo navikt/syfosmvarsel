@@ -20,23 +20,13 @@ import org.apache.kafka.common.serialization.StringDeserializer
 
 class KafkaFactory private constructor() {
     companion object {
-        fun getAvvistKafkaConsumer(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, String> {
-            val consumerProperties = kafkaBaseConfig.toConsumerConfig(
-                "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
-            )
-            consumerProperties.let { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1" }
-            val avvistKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
-            avvistKafkaConsumer.subscribe(listOf(environment.avvistSykmeldingTopic))
-            return avvistKafkaConsumer
-        }
-
         fun getNyKafkaConsumer(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, String> {
             val consumerProperties = kafkaBaseConfig.toConsumerConfig(
                 "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
             )
             consumerProperties.let { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1" }
             val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
-            nyKafkaConsumer.subscribe(listOf(environment.sykmeldingAutomatiskBehandlingTopic, environment.sykmeldingManuellBehandlingTopic))
+            nyKafkaConsumer.subscribe(listOf(environment.sykmeldingAutomatiskBehandlingTopic, environment.sykmeldingManuellBehandlingTopic, environment.avvistSykmeldingTopic))
             return nyKafkaConsumer
         }
 
