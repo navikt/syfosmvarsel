@@ -83,6 +83,7 @@ fun main() {
     applicationServer.start()
 
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
+    kafkaBaseConfig["auto.offset.reset"] = "none"
 
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
