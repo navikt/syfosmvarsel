@@ -44,8 +44,6 @@ spec:
       value: https://tjenester-q1.nav.no
     - name: SECURITY_TOKEN_SERVICE_URL
       value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
-    - name: DISKRESJONSKODE_ENDPOINT_URL
-      value: https://wasapp-q1.adeo.no/tpsws/Diskresjonskode
     - name: MOUNT_PATH_VAULT
       value: /postgresql/preprod-fss
     - name: MQ_HOST_NAME

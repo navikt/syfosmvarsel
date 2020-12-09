@@ -44,8 +44,6 @@ spec:
       value: https://tjenester.nav.no
     - name: SECURITY_TOKEN_SERVICE_URL
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
-    - name: DISKRESJONSKODE_ENDPOINT_URL
-      value: https://wasapp.adeo.no/tpsws/Diskresjonskode
     - name: MOUNT_PATH_VAULT
       value: /postgresql/prod-fss
     - name: MQ_HOST_NAME
