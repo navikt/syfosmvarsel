@@ -182,10 +182,15 @@ suspend fun blockingApplicationLogicNySykmelding(
                 sykmeldingId = receivedSykmelding.sykmelding.id
             )
             wrapExceptions(loggingMeta) {
-                when (it.topic()) {
-                    environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
-                    else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                try {
+                    when (it.topic()) {
+                        environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
+                        else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                    }
+                } catch (e: Exception) {
+                    log.error("Noe gikk galt med sykmeldingid ${receivedSykmelding.sykmelding.id}, ignorerer pga dev")
                 }
+
             }
         }
         delay(100)
