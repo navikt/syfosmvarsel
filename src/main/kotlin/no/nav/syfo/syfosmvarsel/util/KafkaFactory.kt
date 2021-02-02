@@ -5,13 +5,10 @@ import java.util.Properties
 import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
-import no.nav.syfo.kafka.envOverrides
-import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
-import no.nav.syfo.syfosmvarsel.VaultSecrets
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonKafkaProducer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -30,9 +27,8 @@ class KafkaFactory private constructor() {
             return nyKafkaConsumer
         }
 
-        fun getKafkaStatusConsumer(vaultSecrets: VaultSecrets, environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
-            val kafkaBaseConfigForStatus = loadBaseConfig(environment, vaultSecrets).envOverrides()
-            val properties = kafkaBaseConfigForStatus.toConsumerConfig("syfosmvarsel-consumer-3", JacksonKafkaDeserializer::class)
+        fun getKafkaStatusConsumer(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
+            val properties = kafkaBaseConfig.toConsumerConfig("syfosmvarsel-consumer-3", JacksonKafkaDeserializer::class)
             properties.let { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1" }
             val kafkaStatusConsumer = KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusTopic))
