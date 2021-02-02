@@ -110,7 +110,7 @@ fun main() {
     val varselService = VarselService(pdlService, dkifClient, database, bestillVarselMHandlingMqProducer)
 
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
-    val kafkaStatusConsumer = getKafkaStatusConsumer(vaultSecrets, env)
+    val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
@@ -188,11 +188,11 @@ suspend fun blockingApplicationLogicNySykmelding(
                 }
             }
         }
-        delay(100)
+        delay(1)
     }
 }
 
-suspend fun blockingApplicationLogicStatusendring(
+fun blockingApplicationLogicStatusendring(
     applicationState: ApplicationState,
     kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     statusendringService: StatusendringService
@@ -207,6 +207,5 @@ suspend fun blockingApplicationLogicStatusendring(
                 throw e
             }
         }
-        delay(100)
     }
 }
