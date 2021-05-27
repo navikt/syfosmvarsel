@@ -1,4 +1,4 @@
-package no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model
+package no.nav.syfo.syfosmvarsel.pdl.client.model
 
 data class GetPersonResponse(
     val data: ResponseData,

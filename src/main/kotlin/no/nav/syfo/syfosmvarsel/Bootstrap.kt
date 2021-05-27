@@ -15,7 +15,6 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
-import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -29,8 +28,6 @@ import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
-import no.nav.syfo.mq.connectionFactory
-import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
 import no.nav.syfo.syfosmvarsel.application.RenewVaultService
 import no.nav.syfo.syfosmvarsel.application.db.Database
@@ -38,15 +35,12 @@ import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
+import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
+import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
-import no.nav.syfo.syfosmvarsel.varselutsending.BestillVarselMHandlingMqProducer
-import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
-import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.PdlClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -67,12 +61,6 @@ fun main() {
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
-
-    val connection = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
-    connection.start()
-    val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    val bestillVarselMHandlingProducer = session.producerForQueue(env.bestvarselmhandlingQueueName)
-    val bestillVarselMHandlingMqProducer = BestillVarselMHandlingMqProducer(session, bestillVarselMHandlingProducer)
 
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
@@ -99,24 +87,21 @@ fun main() {
     }
     val httpClient = HttpClient(Apache, config)
 
-    val dkifClient = DkifClient(stsClient = oidcClient, httpClient = httpClient)
-
     val pdlClient = PdlClient(httpClient,
             env.pdlGraphqlPath,
             PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), ""))
 
     val pdlService = PdlPersonService(pdlClient, oidcClient)
 
-    val varselService = VarselService(pdlService, dkifClient, database, bestillVarselMHandlingMqProducer)
-
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
     val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
-    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
+    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
+        servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl, pdlPersonService = pdlService)
 
-    val nySykmeldingService = NySykmeldingService(varselService, brukernotifikasjonService)
-    val avvistSykmeldingService = AvvistSykmeldingService(varselService, brukernotifikasjonService)
+    val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
+    val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
     val statusendringService = StatusendringService(brukernotifikasjonService)
 
     applicationState.ready = true

@@ -1,12 +1,12 @@
-package no.nav.syfo.syfosmvarsel.varselutsending.pdl.client
+package no.nav.syfo.syfosmvarsel.pdl.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.http.HttpHeaders
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model.GetPersonRequest
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model.GetPersonResponse
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model.GetPersonVariables
+import no.nav.syfo.syfosmvarsel.pdl.client.model.GetPersonRequest
+import no.nav.syfo.syfosmvarsel.pdl.client.model.GetPersonResponse
+import no.nav.syfo.syfosmvarsel.pdl.client.model.GetPersonVariables
 
 class PdlClient(
     private val httpClient: HttpClient,

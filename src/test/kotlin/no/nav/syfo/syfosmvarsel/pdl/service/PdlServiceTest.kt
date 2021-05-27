@@ -7,11 +7,10 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.PdlClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model.GetPersonResponse
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model.ResponseData
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.error.PersonNotFoundInPdl
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
+import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
+import no.nav.syfo.syfosmvarsel.pdl.client.model.GetPersonResponse
+import no.nav.syfo.syfosmvarsel.pdl.client.model.ResponseData
+import no.nav.syfo.syfosmvarsel.pdl.error.PersonNotFoundInPdl
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

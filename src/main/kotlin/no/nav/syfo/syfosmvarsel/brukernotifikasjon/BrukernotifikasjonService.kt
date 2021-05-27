@@ -13,20 +13,24 @@ import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
+import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
+import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 
 class BrukernotifikasjonService(
     private val database: DatabaseInterface,
     private val brukernotifikasjonKafkaProducer: BrukernotifikasjonKafkaProducer,
     private val servicebruker: String,
-    private val tjenesterUrl: String
+    private val tjenesterUrl: String,
+    private val pdlPersonService: PdlPersonService
 ) {
 
-    fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String, tekst: String, loggingMeta: LoggingMeta) {
+    suspend fun opprettBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String, tekst: String, loggingMeta: LoggingMeta) {
         val brukernotifikasjonFinnesFraFor = database.brukernotifikasjonFinnesFraFor(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
         if (brukernotifikasjonFinnesFraFor) {
             log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer, {}", StructuredArguments.fields(loggingMeta))
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
+            val skalSendeEksterntVarsel = skalSendeEksterntVarsel(fnr, sykmeldingId)
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
                 Nokkel(servicebruker, opprettBrukernotifikasjon.grupperingsId.toString()),
@@ -36,7 +40,8 @@ class BrukernotifikasjonService(
                     opprettBrukernotifikasjon.grupperingsId.toString(),
                     tekst,
                     lagOppgavelenke(tjenesterUrl),
-                    4
+                    4,
+                    skalSendeEksterntVarsel
                 )
             )
             log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId {}", StructuredArguments.fields(loggingMeta))
@@ -62,6 +67,24 @@ class BrukernotifikasjonService(
             )
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
             BRUKERNOT_FERDIG.inc()
+        }
+    }
+
+    suspend fun skalSendeEksterntVarsel(mottaker: String, sykmeldingId: String): Boolean {
+        if (harDiskresjonskode(mottaker = mottaker, sykmeldingId = sykmeldingId)) {
+            log.info("Bruker har diskresjonskode, sender ikke eksternt varsel for sykmeldingId {}", sykmeldingId)
+            SM_VARSEL_AVBRUTT.inc()
+            return false
+        }
+        return true
+    }
+
+    private suspend fun harDiskresjonskode(mottaker: String, sykmeldingId: String): Boolean {
+        try {
+            return pdlPersonService.harDiskresjonskode(mottaker, sykmeldingId)
+        } catch (e: Exception) {
+            log.error("Det skjedde en feil ved henting av diskresjonskode for sykmeldingId {}, ${e.message}", sykmeldingId)
+            throw e
         }
     }
 

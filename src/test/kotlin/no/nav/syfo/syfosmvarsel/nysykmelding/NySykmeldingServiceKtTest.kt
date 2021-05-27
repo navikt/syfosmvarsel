@@ -13,7 +13,6 @@ import io.mockk.verify
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
@@ -26,16 +25,8 @@ import no.nav.syfo.syfosmvarsel.brukernotifikasjon.Notifikasjonstatus
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
 import no.nav.syfo.syfosmvarsel.objectMapper
-import no.nav.syfo.syfosmvarsel.opprettReceivedSykmelding
-import no.nav.syfo.syfosmvarsel.varselutsending.BestillVarselMHandlingMqProducer
-import no.nav.syfo.syfosmvarsel.varselutsending.VarselService
-import no.nav.syfo.syfosmvarsel.varselutsending.database.hentVarsel
-import no.nav.syfo.syfosmvarsel.varselutsending.dkif.DkifClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.service.PdlPersonService
-import org.amshove.kluent.shouldBeAfter
-import org.amshove.kluent.shouldBeBefore
+import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import org.amshove.kluent.shouldEqual
-import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -44,21 +35,16 @@ import org.spekframework.spek2.style.specification.describe
 object NySykmeldingServiceKtTest : Spek({
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
-    val bestillVarselMHandlingMqProducerMock = mockk<BestillVarselMHandlingMqProducer>()
-    val dkifClientMock = mockk<DkifClient>()
-    val varselService = VarselService(pdlPersonService, dkifClientMock, database, bestillVarselMHandlingMqProducerMock)
     val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "tjenester")
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "tjenester", pdlPersonService)
 
-    val nySykmeldingService = NySykmeldingService(varselService, brukernotifikasjonService)
+    val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
 
     beforeEachTest {
         clearAllMocks()
         every { brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), any()) } just Runs
         every { brukernotifikasjonKafkaProducer.sendDonemelding(any(), any()) } just Runs
         coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
-        coEvery { dkifClientMock.erReservert(any(), any()) } returns false
-        every { bestillVarselMHandlingMqProducerMock.sendOppgavevarsel(any(), any()) } just Runs
     }
 
     afterEachTest {
@@ -69,26 +55,10 @@ object NySykmeldingServiceKtTest : Spek({
         database.stop()
     }
 
-    describe("Mapping av ny sykmelding til oppgavevarsel fungerer som forventet") {
-        val sykmelding = opprettReceivedSykmelding(id = UUID.randomUUID().toString())
-        println(sykmelding.sykmelding.id)
-        it("Ny sykmelding mappes korrekt til oppgavevarsel") {
-            val oppgavevarsel = nySykmeldingService.receivedNySykmeldingTilOppgaveVarsel(sykmelding)
-
-            oppgavevarsel.ressursId shouldEqual sykmelding.sykmelding.id
-            oppgavevarsel.mottaker shouldEqual "123124"
-            oppgavevarsel.utlopstidspunkt shouldBeAfter oppgavevarsel.utsendelsestidspunkt
-            oppgavevarsel.varseltypeId shouldEqual "NySykmeldingUtenLenke"
-            oppgavevarsel.varselbestillingId shouldNotBe null
-            oppgavevarsel.utsendelsestidspunkt shouldBeAfter LocalDate.now().atTime(8, 59)
-            oppgavevarsel.utsendelsestidspunkt shouldBeBefore LocalDate.now().plusDays(1).atTime(17, 0)
-        }
-    }
-
     describe("Ende til ende-test ny sykmelding") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
-        it("Oppretter varsel for ny sykmelding") {
+        it("Oppretter brukernotifikasjon med eksternt varsel for ny sykmelding") {
             runBlocking {
                 nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
 
@@ -97,10 +67,11 @@ object NySykmeldingServiceKtTest : Spek({
                 brukernotifikasjoner[0].event shouldEqual "APEN"
                 brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.OPPRETTET
 
-                val varselDB = database.hentVarsel(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                varselDB?.mottakerFnr shouldEqual "1231231"
-                varselDB?.sykmeldingId shouldEqual UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936")
-                verify(exactly = 1) { bestillVarselMHandlingMqProducerMock.sendOppgavevarsel("d6112773-9587-41d8-9a3f-c8cb42364936", any()) }
+                verify(exactly = 1) {
+                    brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), withArg {
+                        it.eksternVarsling shouldEqual true
+                    })
+                }
             }
         }
 
@@ -111,16 +82,19 @@ object NySykmeldingServiceKtTest : Spek({
             }
         }
 
-        it("Oppretter brukernotifikasjon, men ikke varsel for ny sykmelding hvis bruker har diskresjonskode") {
+        it("Oppretter brukernotifikasjon, men ikke eksternt varsel for ny sykmelding hvis bruker har diskresjonskode") {
             coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns true
             runBlocking {
                 nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
 
                 val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
                 brukernotifikasjoner.size shouldEqual 1
-                val varselDB = database.hentVarsel(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                varselDB shouldEqual null
-                verify(exactly = 0) { bestillVarselMHandlingMqProducerMock.sendOppgavevarsel(any(), any()) }
+
+                verify(exactly = 1) {
+                    brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), withArg {
+                        it.eksternVarsling shouldEqual false
+                    })
+                }
             }
         }
     }

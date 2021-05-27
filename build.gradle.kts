@@ -30,7 +30,7 @@ val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.1"
-val brukernotifikasjonAvroVersion = "1.2020.02.11-13.20-46252a031986"
+val brukernotifikasjonAvroVersion = "1.2021.01.18-11.12-b9c8c40b98d1"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.71"
@@ -49,6 +49,7 @@ repositories {
     maven(url = "http://packages.confluent.io/maven/")
     maven(url = "https://dl.bintray.com/spekframework/spek-dev")
     maven(url = "https://kotlin.bintray.com/kotlinx")
+    maven(url = "https://jitpack.io")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
         credentials {
@@ -75,7 +76,7 @@ dependencies {
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("org.apache.avro:avro:$avroVersion")
-    implementation("no.nav:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
+    implementation("com.github.navikt:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
@@ -83,7 +84,6 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
 
     implementation("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
     implementation("javax.activation:activation:$javaxActivationVersion")
@@ -103,7 +103,6 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
-    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon:1.2020.01.09-12.44-3713b7c04e1c")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
 
@@ -113,7 +112,7 @@ dependencies {
         exclude(group = "org.eclipse.jetty") // conflicts with WireMock
     }
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
-    testImplementation("io.mockk:mockk:1.9.3")
+    testImplementation("io.mockk:mockk:1.11.0")
     testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
