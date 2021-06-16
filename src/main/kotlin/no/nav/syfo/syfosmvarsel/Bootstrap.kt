@@ -204,7 +204,11 @@ fun blockingApplicationLogicStatusendring(
                 statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
-                throw e
+                if (sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId == "1610050814kipe02438.1") {
+                    log.error("Ignorerer steingammel sykmelding")
+                } else {
+                    throw e
+                }
             }
         }
     }
