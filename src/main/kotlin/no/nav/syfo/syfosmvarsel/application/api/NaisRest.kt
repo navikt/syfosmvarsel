@@ -1,4 +1,4 @@
-package no.nav.syfo.application.api
+package no.nav.syfo.syfosmvarsel.application.api
 
 import io.ktor.application.call
 import io.ktor.http.ContentType
@@ -9,7 +9,7 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
-import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.syfosmvarsel.application.ApplicationState
 
 fun Routing.registerNaisApi(
     applicationState: ApplicationState,

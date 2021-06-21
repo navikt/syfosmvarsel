@@ -22,8 +22,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
@@ -32,7 +30,9 @@ import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
+import no.nav.syfo.syfosmvarsel.application.ApplicationState
 import no.nav.syfo.syfosmvarsel.application.RenewVaultService
+import no.nav.syfo.syfosmvarsel.application.createApplicationEngine
 import no.nav.syfo.syfosmvarsel.application.db.Database
 import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
@@ -85,7 +85,7 @@ fun main() {
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
     kafkaBaseConfig["auto.offset.reset"] = "none"
 
-    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
+    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL)
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {

@@ -2,7 +2,6 @@ package no.nav.syfo.syfosmvarsel.application
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.application.vault.Vault
 import no.nav.syfo.syfosmvarsel.log

@@ -6,7 +6,7 @@ import com.bettercloud.vault.VaultConfig
 import com.bettercloud.vault.VaultException
 import java.io.File
 import kotlinx.coroutines.delay
-import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.syfosmvarsel.application.ApplicationState
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.syfo.vault")

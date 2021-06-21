@@ -3,7 +3,7 @@ package no.nav.syfo.syfosmvarsel.application.db
 import com.bettercloud.vault.VaultException
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.delay
-import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.syfosmvarsel.application.ApplicationState
 import no.nav.syfo.syfosmvarsel.application.vault.Vault
 import org.slf4j.LoggerFactory
 

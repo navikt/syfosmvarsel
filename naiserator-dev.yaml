@@ -22,7 +22,7 @@ spec:
     path: /is_ready
     initialDelay: 30
     periodSeconds: 5
-    timeout: 5
+    timeout: 1
   prometheus:
     enabled: true
     path: /prometheus
