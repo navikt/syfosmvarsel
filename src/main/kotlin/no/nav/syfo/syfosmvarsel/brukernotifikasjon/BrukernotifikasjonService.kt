@@ -7,6 +7,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
+import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
@@ -31,6 +32,7 @@ class BrukernotifikasjonService(
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
             val skalSendeEksterntVarsel = skalSendeEksterntVarsel(fnr, sykmeldingId)
+            val preferertKanal = if (skalSendeEksterntVarsel) { listOf(PreferertKanal.SMS.name, PreferertKanal.EPOST.name) } else { emptyList() }
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
                 Nokkel(servicebruker, opprettBrukernotifikasjon.grupperingsId.toString()),
@@ -41,7 +43,8 @@ class BrukernotifikasjonService(
                     tekst,
                     lagOppgavelenke(tjenesterUrl),
                     4,
-                    skalSendeEksterntVarsel
+                    skalSendeEksterntVarsel,
+                    preferertKanal
                 )
             )
             log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId {}", StructuredArguments.fields(loggingMeta))

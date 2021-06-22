@@ -30,7 +30,7 @@ val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.1"
-val brukernotifikasjonAvroVersion = "1.2021.01.18-11.12-b9c8c40b98d1"
+val brukernotifikasjonAvroVersion = "1.2021.06.21-08.21-7998a39f216a"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.71"
