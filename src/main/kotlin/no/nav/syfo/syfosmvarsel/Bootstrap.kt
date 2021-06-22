@@ -62,8 +62,8 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
-    val vaultSecrets =
-            objectMapper.readValue<VaultSecrets>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+    val vaultSecrets = objectMapper.readValue<VaultSecrets>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+    val vaultServiceUser = VaultServiceUser()
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
@@ -82,10 +82,10 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 
-    val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
+    val kafkaBaseConfig = loadBaseConfig(env, vaultServiceUser).envOverrides()
     kafkaBaseConfig["auto.offset.reset"] = "none"
 
-    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenServiceURL)
+    val oidcClient = StsOidcClient(vaultServiceUser.serviceuserUsername, vaultServiceUser.serviceuserPassword, env.securityTokenServiceURL)
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {
@@ -113,7 +113,7 @@ fun main() {
     val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
-    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
+    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer, servicebruker = vaultServiceUser.serviceuserUsername, tjenesterUrl = env.tjenesterUrl)
 
     val nySykmeldingService = NySykmeldingService(varselService, brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(varselService, brukernotifikasjonService)
