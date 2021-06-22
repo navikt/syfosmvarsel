@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: syfosmvarsel
-  namespace: default
+  namespace: teamsykmelding
   labels:
-    team: teamsykefravr
+    team: teamsykmelding
 spec:
   image: {{ image }}
   replicas:
@@ -22,7 +22,7 @@ spec:
     path: /is_ready
     initialDelay: 30
     periodSeconds: 5
-    timeout: 5
+    timeout: 1
   prometheus:
     enabled: true
     path: /prometheus
@@ -35,6 +35,11 @@ spec:
       memory: 512Mi
   vault:
     enabled: true
+    paths:
+      - kvPath: serviceuser/data/prod/srvsyfosmvarsel
+        mountPath: /secrets/serviceuser
+      - kvPath: /kv/prod/fss/syfosmvarsel/teamsykmelding
+        mountPath: /var/run/secrets/nais.io/vault
   ingresses:
     - "https://syfosmvarsel.nais.adeo.no"
   env:
@@ -42,8 +47,6 @@ spec:
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: TJENESTER_URL
       value: https://tjenester.nav.no
-    - name: SECURITY_TOKEN_SERVICE_URL
-      value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: MOUNT_PATH_VAULT
       value: /postgresql/prod-fss
     - name: MQ_HOST_NAME
