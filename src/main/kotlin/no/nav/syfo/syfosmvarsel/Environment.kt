@@ -1,5 +1,8 @@
 package no.nav.syfo.syfosmvarsel
 
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 import no.nav.syfo.kafka.KafkaConfig
 import no.nav.syfo.kafka.KafkaCredentials
 
@@ -13,7 +16,7 @@ data class Environment(
     val brukernotifikasjonDoneTopic: String = getEnvVar("BRUKERNOTIFIKASJON_DONE_TOPIC", "aapen-brukernotifikasjon-done-v1"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val tjenesterUrl: String = getEnvVar("TJENESTER_URL"),
-    val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL"),
+    val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmvarsel"),
     val syfosmvarselDBURL: String = getEnvVar("DB_URL"),
     val mountPathVault: String = getEnvVar("MOUNT_PATH_VAULT"),
@@ -21,9 +24,9 @@ data class Environment(
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
 ) : KafkaConfig
 
-data class VaultSecrets(
-    val serviceuserUsername: String,
-    val serviceuserPassword: String
+data class VaultServiceUser(
+    val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
+    val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password")
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword
@@ -31,3 +34,5 @@ data class VaultSecrets(
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
         System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+
+fun getFileAsString(filePath: String) = String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)

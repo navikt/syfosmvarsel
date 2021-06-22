@@ -26,7 +26,7 @@ import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
-import no.nav.syfo.syfosmvarsel.VaultSecrets
+import no.nav.syfo.syfosmvarsel.VaultServiceUser
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
 import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
@@ -44,7 +44,7 @@ class BrukernotifikasjonServiceSpek : Spek({
         topicNames = topics,
         withSchemaRegistry = true
     )
-    val credentials = VaultSecrets("", "")
+    val vaultServiceUser = VaultServiceUser("", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         tjenesterUrl = "tjenester", cluster = "local", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
         mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti"
@@ -56,7 +56,7 @@ class BrukernotifikasjonServiceSpek : Spek({
         put("schema.registry.url", embeddedEnvironment.schemaRegistry!!.url)
     }
 
-    val baseConfig = loadBaseConfig(config, credentials).overrideForTest()
+    val baseConfig = loadBaseConfig(config, vaultServiceUser).overrideForTest()
     val kafkaBrukernotifikasjonProducerConfig = baseConfig.toProducerConfig(
         "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class)
 

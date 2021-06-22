@@ -13,7 +13,6 @@ import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
-import java.nio.file.Paths
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -21,15 +20,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
+import no.nav.syfo.syfosmvarsel.application.ApplicationState
 import no.nav.syfo.syfosmvarsel.application.RenewVaultService
+import no.nav.syfo.syfosmvarsel.application.createApplicationEngine
 import no.nav.syfo.syfosmvarsel.application.db.Database
 import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
@@ -56,8 +55,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
-    val vaultSecrets =
-            objectMapper.readValue<VaultSecrets>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+    val vaultServiceUser = VaultServiceUser()
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
@@ -70,10 +68,10 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 
-    val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
+    val kafkaBaseConfig = loadBaseConfig(env, vaultServiceUser).envOverrides()
     kafkaBaseConfig["auto.offset.reset"] = "none"
 
-    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
+    val oidcClient = StsOidcClient(vaultServiceUser.serviceuserUsername, vaultServiceUser.serviceuserPassword, env.securityTokenServiceURL)
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {
@@ -98,7 +96,7 @@ fun main() {
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        servicebruker = vaultSecrets.serviceuserUsername, tjenesterUrl = env.tjenesterUrl, pdlPersonService = pdlService)
+        servicebruker = vaultServiceUser.serviceuserUsername, tjenesterUrl = env.tjenesterUrl, pdlPersonService = pdlService)
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
