@@ -33,7 +33,6 @@ class BrukernotifikasjonService(
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
             val skalSendeEksterntVarsel = skalSendeEksterntVarsel(fnr, sykmeldingId)
             val preferertKanal = if (skalSendeEksterntVarsel) { listOf(PreferertKanal.SMS.name, PreferertKanal.EPOST.name) } else { emptyList() }
-            database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
                 Nokkel(servicebruker, opprettBrukernotifikasjon.grupperingsId.toString()),
                 Oppgave(
@@ -47,6 +46,7 @@ class BrukernotifikasjonService(
                     preferertKanal
                 )
             )
+            database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             log.info("Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId {}", StructuredArguments.fields(loggingMeta))
             BRUKERNOT_OPPRETTET.inc()
         }
@@ -59,7 +59,6 @@ class BrukernotifikasjonService(
             log.info("Fant ingen notifikasjon for sykmelding med id $sykmeldingId som ikke er ferdigstilt")
         } else {
             val ferdigstiltBrukernotifikasjon = mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, apenBrukernotifikasjon)
-            database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
             brukernotifikasjonKafkaProducer.sendDonemelding(
                 Nokkel(servicebruker, apenBrukernotifikasjon.grupperingsId.toString()),
                 Done(
@@ -69,6 +68,7 @@ class BrukernotifikasjonService(
                 )
             )
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
+            database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
             BRUKERNOT_FERDIG.inc()
         }
     }
