@@ -49,15 +49,5 @@ spec:
       value: https://tjenester.nav.no
     - name: MOUNT_PATH_VAULT
       value: /postgresql/prod-fss
-    - name: MQ_HOST_NAME
-      value: a01apvl063.adeo.no
-    - name: MQ_PORT
-      value: '1414'
-    - name: MQ_GATEWAY_NAME
-      value: MPLSC02
-    - name: MQ_CHANNEL_NAME
-      value: P_SYFOSMVARSEL
-    - name: BESTVARSELMHANDLING_QUEUENAME
-      value: QA.P_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql

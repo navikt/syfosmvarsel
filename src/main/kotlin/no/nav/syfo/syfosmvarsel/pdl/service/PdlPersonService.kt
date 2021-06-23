@@ -1,9 +1,9 @@
-package no.nav.syfo.syfosmvarsel.varselutsending.pdl.service
+package no.nav.syfo.syfosmvarsel.pdl.service
 
 import no.nav.syfo.client.StsOidcClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.PdlClient
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.client.model.Gradering
-import no.nav.syfo.syfosmvarsel.varselutsending.pdl.error.PersonNotFoundInPdl
+import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
+import no.nav.syfo.syfosmvarsel.pdl.client.model.Gradering
+import no.nav.syfo.syfosmvarsel.pdl.error.PersonNotFoundInPdl
 import org.slf4j.LoggerFactory
 
 class PdlPersonService(private val pdlClient: PdlClient, private val stsOidcClient: StsOidcClient) {

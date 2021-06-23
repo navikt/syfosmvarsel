@@ -49,15 +49,5 @@ spec:
       value: https://tjenester-q1.nav.no
     - name: MOUNT_PATH_VAULT
       value: /postgresql/preprod-fss
-    - name: MQ_HOST_NAME
-      value: b27apvl176.preprod.local
-    - name: MQ_PORT
-      value: '1413'
-    - name: MQ_GATEWAY_NAME
-      value: MQ1LSC02
-    - name: MQ_CHANNEL_NAME
-      value: Q1_SYFOSMVARSEL
-    - name: BESTVARSELMHANDLING_QUEUENAME
-      value: QA.Q1_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.preprod.local/graphql
