@@ -32,7 +32,7 @@ class BrukernotifikasjonService(
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
             val skalSendeEksterntVarsel = skalSendeEksterntVarsel(fnr, sykmeldingId)
-            val preferertKanal = if (skalSendeEksterntVarsel) { listOf(PreferertKanal.SMS.name, PreferertKanal.EPOST.name) } else { emptyList() }
+            val preferertKanal = if (skalSendeEksterntVarsel) { listOf(PreferertKanal.SMS.name) } else { emptyList() }
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
                 Nokkel(servicebruker, opprettBrukernotifikasjon.grupperingsId.toString()),
                 Oppgave(
