@@ -33,6 +33,10 @@ spec:
     requests:
       cpu: 100m
       memory: 128Mi
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
   vault:
     enabled: true
     paths:

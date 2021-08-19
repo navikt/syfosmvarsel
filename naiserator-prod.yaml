@@ -33,6 +33,10 @@ spec:
     requests:
       cpu: 300m
       memory: 512Mi
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
   vault:
     enabled: true
     paths:
