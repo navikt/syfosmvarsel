@@ -5,8 +5,7 @@ import io.mockk.coEvery
 import io.mockk.mockkClass
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.OidcToken
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.pdl.client.model.GetPersonResponse
 import no.nav.syfo.syfosmvarsel.pdl.client.model.ResponseData
@@ -17,17 +16,17 @@ import org.spekframework.spek2.style.specification.describe
 
 class PdlServiceTest : Spek({
     val pdlClient = mockkClass(PdlClient::class)
-    val stsOidcClient = mockkClass(StsOidcClient::class)
-    val pdlService = PdlPersonService(pdlClient, stsOidcClient)
+    val accessTokenClientV2 = mockkClass(AccessTokenClientV2::class)
+    val pdlService = PdlPersonService(pdlClient, accessTokenClientV2, "littaScope")
 
     beforeEachTest {
         clearAllMocks()
-        coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
     }
 
     describe("PdlService") {
         it("hente person fra pdl uten fortrolig dresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("UGRADERT"))
+            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
             runBlocking {
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual false
@@ -35,6 +34,7 @@ class PdlServiceTest : Spek({
         }
         it("skal gå gjennom om adressebeskyttelse er null") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(null)
+            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
             runBlocking {
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual false
@@ -42,6 +42,7 @@ class PdlServiceTest : Spek({
         }
         it("hente person fra pdl fortrolig dresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("FORTROLIG"))
+            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
             runBlocking {
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual false
@@ -49,6 +50,7 @@ class PdlServiceTest : Spek({
         }
         it("hente person fra pdl strengt fortrolig dresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("STRENGT_FORTROLIG"))
+            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
             runBlocking {
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual true
@@ -56,6 +58,7 @@ class PdlServiceTest : Spek({
         }
         it("hente person fra pdl strengt fortrolig dresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse(listOf("STRENGT_FORTROLIG_UTLAND"))
+            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
             runBlocking {
                 val diskresjonskode = pdlService.harDiskresjonskode("01245678901", "123")
                 diskresjonskode shouldEqual true
@@ -64,6 +67,7 @@ class PdlServiceTest : Spek({
 
         it("Skal feile når person ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(ResponseData(null), null)
+            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.harDiskresjonskode("01245678901", "123")

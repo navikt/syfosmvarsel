@@ -1,18 +1,21 @@
 package no.nav.syfo.syfosmvarsel.pdl.service
 
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.pdl.client.model.Gradering
 import no.nav.syfo.syfosmvarsel.pdl.error.PersonNotFoundInPdl
 import org.slf4j.LoggerFactory
 
-class PdlPersonService(private val pdlClient: PdlClient, private val stsOidcClient: StsOidcClient) {
-    companion object {
+class PdlPersonService(
+    private val pdlClient: PdlClient,
+    private val accessTokenClientV2: AccessTokenClientV2,
+    private val pdlScope: String
+) { companion object {
         private val log = LoggerFactory.getLogger(PdlPersonService::class.java)
     }
     suspend fun harDiskresjonskode(fnr: String, sykmeldingsId: String): Boolean {
-        val stsToken = stsOidcClient.oidcToken().access_token
-        val pdlResponse = pdlClient.getPerson(fnr, stsToken)
+        val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
+        val pdlResponse = pdlClient.getPerson(fnr, accessToken)
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
