@@ -15,9 +15,9 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.client.StsOidcClient
@@ -40,6 +40,7 @@ import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
+import no.nav.syfo.util.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -117,13 +118,14 @@ fun main() {
 }
 
 fun createListener(applicationState: ApplicationState, applicationLogic: suspend CoroutineScope.() -> Unit): Job =
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Unbounded) {
             try {
                 applicationLogic()
             } catch (e: TrackableException) {
                 log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
             } finally {
                 applicationState.alive = false
+                applicationState.ready = false
             }
         }
 
@@ -155,7 +157,7 @@ suspend fun blockingApplicationLogicNySykmelding(
     environment: Environment
 ) {
     while (applicationState.ready) {
-        kafkaConsumer.poll(Duration.ofMillis(0)).filterNot { it.value() == null }.forEach {
+        kafkaConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
             val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
             val loggingMeta = LoggingMeta(
@@ -171,7 +173,6 @@ suspend fun blockingApplicationLogicNySykmelding(
                 }
             }
         }
-        delay(1)
     }
 }
 
@@ -181,7 +182,7 @@ fun blockingApplicationLogicStatusendring(
     statusendringService: StatusendringService
 ) {
     while (applicationState.ready) {
-        kafkaStatusConsumer.poll(Duration.ofMillis(0)).filterNot { it.value() == null }.forEach {
+        kafkaStatusConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
             val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
             try {
                 statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
