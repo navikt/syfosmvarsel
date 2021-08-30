@@ -124,7 +124,6 @@ fun createListener(applicationState: ApplicationState, applicationLogic: suspend
                 log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
             } finally {
                 applicationState.alive = false
-                applicationState.ready = false
             }
         }
 
@@ -188,11 +187,7 @@ fun blockingApplicationLogicStatusendring(
                 statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
-                if (sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId == "1609300956bryn78947.1") {
-                    log.error("Ignorerer gammel sykmelding")
-                } else {
-                    throw e
-                }
+                throw e
             }
         }
     }
