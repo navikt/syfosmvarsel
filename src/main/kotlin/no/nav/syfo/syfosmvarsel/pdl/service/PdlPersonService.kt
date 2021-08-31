@@ -14,9 +14,7 @@ class PdlPersonService(
         private val log = LoggerFactory.getLogger(PdlPersonService::class.java)
     }
     suspend fun harDiskresjonskode(fnr: String, sykmeldingsId: String): Boolean {
-        log.info("Trying to get accessToken for $sykmeldingsId")
         val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
-        log.info("Trying to call pdl for $sykmeldingsId")
         val pdlResponse = pdlClient.getPerson(fnr, accessToken)
 
         if (pdlResponse.errors != null) {
