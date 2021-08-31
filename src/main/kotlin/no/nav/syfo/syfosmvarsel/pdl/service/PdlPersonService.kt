@@ -1,15 +1,15 @@
 package no.nav.syfo.syfosmvarsel.pdl.service
 
-import no.nav.syfo.client.AccessTokenClientV2
+import no.nav.syfo.syfosmvarsel.client.AccessTokenClientV2
 import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.pdl.client.model.Gradering
 import no.nav.syfo.syfosmvarsel.pdl.error.PersonNotFoundInPdl
 import org.slf4j.LoggerFactory
 
 class PdlPersonService(
-    private val pdlClient: PdlClient,
-    private val accessTokenClientV2: AccessTokenClientV2,
-    private val pdlScope: String
+        private val pdlClient: PdlClient,
+        private val accessTokenClientV2: AccessTokenClientV2,
+        private val pdlScope: String
 ) { companion object {
         private val log = LoggerFactory.getLogger(PdlPersonService::class.java)
     }

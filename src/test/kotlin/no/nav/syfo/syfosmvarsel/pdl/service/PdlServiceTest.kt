@@ -5,7 +5,7 @@ import io.mockk.coEvery
 import io.mockk.mockkClass
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.AccessTokenClientV2
+import no.nav.syfo.syfosmvarsel.client.AccessTokenClientV2
 import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.pdl.client.model.GetPersonResponse
 import no.nav.syfo.syfosmvarsel.pdl.client.model.ResponseData
