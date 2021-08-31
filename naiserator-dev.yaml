@@ -37,6 +37,7 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  webproxy: true
   vault:
     enabled: true
     paths:
