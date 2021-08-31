@@ -37,6 +37,7 @@ spec:
     application:
       enabled: true
       tenant: nav.no
+  webproxy: true
   vault:
     enabled: true
     paths:
@@ -55,3 +56,5 @@ spec:
       value: /postgresql/prod-fss
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
+    - name: PDL_SCOPE
+      value: api://prod-fss.pdl.pdl-api/.default

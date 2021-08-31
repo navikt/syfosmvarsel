@@ -47,7 +47,9 @@ class BrukernotifikasjonServiceSpek : Spek({
     val vaultServiceUser = VaultServiceUser("", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         tjenesterUrl = "tjenester", cluster = "local", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
-        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic", brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti"
+        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic",
+        brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti", pdlScope = "scope",
+        aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

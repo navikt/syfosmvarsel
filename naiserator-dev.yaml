@@ -37,6 +37,7 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  webproxy: true
   vault:
     enabled: true
     paths:
@@ -55,3 +56,5 @@ spec:
       value: /postgresql/preprod-fss
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.preprod.local/graphql
+    - name: PDL_SCOPE
+      value: api://dev-fss.pdl.pdl-api/.default
