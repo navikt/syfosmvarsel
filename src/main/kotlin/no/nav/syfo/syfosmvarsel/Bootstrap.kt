@@ -21,7 +21,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.syfosmvarsel.client.AccessTokenClientV2
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
@@ -34,6 +33,7 @@ import no.nav.syfo.syfosmvarsel.application.db.Database
 import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.syfo.syfosmvarsel.client.AccessTokenClientV2
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
 import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
@@ -111,7 +111,7 @@ fun main() {
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        servicebruker = vaultServiceUser.serviceuserUsername, tjenesterUrl = env.tjenesterUrl, pdlPersonService = pdlService)
+        servicebruker = vaultServiceUser.serviceuserUsername, dittSykefravaerUrl = env.dittSykefravaerUrl, pdlPersonService = pdlService)
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)

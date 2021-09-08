@@ -46,7 +46,7 @@ class BrukernotifikasjonServiceSpek : Spek({
     )
     val vaultServiceUser = VaultServiceUser("", "")
     val config = Environment(kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-        tjenesterUrl = "tjenester", cluster = "local", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
+        dittSykefravaerUrl = "dittsykefravaer", cluster = "local", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
         mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic",
         brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti", pdlScope = "scope",
         aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret"
@@ -76,7 +76,7 @@ class BrukernotifikasjonServiceSpek : Spek({
 
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "srvsyfosmvarsel", "tjenester", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "srvsyfosmvarsel", "dittsykefravaer", pdlPersonService)
 
     val sykmeldingId = UUID.randomUUID()
     val timestampOpprettet = OffsetDateTime.of(2020, 2, 10, 11, 0, 0, 0, ZoneOffset.UTC)
@@ -229,7 +229,7 @@ class BrukernotifikasjonServiceSpek : Spek({
             nokkel.getSystembruker() shouldEqual "srvsyfosmvarsel"
             nokkel.getEventId() shouldEqual sykmeldingId.toString()
             oppgave.getFodselsnummer() shouldEqual "fnr"
-            oppgave.getLink() shouldEqual "tjenester/sykefravaer"
+            oppgave.getLink() shouldEqual "dittsykefravaer/syk/sykefravaer"
             oppgave.getSikkerhetsnivaa() shouldEqual 4
             oppgave.getTekst() shouldEqual "tekst"
             oppgave.getTidspunkt() shouldEqual timestampOpprettet.toInstant().toEpochMilli()
