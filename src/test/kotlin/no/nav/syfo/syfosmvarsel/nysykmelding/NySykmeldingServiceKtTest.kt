@@ -36,7 +36,7 @@ object NySykmeldingServiceKtTest : Spek({
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
     val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "tjenester", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "dittsykefravaer", pdlPersonService)
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
 

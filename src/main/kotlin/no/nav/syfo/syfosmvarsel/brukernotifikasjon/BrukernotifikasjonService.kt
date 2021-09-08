@@ -21,7 +21,7 @@ class BrukernotifikasjonService(
     private val database: DatabaseInterface,
     private val brukernotifikasjonKafkaProducer: BrukernotifikasjonKafkaProducer,
     private val servicebruker: String,
-    private val tjenesterUrl: String,
+    private val dittSykefravaerUrl: String,
     private val pdlPersonService: PdlPersonService
 ) {
 
@@ -40,7 +40,7 @@ class BrukernotifikasjonService(
                     fnr,
                     opprettBrukernotifikasjon.grupperingsId.toString(),
                     tekst,
-                    lagOppgavelenke(tjenesterUrl),
+                    lagOppgavelenke(dittSykefravaerUrl),
                     4,
                     skalSendeEksterntVarsel,
                     preferertKanal
@@ -111,7 +111,7 @@ class BrukernotifikasjonService(
             notifikasjonstatus = Notifikasjonstatus.FERDIG
         )
 
-    private fun lagOppgavelenke(tjenesterUrl: String): String {
-        return "$tjenesterUrl/sykefravaer"
+    private fun lagOppgavelenke(dittSykefravaerUrl: String): String {
+        return "$dittSykefravaerUrl/syk/sykefravaer"
     }
 }

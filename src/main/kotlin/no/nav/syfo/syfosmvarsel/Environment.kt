@@ -15,7 +15,7 @@ data class Environment(
     val brukernotifikasjonOpprettTopic: String = getEnvVar("BRUKERNOTIFIKASJON_OPPRETT_TOPIC", "aapen-brukernotifikasjon-nyOppgave-v1"),
     val brukernotifikasjonDoneTopic: String = getEnvVar("BRUKERNOTIFIKASJON_DONE_TOPIC", "aapen-brukernotifikasjon-done-v1"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    val tjenesterUrl: String = getEnvVar("TJENESTER_URL"),
+    val dittSykefravaerUrl: String = getEnvVar("DITT_SYKEFRAVAER_URL"),
     val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmvarsel"),
     val syfosmvarselDBURL: String = getEnvVar("DB_URL"),
