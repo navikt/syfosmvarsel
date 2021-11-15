@@ -1,6 +1,7 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments
@@ -8,6 +9,9 @@ import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
+import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SLETTET
+import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
@@ -30,7 +34,7 @@ class BrukernotifikasjonService(
         if (brukernotifikasjonFinnesFraFor) {
             log.info("Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer, {}", StructuredArguments.fields(loggingMeta))
         } else {
-            val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
+            val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato, fnr)
             val skalSendeEksterntVarsel = skalSendeEksterntVarsel(fnr, sykmeldingId)
             val preferertKanal = if (skalSendeEksterntVarsel) { listOf(PreferertKanal.SMS.name) } else { emptyList() }
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
@@ -73,6 +77,42 @@ class BrukernotifikasjonService(
         }
     }
 
+    fun ferdigstillBrukernotifikasjonVedTombstone(sykmeldingId: String) {
+        val apenBrukernotifikasjon = database.hentBrukernotifikasjonSomSkalFerdigstillesVedTombstone(sykmeldingId = UUID.fromString(sykmeldingId))
+        if (apenBrukernotifikasjon == null) {
+            log.info("Fant ingen notifikasjon for tombstonet sykmelding med id $sykmeldingId som ikke er ferdigstilt")
+        } else if (apenBrukernotifikasjon.fnr == null) {
+            log.warn("Tombstonet sykmelding med id $sykmeldingId mangler fnr, kan ikke ferdigstille brukernotifikasjon")
+        } else {
+            val sykmeldingStatusKafkaMessageDTO = SykmeldingStatusKafkaMessageDTO(
+                kafkaMetadata = KafkaMetadataDTO(
+                    sykmeldingId = sykmeldingId,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    fnr = apenBrukernotifikasjon.fnr,
+                    source = "syfosmvarsel"
+                ),
+                event = SykmeldingStatusKafkaEventDTO(
+                    sykmeldingId = sykmeldingId,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    statusEvent = STATUS_SLETTET,
+                    arbeidsgiver = null,
+                    sporsmals = null
+                )
+            )
+            val ferdigstiltBrukernotifikasjon = mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO, apenBrukernotifikasjon)
+            brukernotifikasjonKafkaProducer.sendDonemelding(
+                Nokkel(servicebruker, apenBrukernotifikasjon.grupperingsId.toString()),
+                Done(
+                    ferdigstiltBrukernotifikasjon.timestamp.toInstant().toEpochMilli(),
+                    sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr,
+                    ferdigstiltBrukernotifikasjon.grupperingsId.toString()
+                )
+            )
+            log.info("Ferdigstilt brukernotifikasjon for tombstonet sykmelding med id $sykmeldingId")
+            database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
+        }
+    }
+
     suspend fun skalSendeEksterntVarsel(mottaker: String, sykmeldingId: String): Boolean {
         if (harDiskresjonskode(mottaker = mottaker, sykmeldingId = sykmeldingId)) {
             log.info("Bruker har diskresjonskode, sender ikke eksternt varsel for sykmeldingId {}", sykmeldingId)
@@ -91,14 +131,15 @@ class BrukernotifikasjonService(
         }
     }
 
-    private fun mapTilOpprettetBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime): BrukernotifikasjonDB =
+    private fun mapTilOpprettetBrukernotifikasjon(sykmeldingId: String, mottattDato: LocalDateTime, fnr: String): BrukernotifikasjonDB =
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(sykmeldingId),
             timestamp = mottattDato.atOffset(ZoneOffset.UTC),
             event = "APEN",
             grupperingsId = UUID.fromString(sykmeldingId),
             eventId = UUID.randomUUID(),
-            notifikasjonstatus = Notifikasjonstatus.OPPRETTET
+            notifikasjonstatus = Notifikasjonstatus.OPPRETTET,
+            fnr = fnr
         )
 
     private fun mapTilFerdigstiltBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO, opprettetBrukernotifikasjonDB: BrukernotifikasjonDB): BrukernotifikasjonDB =
@@ -108,7 +149,8 @@ class BrukernotifikasjonService(
             event = sykmeldingStatusKafkaMessageDTO.event.statusEvent,
             grupperingsId = opprettetBrukernotifikasjonDB.grupperingsId,
             eventId = UUID.randomUUID(),
-            notifikasjonstatus = Notifikasjonstatus.FERDIG
+            notifikasjonstatus = Notifikasjonstatus.FERDIG,
+            fnr = sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr
         )
 
     private fun lagOppgavelenke(dittSykefravaerUrl: String): String {

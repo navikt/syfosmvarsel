@@ -171,19 +171,25 @@ suspend fun blockingApplicationLogicNySykmelding(
     environment: Environment
 ) {
     while (applicationState.ready) {
-        kafkaConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
-            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
-
-            val loggingMeta = LoggingMeta(
-                mottakId = receivedSykmelding.navLogId,
-                orgNr = receivedSykmelding.legekontorOrgNr,
-                msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id
-            )
-            wrapExceptions(loggingMeta) {
+        kafkaConsumer.poll(Duration.ofMillis(1000)).forEach {
+            if (it.value() == null) {
                 when (it.topic()) {
-                    environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
-                    else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                    environment.avvistSykmeldingTopic -> avvistSykmeldingService.tombstoneSykmelding(it.key())
+                    else -> nySykmeldingService.tombstoneSykmelding(it.key())
+                }
+            } else {
+                val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
+                val loggingMeta = LoggingMeta(
+                    mottakId = receivedSykmelding.navLogId,
+                    orgNr = receivedSykmelding.legekontorOrgNr,
+                    msgId = receivedSykmelding.msgId,
+                    sykmeldingId = receivedSykmelding.sykmelding.id
+                )
+                wrapExceptions(loggingMeta) {
+                    when (it.topic()) {
+                        environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
+                        else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                    }
                 }
             }
         }

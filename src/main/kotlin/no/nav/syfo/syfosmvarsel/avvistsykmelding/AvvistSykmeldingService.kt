@@ -25,4 +25,9 @@ class AvvistSykmeldingService(private val brukernotifikasjonService: Brukernotif
             throw e
         }
     }
+
+    fun tombstoneSykmelding(sykmeldingId: String) {
+        log.info("Mottatt tombstone-event for avvist sykmelding med id $sykmeldingId")
+        brukernotifikasjonService.ferdigstillBrukernotifikasjonVedTombstone(sykmeldingId)
+    }
 }

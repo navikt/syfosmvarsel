@@ -37,4 +37,9 @@ class NySykmeldingService(private val brukernotifikasjonService: Brukernotifikas
             "Du har mottatt en ny sykmelding"
         }
     }
+
+    fun tombstoneSykmelding(sykmeldingId: String) {
+        log.info("Mottatt tombstone-event for sykmelding med id $sykmeldingId")
+        brukernotifikasjonService.ferdigstillBrukernotifikasjonVedTombstone(sykmeldingId)
+    }
 }

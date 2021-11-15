@@ -97,6 +97,22 @@ object NySykmeldingServiceKtTest : Spek({
                 }
             }
         }
+
+        it("Ferdigstiller brukernotifikasjon ved tombstoning av ny sykmelding") {
+            runBlocking {
+                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
+
+                nySykmeldingService.tombstoneSykmelding("d6112773-9587-41d8-9a3f-c8cb42364936")
+
+                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
+                brukernotifikasjoner.size shouldEqual 2
+                val ferdigstiltNotifikasjon = brukernotifikasjoner.find { it.notifikasjonstatus == Notifikasjonstatus.FERDIG }
+                ferdigstiltNotifikasjon?.event shouldEqual "SLETTET"
+                verify(exactly = 1) {
+                    brukernotifikasjonKafkaProducer.sendDonemelding(any(), any())
+                }
+            }
+        }
     }
 
     describe("Får riktig tekst for brukernotifikasjon") {

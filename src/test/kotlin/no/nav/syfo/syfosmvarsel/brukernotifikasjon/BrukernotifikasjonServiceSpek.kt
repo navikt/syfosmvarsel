@@ -90,7 +90,8 @@ class BrukernotifikasjonServiceSpek : Spek({
         event = "APEN",
         grupperingsId = sykmeldingId,
         eventId = eventIdOpprettet,
-        notifikasjonstatus = Notifikasjonstatus.OPPRETTET
+        notifikasjonstatus = Notifikasjonstatus.OPPRETTET,
+        fnr = "fnr"
     )
 
     val sykmeldingStatusKafkaMessageDTO = SykmeldingStatusKafkaMessageDTO(
@@ -206,6 +207,39 @@ class BrukernotifikasjonServiceSpek : Spek({
             brukernotifikasjoner[0].eventId shouldNotBe null
             brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.FERDIG
             brukernotifikasjoner[1] shouldEqual brukernotifikasjonDB
+        }
+    }
+
+    describe("Test av tombstoning") {
+        it("ferdigstillBrukernotifikasjonVedTombstone oppretter ny rad i databasen for ferdigstilling av åpen notifikasjon") {
+            database.registrerBrukernotifikasjon(brukernotifikasjonDB)
+
+            brukernotifikasjonService.ferdigstillBrukernotifikasjonVedTombstone(sykmeldingId.toString())
+
+            val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+            brukernotifikasjoner.size shouldEqual 2
+            val ferdigstiltNotifikasjon = brukernotifikasjoner.find { it.notifikasjonstatus == Notifikasjonstatus.FERDIG }
+            ferdigstiltNotifikasjon?.event shouldEqual "SLETTET"
+        }
+
+        it("ferdigstillBrukernotifikasjonVedTombstone gjør ingenting hvis den ikke finner noen åpen notifikasjon for sykmeldingen") {
+            database.registrerBrukernotifikasjon(brukernotifikasjonDB)
+            brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
+
+            brukernotifikasjonService.ferdigstillBrukernotifikasjonVedTombstone(sykmeldingId.toString())
+
+            val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+            brukernotifikasjoner.size shouldEqual 2
+            brukernotifikasjoner.find { it.event == "SLETTET" } shouldEqual null
+        }
+
+        it("ferdigstillBrukernotifikasjonVedTombstone gjør ingenting hvis fnr mangler i databasen") {
+            database.registrerBrukernotifikasjon(brukernotifikasjonDB.copy(fnr = null))
+
+            brukernotifikasjonService.ferdigstillBrukernotifikasjonVedTombstone(sykmeldingId.toString())
+
+            val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+            brukernotifikasjoner.size shouldEqual 1
         }
     }
 

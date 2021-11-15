@@ -23,6 +23,16 @@ fun DatabaseInterface.hentApenBrukernotifikasjon(sykmeldingId: UUID, event: Stri
         return brukernotifikasjoner.firstOrNull()
     }
 
+fun DatabaseInterface.hentBrukernotifikasjonSomSkalFerdigstillesVedTombstone(sykmeldingId: UUID): BrukernotifikasjonDB? =
+    connection.use { connection ->
+        val brukernotifikasjoner = connection.hentBrukernotifikasjoner(sykmeldingId)
+        return if (brukernotifikasjoner.any { it.notifikasjonstatus == Notifikasjonstatus.FERDIG }) {
+            null
+        } else {
+            brukernotifikasjoner.firstOrNull { it.notifikasjonstatus == Notifikasjonstatus.OPPRETTET }
+        }
+    }
+
 fun DatabaseInterface.registrerBrukernotifikasjon(brukernotifikasjonDB: BrukernotifikasjonDB) {
     connection.use { connection ->
         connection.registrerBrukernotifikasjon(brukernotifikasjonDB)
@@ -44,7 +54,7 @@ private fun Connection.finnesFraFor(sykmeldingId: UUID, event: String): Boolean 
 fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: BrukernotifikasjonDB) {
     this.prepareStatement(
         """
-                INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus, fnr) VALUES (?, ?, ?, ?, ?, ?, ?)
                 """
     ).use {
         it.setObject(1, brukernotifikasjonDB.sykmeldingId)
@@ -53,6 +63,7 @@ fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: Brukernotifikas
         it.setObject(4, brukernotifikasjonDB.grupperingsId)
         it.setObject(5, brukernotifikasjonDB.eventId)
         it.setString(6, brukernotifikasjonDB.notifikasjonstatus.name)
+        it.setString(7, brukernotifikasjonDB.fnr)
         it.execute()
     }
 }
@@ -69,6 +80,18 @@ private fun Connection.hentApenBrukernotifikasjon(sykmeldingId: UUID): List<Bruk
         it.executeQuery().toList { tilBrukernotifikasjon() }
     }
 
+private fun Connection.hentBrukernotifikasjoner(sykmeldingId: UUID): List<BrukernotifikasjonDB> =
+    this.prepareStatement(
+        """
+                 SELECT *
+                   FROM brukernotifikasjon
+                  WHERE sykmelding_id = ?
+            """
+    ).use {
+        it.setObject(1, sykmeldingId)
+        it.executeQuery().toList { tilBrukernotifikasjon() }
+    }
+
 fun ResultSet.tilBrukernotifikasjon(): BrukernotifikasjonDB =
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(getString("sykmelding_id")),
@@ -76,7 +99,8 @@ fun ResultSet.tilBrukernotifikasjon(): BrukernotifikasjonDB =
             event = getString("event"),
             grupperingsId = UUID.fromString(getString("grupperingsId")),
             eventId = UUID.fromString(getString("eventId")),
-            notifikasjonstatus = tilNotifikasjonstatus(getString("notifikasjonstatus"))
+            notifikasjonstatus = tilNotifikasjonstatus(getString("notifikasjonstatus")),
+            fnr = getString("fnr")
         )
 
 private fun tilNotifikasjonstatus(status: String): Notifikasjonstatus {
