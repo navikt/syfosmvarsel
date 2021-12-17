@@ -7,7 +7,10 @@ import no.nav.syfo.syfosmvarsel.pdl.client.model.HentPerson
 import no.nav.syfo.syfosmvarsel.pdl.client.model.ResponseData
 
 fun getPdlResponse(adresseGradering: List<String>?): GetPersonResponse {
-    return GetPersonResponse(ResponseData(
-            hentPerson = HentPerson(adresseGradering?.map { Adressebeskyttelse(gradering = Gradering.valueOf(it)) })),
-    errors = null)
+    return GetPersonResponse(
+        ResponseData(
+            hentPerson = HentPerson(adresseGradering?.map { Adressebeskyttelse(gradering = Gradering.valueOf(it)) })
+        ),
+        errors = null
+    )
 }

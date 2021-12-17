@@ -5,38 +5,33 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.3.4"
-val kluentVersion = "1.49"
-val ktorVersion = "1.3.2"
-val logbackVersion = "1.2.3"
-val prometheusVersion = "0.8.0"
-val spekVersion = "2.0.9"
-val logstashEncoderVersion = "5.1"
-val kafkaVersion = "2.4.0"
-val jacksonVersion = "2.9.9"
-val smCommonVersion = "1.c22544d"
-val micrometerVersion = "1.1.4"
-val kotlinxSerializationVersion = "0.11.1"
-val kafkaEmbeddedVersion = "2.4.0"
+val coroutinesVersion = "1.5.1"
+val kluentVersion = "1.68"
+val ktorVersion = "1.6.7"
+val logbackVersion = "1.2.8"
+val prometheusVersion = "0.12.0"
+val spekVersion = "2.0.17"
+val logstashEncoderVersion = "7.0.1"
+val kafkaVersion = "2.8.0"
+val jacksonVersion = "2.13.0"
+val smCommonVersion = "1.a92720c"
 val avroVersion = "1.8.2"
-val confluentVersion = "5.3.0"
-val jaxwsApiVersion = "2.3.1"
-val jaxwsToolsVersion = "2.3.2"
-val javaxActivationVersion = "1.1.1"
-val cxfVersion = "3.2.7"
-val postgresVersion = "42.2.5"
-val h2Version = "1.4.197"
-val flywayVersion = "5.2.4"
-val hikariVersion = "3.3.0"
+val confluentVersion = "6.2.2"
+val postgresVersion = "42.3.1"
+val h2Version = "2.0.202"
+val flywayVersion = "8.1.0"
+val hikariVersion = "5.0.0"
 val vaultJavaDriveVersion = "3.1.0"
-val postgresEmbeddedVersion = "0.13.1"
 val brukernotifikasjonAvroVersion = "1.2021.06.21-08.21-7998a39f216a"
+val mockkVersion = "1.12.1"
+val kotlinVersion = "1.6.0"
+val testContainerVersion = "1.16.2"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.3.71"
-    id("org.jmailen.kotlinter") version "2.2.0"
-    id("com.diffplug.gradle.spotless") version "3.14.0"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("org.jetbrains.kotlin.jvm") version "1.6.0"
+    id("org.jmailen.kotlinter") version "3.6.0"
+    id("com.diffplug.spotless") version "5.16.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 val githubUser: String by project
@@ -44,11 +39,7 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/ktor")
-    maven(url = "http://packages.confluent.io/maven/")
-    maven(url = "https://dl.bintray.com/spekframework/spek-dev")
-    maven(url = "https://kotlin.bintray.com/kotlinx")
+    maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
@@ -61,17 +52,18 @@ repositories {
 
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("io.ktor:ktor-metrics-micrometer:$ktorVersion")
-    implementation("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
     implementation("io.ktor:ktor-jackson:$ktorVersion")
+
+    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
@@ -82,18 +74,7 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
-
-    implementation("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
-    implementation("javax.activation:activation:$javaxActivationVersion")
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
-    implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
-        exclude(group = "com.sun.xml.ws", module = "policy")
-    }
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.h2database:h2:$h2Version")
@@ -103,17 +84,16 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
 
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty") // conflicts with WireMock
     }
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
-    testImplementation("io.mockk:mockk:1.11.0")
-    testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
+    testImplementation("org.testcontainers:kafka:$testContainerVersion")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
@@ -141,7 +121,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "12"
+        kotlinOptions.jvmTarget = "17"
     }
 
     withType<ShadowJar> {
@@ -161,4 +141,7 @@ tasks {
         maxHeapSize = "512m"
     }
 
+    "check" {
+        dependsOn("formatKotlin")
+    }
 }

@@ -1,8 +1,8 @@
 package no.nav.syfo.syfosmvarsel
 
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.ThreadContextElement
 import org.slf4j.MDC
+import kotlin.coroutines.CoroutineContext
 
 private typealias MDCContextMap = Map<String, String>?
 

@@ -1,11 +1,11 @@
 package no.nav.syfo.syfosmvarsel.util
 
-import java.time.LocalDate
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeBefore
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 object DateUtilsKtTest : Spek({
 
@@ -21,7 +21,7 @@ object DateUtilsKtTest : Spek({
 
         it("klokkeslett mellom 9 og 17 blir ikke endret") {
             val dato = LocalDate.now().atTime(9, 50).innenforArbeidstidEllerPaafolgendeDag()
-            dato shouldEqual LocalDate.now().atTime(9, 50)
+            dato shouldBeEqualTo LocalDate.now().atTime(9, 50)
         }
 
         it("klokkslett etter 17 blir innenfor arbeidstid påfølgende dag") {
@@ -39,17 +39,17 @@ object DateUtilsKtTest : Spek({
 
             it("Nøyaktig 9 blir nøyaktig 9") {
                 val noyaktig9 = LocalDate.now().atTime(9, 0).innenforArbeidstidEllerPaafolgendeDag()
-                noyaktig9 shouldEqual LocalDate.now().atTime(9, 0)
+                noyaktig9 shouldBeEqualTo LocalDate.now().atTime(9, 0)
             }
 
             it("Rett etter 9 blir innenfor arbeidstid") {
                 val rettEtter9 = LocalDate.now().atTime(9, 0, 1).innenforArbeidstidEllerPaafolgendeDag()
-                rettEtter9 shouldEqual LocalDate.now().atTime(9, 0, 1)
+                rettEtter9 shouldBeEqualTo LocalDate.now().atTime(9, 0, 1)
             }
 
             it("Rett før 5 blir rett før 5") {
                 val rettFor17 = LocalDate.now().atTime(16, 59, 59).innenforArbeidstidEllerPaafolgendeDag()
-                rettFor17 shouldEqual LocalDate.now().atTime(16, 59, 59)
+                rettFor17 shouldBeEqualTo LocalDate.now().atTime(16, 59, 59)
             }
 
             it("Nøyaktig 5 blir neste dag innenfor arbeidstid") {

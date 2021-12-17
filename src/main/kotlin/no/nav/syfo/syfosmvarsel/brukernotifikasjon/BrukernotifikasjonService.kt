@@ -1,8 +1,5 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
@@ -16,6 +13,9 @@ import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
 import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
 import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class BrukernotifikasjonService(
     private val database: DatabaseInterface,
