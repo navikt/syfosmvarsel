@@ -1,6 +1,5 @@
 package no.nav.syfo.syfosmvarsel.nysykmelding
 
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.model.ReceivedSykmelding
@@ -10,7 +9,6 @@ import no.nav.syfo.syfosmvarsel.metrics.NY_SM_VARSEL_OPPRETTET
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-@KtorExperimentalAPI
 class NySykmeldingService(private val brukernotifikasjonService: BrukernotifikasjonService) {
 
     private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmvarsel")

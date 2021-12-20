@@ -1,7 +1,6 @@
 package no.nav.syfo.syfosmvarsel.util
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer
-import java.util.Properties
 import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
@@ -14,6 +13,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
+import java.util.Properties
 
 class KafkaFactory private constructor() {
     companion object {
@@ -37,14 +37,17 @@ class KafkaFactory private constructor() {
 
         fun getBrukernotifikasjonKafkaProducer(kafkaBaseConfig: Properties, environment: Environment): BrukernotifikasjonKafkaProducer {
             val kafkaBrukernotifikasjonProducerConfig = kafkaBaseConfig.toProducerConfig(
-                "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class)
+                "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class
+            )
 
             val kafkaproducerOpprett = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerConfig)
             val kafkaproducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerConfig)
-            return BrukernotifikasjonKafkaProducer(kafkaproducerOpprett = kafkaproducerOpprett,
+            return BrukernotifikasjonKafkaProducer(
+                kafkaproducerOpprett = kafkaproducerOpprett,
                 kafkaproducerDone = kafkaproducerDone,
                 brukernotifikasjonOpprettTopic = environment.brukernotifikasjonOpprettTopic,
-                brukernotifikasjonDoneTopic = environment.brukernotifikasjonDoneTopic)
+                brukernotifikasjonDoneTopic = environment.brukernotifikasjonDoneTopic
+            )
         }
     }
 }

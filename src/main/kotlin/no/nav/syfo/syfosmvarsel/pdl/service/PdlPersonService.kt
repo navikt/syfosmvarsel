@@ -10,7 +10,8 @@ class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val pdlScope: String
-) { companion object {
+) {
+    companion object {
         private val log = LoggerFactory.getLogger(PdlPersonService::class.java)
     }
     suspend fun harDiskresjonskode(fnr: String, sykmeldingsId: String): Boolean {
@@ -29,7 +30,7 @@ class PdlPersonService(
 
         val gradert = pdlResponse.data.hentPerson.adressebeskyttelse?.any { adressebeskyttelse ->
             adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG ||
-                    adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG_UTLAND
+                adressebeskyttelse.gradering == Gradering.STRENGT_FORTROLIG_UTLAND
         }
 
         return gradert ?: false

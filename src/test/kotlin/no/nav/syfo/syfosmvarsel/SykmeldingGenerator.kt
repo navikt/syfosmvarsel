@@ -1,9 +1,5 @@
 package no.nav.syfo.syfosmvarsel
 
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
-import kotlin.random.Random
 import no.nav.syfo.model.Adresse
 import no.nav.syfo.model.AktivitetIkkeMulig
 import no.nav.syfo.model.AnnenFraversArsak
@@ -26,22 +22,30 @@ import no.nav.syfo.model.Prognose
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
+import kotlin.random.Random
 
 fun opprettReceivedSykmelding(id: String, sykmelding: Sykmelding = opprettSykmelding()) = ReceivedSykmelding(
-        sykmelding = sykmelding,
-        personNrPasient = "123124",
-        tlfPasient = "123455",
-        personNrLege = "123145",
-        navLogId = "0412",
-        msgId = id,
-        legekontorOrgNr = "",
-        legekontorHerId = "",
-        legekontorReshId = "",
-        legekontorOrgName = "Legevakt",
-        mottattDato = LocalDateTime.now(),
-        rulesetVersion = "",
-        fellesformat = "",
-        tssid = ""
+    sykmelding = sykmelding,
+    personNrPasient = "123124",
+    tlfPasient = "123455",
+    personNrLege = "123145",
+    navLogId = "0412",
+    msgId = id,
+    legekontorOrgNr = "",
+    legekontorHerId = "",
+    legekontorReshId = "",
+    legekontorOrgName = "Legevakt",
+    mottattDato = LocalDateTime.now(),
+    rulesetVersion = "",
+    fellesformat = "",
+    tssid = "",
+    partnerreferanse = null,
+    merknader = null,
+    legeHelsepersonellkategori = null,
+    legeHprNr = null
 )
 
 fun opprettSykmelding(
@@ -67,27 +71,27 @@ fun opprettSykmelding(
     signaturDato: LocalDateTime = LocalDateTime.now(),
     navnFastlege: String? = null
 ) = Sykmelding(
-        id = id,
-        msgId = msgid,
-        pasientAktoerId = pasientAktoerId,
-        medisinskVurdering = medisinskVurdering,
-        skjermesForPasient = skjermetForPasient,
-        perioder = perioder,
-        prognose = prognose,
-        utdypendeOpplysninger = utdypendeOpplysninger,
-        tiltakArbeidsplassen = tiltakArbeidsplassen,
-        tiltakNAV = tiltakNAV,
-        andreTiltak = andreTiltak,
-        meldingTilNAV = meldingTilNAV,
-        meldingTilArbeidsgiver = meldingTilArbeidsgiver,
-        kontaktMedPasient = kontaktMedPasient,
-        behandletTidspunkt = behandletTidspunkt,
-        behandler = behandler,
-        avsenderSystem = avsenderSystem,
-        arbeidsgiver = arbeidsgiver,
-        syketilfelleStartDato = syketilfelleStartDato,
-        signaturDato = signaturDato,
-        navnFastlege = navnFastlege
+    id = id,
+    msgId = msgid,
+    pasientAktoerId = pasientAktoerId,
+    medisinskVurdering = medisinskVurdering,
+    skjermesForPasient = skjermetForPasient,
+    perioder = perioder,
+    prognose = prognose,
+    utdypendeOpplysninger = utdypendeOpplysninger,
+    tiltakArbeidsplassen = tiltakArbeidsplassen,
+    tiltakNAV = tiltakNAV,
+    andreTiltak = andreTiltak,
+    meldingTilNAV = meldingTilNAV,
+    meldingTilArbeidsgiver = meldingTilArbeidsgiver,
+    kontaktMedPasient = kontaktMedPasient,
+    behandletTidspunkt = behandletTidspunkt,
+    behandler = behandler,
+    avsenderSystem = avsenderSystem,
+    arbeidsgiver = arbeidsgiver,
+    syketilfelleStartDato = syketilfelleStartDato,
+    signaturDato = signaturDato,
+    navnFastlege = navnFastlege
 )
 
 fun opprettMedisinskVurdering(
@@ -98,12 +102,12 @@ fun opprettMedisinskVurdering(
     yrkesskadeDato: LocalDate? = null,
     annenFraversArsak: AnnenFraversArsak? = null
 ) = MedisinskVurdering(
-        hovedDiagnose = hovedDiagnose,
-        biDiagnoser = bidiagnoser,
-        svangerskap = svangerskap,
-        yrkesskade = yrkesskade,
-        yrkesskadeDato = yrkesskadeDato,
-        annenFraversArsak = annenFraversArsak
+    hovedDiagnose = hovedDiagnose,
+    biDiagnoser = bidiagnoser,
+    svangerskap = svangerskap,
+    yrkesskade = yrkesskade,
+    yrkesskadeDato = yrkesskadeDato,
+    annenFraversArsak = annenFraversArsak
 )
 
 fun opprettPeriode(
@@ -115,29 +119,29 @@ fun opprettPeriode(
     gradert: Gradert? = null,
     reisetilskudd: Boolean = false
 ) = Periode(
-        fom = fom,
-        tom = tom,
-        aktivitetIkkeMulig = aktivitetIkkeMulig,
-        avventendeInnspillTilArbeidsgiver = avventendeInnspillTilArbeidsgiver,
-        behandlingsdager = behandlingsdager,
-        gradert = gradert,
-        reisetilskudd = reisetilskudd
+    fom = fom,
+    tom = tom,
+    aktivitetIkkeMulig = aktivitetIkkeMulig,
+    avventendeInnspillTilArbeidsgiver = avventendeInnspillTilArbeidsgiver,
+    behandlingsdager = behandlingsdager,
+    gradert = gradert,
+    reisetilskudd = reisetilskudd
 )
 
 fun opprettAktivitetIkkeMulig(
     medisinskArsak: MedisinskArsak? = opprettMedisinskArsak(),
     arbeidsrelatertArsak: ArbeidsrelatertArsak? = null
 ) = AktivitetIkkeMulig(
-        medisinskArsak = medisinskArsak,
-        arbeidsrelatertArsak = arbeidsrelatertArsak
+    medisinskArsak = medisinskArsak,
+    arbeidsrelatertArsak = arbeidsrelatertArsak
 )
 
 fun opprettMedisinskArsak(
     beskrivelse: String = "test data",
     arsak: List<MedisinskArsakType> = listOf(MedisinskArsakType.values()[Random.nextInt(MedisinskArsakType.values().size)])
 ) = MedisinskArsak(
-        beskrivelse = beskrivelse,
-        arsak = arsak
+    beskrivelse = beskrivelse,
+    arsak = arsak
 )
 
 fun opprettPrognose(
@@ -146,10 +150,10 @@ fun opprettPrognose(
     erIArbeid: ErIArbeid? = opprettErIArbeid(),
     erIkkeIArbeid: ErIkkeIArbeid? = null
 ) = Prognose(
-        arbeidsforEtterPeriode = arbeidsforEtterPeriode,
-        hensynArbeidsplassen = hennsynArbeidsplassen,
-        erIArbeid = erIArbeid,
-        erIkkeIArbeid = erIkkeIArbeid
+    arbeidsforEtterPeriode = arbeidsforEtterPeriode,
+    hensynArbeidsplassen = hennsynArbeidsplassen,
+    erIArbeid = erIArbeid,
+    erIkkeIArbeid = erIkkeIArbeid
 )
 
 fun opprettErIArbeid(
@@ -158,10 +162,10 @@ fun opprettErIArbeid(
     arbeidFOM: LocalDate = LocalDate.now().plusDays(30),
     vurderingsdato: LocalDate = LocalDate.now()
 ) = ErIArbeid(
-        egetArbeidPaSikt = egetArbeidPaSikt,
-        annetArbeidPaSikt = annetArbeidPaSikt,
-        arbeidFOM = arbeidFOM,
-        vurderingsdato = vurderingsdato
+    egetArbeidPaSikt = egetArbeidPaSikt,
+    annetArbeidPaSikt = annetArbeidPaSikt,
+    arbeidFOM = arbeidFOM,
+    vurderingsdato = vurderingsdato
 )
 
 fun opprettKontaktMedPasient(
@@ -180,15 +184,15 @@ fun opprettBehandler(
     adresse: Adresse = opprettAdresse(),
     tlf: String? = null
 ) = Behandler(
-        fornavn = fornavn,
-        mellomnavn = mellomnavn,
-        etternavn = etternavn,
-        aktoerId = aktoerId,
-        fnr = fnr,
-        hpr = hpr,
-        her = her,
-        adresse = adresse,
-        tlf = tlf
+    fornavn = fornavn,
+    mellomnavn = mellomnavn,
+    etternavn = etternavn,
+    aktoerId = aktoerId,
+    fnr = fnr,
+    hpr = hpr,
+    her = her,
+    adresse = adresse,
+    tlf = tlf
 )
 
 fun opprettAdresse(
@@ -198,19 +202,19 @@ fun opprettAdresse(
     postboks: String? = null,
     land: String? = "NO"
 ) = Adresse(
-        gate = gate,
-        postnummer = postnummer,
-        kommune = kommune,
-        postboks = postboks,
-        land = land
+    gate = gate,
+    postnummer = postnummer,
+    kommune = kommune,
+    postboks = postboks,
+    land = land
 )
 
 fun opprettAvsenderSystem(
     navn: String = "test",
     versjon: String = "1.2.3"
 ) = AvsenderSystem(
-        navn = navn,
-        versjon = versjon
+    navn = navn,
+    versjon = versjon
 )
 
 fun opprettArbeidsgiver(
@@ -219,7 +223,8 @@ fun opprettArbeidsgiver(
     yrkesbetegnelse: String = "Maler",
     stillingsprosent: Int = 100
 ) = Arbeidsgiver(
-        harArbeidsgiver = harArbeidsgiver,
-        navn = legekontor,
-        yrkesbetegnelse = yrkesbetegnelse,
-        stillingsprosent = stillingsprosent)
+    harArbeidsgiver = harArbeidsgiver,
+    navn = legekontor,
+    yrkesbetegnelse = yrkesbetegnelse,
+    stillingsprosent = stillingsprosent
+)

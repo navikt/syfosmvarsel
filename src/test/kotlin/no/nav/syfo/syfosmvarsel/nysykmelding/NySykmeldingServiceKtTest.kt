@@ -2,7 +2,6 @@ package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -10,11 +9,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.UUID
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.syfosmvarsel.LoggingMeta
@@ -26,12 +20,16 @@ import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
 import no.nav.syfo.syfosmvarsel.objectMapper
 import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.UUID
+import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 object NySykmeldingServiceKtTest : Spek({
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
@@ -51,26 +49,29 @@ object NySykmeldingServiceKtTest : Spek({
         database.connection.dropData()
     }
 
-    afterGroup {
-        database.stop()
-    }
-
     describe("Ende til ende-test ny sykmelding") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
         val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter brukernotifikasjon med eksternt varsel for ny sykmelding") {
             runBlocking {
-                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
+                nySykmeldingService.opprettVarselForNySykmelding(
+                    objectMapper.readValue(cr.value()),
+                    LoggingMeta("mottakId", "12315", "", "")
+                )
 
-                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                brukernotifikasjoner.size shouldEqual 1
-                brukernotifikasjoner[0].event shouldEqual "APEN"
-                brukernotifikasjoner[0].notifikasjonstatus shouldEqual Notifikasjonstatus.OPPRETTET
+                val brukernotifikasjoner =
+                    database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
+                brukernotifikasjoner.size shouldBeEqualTo 1
+                brukernotifikasjoner[0].event shouldBeEqualTo "APEN"
+                brukernotifikasjoner[0].notifikasjonstatus shouldBeEqualTo Notifikasjonstatus.OPPRETTET
 
                 verify(exactly = 1) {
-                    brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), withArg {
-                        it.eksternVarsling shouldEqual true
-                    })
+                    brukernotifikasjonKafkaProducer.sendOpprettmelding(
+                        any(),
+                        withArg {
+                            it.eksternVarsling shouldBeEqualTo true
+                        }
+                    )
                 }
             }
         }
@@ -85,15 +86,22 @@ object NySykmeldingServiceKtTest : Spek({
         it("Oppretter brukernotifikasjon, men ikke eksternt varsel for ny sykmelding hvis bruker har diskresjonskode") {
             coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns true
             runBlocking {
-                nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(cr.value()), LoggingMeta("mottakId", "12315", "", ""))
+                nySykmeldingService.opprettVarselForNySykmelding(
+                    objectMapper.readValue(cr.value()),
+                    LoggingMeta("mottakId", "12315", "", "")
+                )
 
-                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-                brukernotifikasjoner.size shouldEqual 1
+                val brukernotifikasjoner =
+                    database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
+                brukernotifikasjoner.size shouldBeEqualTo 1
 
                 verify(exactly = 1) {
-                    brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), withArg {
-                        it.eksternVarsling shouldEqual false
-                    })
+                    brukernotifikasjonKafkaProducer.sendOpprettmelding(
+                        any(),
+                        withArg {
+                            it.eksternVarsling shouldBeEqualTo false
+                        }
+                    )
                 }
             }
         }
@@ -103,13 +111,13 @@ object NySykmeldingServiceKtTest : Spek({
         it("Egenmeldt sykmelding skal gi egenmeldt-tekst") {
             val avsenderSystem = AvsenderSystem("Egenmeldt", "1")
 
-            nySykmeldingService.lagBrukernotifikasjonstekst(avsenderSystem) shouldEqual "Egenmeldingen din er klar til bruk"
+            nySykmeldingService.lagBrukernotifikasjonstekst(avsenderSystem) shouldBeEqualTo "Egenmeldingen din er klar til bruk"
         }
 
         it("Vanlig sykmelding skal gi melding om ny sykmelding") {
             val avsenderSystem = AvsenderSystem("Min EPJ", "1")
 
-            nySykmeldingService.lagBrukernotifikasjonstekst(avsenderSystem) shouldEqual "Du har mottatt en ny sykmelding"
+            nySykmeldingService.lagBrukernotifikasjonstekst(avsenderSystem) shouldBeEqualTo "Du har mottatt en ny sykmelding"
         }
     }
 })

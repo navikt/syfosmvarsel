@@ -1,10 +1,10 @@
 package no.nav.syfo.syfosmvarsel
 
+import no.nav.syfo.kafka.KafkaConfig
+import no.nav.syfo.kafka.KafkaCredentials
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
-import no.nav.syfo.kafka.KafkaConfig
-import no.nav.syfo.kafka.KafkaCredentials
 
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
@@ -20,7 +20,9 @@ data class Environment(
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmvarsel"),
     val syfosmvarselDBURL: String = getEnvVar("DB_URL"),
     val mountPathVault: String = getEnvVar("MOUNT_PATH_VAULT"),
-    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
+    override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
+    override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
+    override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -37,6 +39,6 @@ data class VaultServiceUser(
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
-        System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+    System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
 
 fun getFileAsString(filePath: String) = String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)

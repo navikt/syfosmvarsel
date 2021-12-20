@@ -12,9 +12,6 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.util.KtorExperimentalAPI
-import java.net.ProxySelector
-import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -46,6 +43,8 @@ import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.ProxySelector
+import java.time.Duration
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
@@ -55,7 +54,6 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 }
 
-@KtorExperimentalAPI
 fun main() {
     val env = Environment()
     val vaultServiceUser = VaultServiceUser()
@@ -65,8 +63,9 @@ fun main() {
 
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
-            env,
-            applicationState)
+        env,
+        applicationState
+    )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
@@ -100,9 +99,11 @@ fun main() {
 
     val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClientWithProxy)
 
-    val pdlClient = PdlClient(httpClient,
-            env.pdlGraphqlPath,
-            PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), ""))
+    val pdlClient = PdlClient(
+        httpClient,
+        env.pdlGraphqlPath,
+        PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
+    )
 
     val pdlService = PdlPersonService(pdlClient, accessTokenClientV2, env.pdlScope)
 
@@ -110,8 +111,10 @@ fun main() {
     val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
-    val brukernotifikasjonService = BrukernotifikasjonService(database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        servicebruker = vaultServiceUser.serviceuserUsername, dittSykefravaerUrl = env.dittSykefravaerUrl, pdlPersonService = pdlService)
+    val brukernotifikasjonService = BrukernotifikasjonService(
+        database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
+        servicebruker = vaultServiceUser.serviceuserUsername, dittSykefravaerUrl = env.dittSykefravaerUrl, pdlPersonService = pdlService
+    )
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
@@ -132,18 +135,17 @@ fun main() {
 }
 
 fun createListener(applicationState: ApplicationState, applicationLogic: suspend CoroutineScope.() -> Unit): Job =
-        GlobalScope.launch(Dispatchers.Unbounded) {
-            try {
-                applicationLogic()
-            } catch (e: TrackableException) {
-                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
-            } finally {
-                applicationState.alive = false
-                applicationState.ready = false
-            }
+    GlobalScope.launch(Dispatchers.Unbounded) {
+        try {
+            applicationLogic()
+        } catch (e: TrackableException) {
+            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+        } finally {
+            applicationState.alive = false
+            applicationState.ready = false
         }
+    }
 
-@KtorExperimentalAPI
 fun launchListeners(
     applicationState: ApplicationState,
     nyKafkaConsumer: KafkaConsumer<String, String>,
@@ -162,7 +164,6 @@ fun launchListeners(
     }
 }
 
-@KtorExperimentalAPI
 suspend fun blockingApplicationLogicNySykmelding(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,

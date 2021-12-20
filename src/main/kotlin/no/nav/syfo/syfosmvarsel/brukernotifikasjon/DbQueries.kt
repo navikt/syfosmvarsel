@@ -1,12 +1,12 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
+import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
+import no.nav.syfo.syfosmvarsel.application.db.toList
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
-import no.nav.syfo.syfosmvarsel.application.db.toList
 
 fun DatabaseInterface.brukernotifikasjonFinnesFraFor(sykmeldingId: UUID, event: String): Boolean {
     connection.use { connection ->
@@ -70,14 +70,14 @@ private fun Connection.hentApenBrukernotifikasjon(sykmeldingId: UUID): List<Bruk
     }
 
 fun ResultSet.tilBrukernotifikasjon(): BrukernotifikasjonDB =
-        BrukernotifikasjonDB(
-            sykmeldingId = UUID.fromString(getString("sykmelding_id")),
-            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            event = getString("event"),
-            grupperingsId = UUID.fromString(getString("grupperingsId")),
-            eventId = UUID.fromString(getString("eventId")),
-            notifikasjonstatus = tilNotifikasjonstatus(getString("notifikasjonstatus"))
-        )
+    BrukernotifikasjonDB(
+        sykmeldingId = UUID.fromString(getString("sykmelding_id")),
+        timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+        event = getString("event"),
+        grupperingsId = UUID.fromString(getString("grupperingsId")),
+        eventId = UUID.fromString(getString("eventId")),
+        notifikasjonstatus = tilNotifikasjonstatus(getString("notifikasjonstatus"))
+    )
 
 private fun tilNotifikasjonstatus(status: String): Notifikasjonstatus {
     return when (status) {
