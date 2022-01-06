@@ -221,9 +221,10 @@ fun blockingApplicationLogicStatusendring(
         kafkaStatusConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
             val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
             try {
+                log.info("Mottatt statusmelding fra onprem ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}")
                 statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
             } catch (e: Exception) {
-                log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+                log.error("Noe gikk galt ved behandling av statusendring fra on-prem for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
                 throw e
             }
         }
@@ -241,9 +242,10 @@ fun blockingApplicationLogicStatusendringAiven(
             .forEach {
                 val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
                 try {
+                    log.info("Mottatt statusmelding fra aiven ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}")
                     statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
                 } catch (e: Exception) {
-                    log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+                    log.error("Noe gikk galt ved behandling av statusendring fra aiven for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
                     throw e
                 }
             }
