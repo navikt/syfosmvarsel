@@ -21,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.exception.ServiceUnavailableException
+import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
@@ -40,6 +41,7 @@ import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
+import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.util.util.Unbounded
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
@@ -119,6 +121,9 @@ fun main() {
 
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
     val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
+
+    val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig()
+    val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(kafkaBaseConfigAiven, env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(
@@ -139,6 +144,7 @@ fun main() {
         nySykmeldingService = nySykmeldingService,
         avvistSykmeldingService = avvistSykmeldingService,
         kafkaStatusConsumer = kafkaStatusConsumer,
+        kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
         statusendringService = statusendringService,
         environment = env
     )
@@ -162,6 +168,7 @@ fun launchListeners(
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
     kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
+    kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     statusendringService: StatusendringService,
     environment: Environment
 ) {
@@ -171,6 +178,10 @@ fun launchListeners(
 
     createListener(applicationState) {
         blockingApplicationLogicStatusendring(applicationState, kafkaStatusConsumer, statusendringService)
+    }
+
+    createListener(applicationState) {
+        blockingApplicationLogicStatusendringAiven(applicationState, statusendringService, kafkaStatusConsumerAiven)
     }
 }
 
@@ -210,11 +221,33 @@ fun blockingApplicationLogicStatusendring(
         kafkaStatusConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
             val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
             try {
+                log.info("Mottatt statusmelding fra onprem ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}")
                 statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
             } catch (e: Exception) {
-                log.error("Noe gikk galt ved behandling av statusendring for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+                log.error("Noe gikk galt ved behandling av statusendring fra on-prem for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
                 throw e
             }
         }
+    }
+}
+
+fun blockingApplicationLogicStatusendringAiven(
+    applicationState: ApplicationState,
+    statusendringService: StatusendringService,
+    kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>
+) {
+    while (applicationState.ready) {
+        kafkaStatusConsumerAiven.poll(Duration.ofMillis(1000))
+            .filter { it.value() != null && !(it.headers().any { header -> header.value().contentEquals("on-prem".toByteArray()) }) }
+            .forEach {
+                val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
+                try {
+                    log.info("Mottatt statusmelding fra aiven ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}")
+                    statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
+                } catch (e: Exception) {
+                    log.error("Noe gikk galt ved behandling av statusendring fra aiven for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+                    throw e
+                }
+            }
     }
 }
