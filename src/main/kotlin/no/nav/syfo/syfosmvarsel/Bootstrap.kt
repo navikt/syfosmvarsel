@@ -238,7 +238,7 @@ fun blockingApplicationLogicStatusendringAiven(
 ) {
     while (applicationState.ready) {
         kafkaStatusConsumerAiven.poll(Duration.ofMillis(1000))
-            .filterNot { it.value() == null && it.headers().any { header -> header.value().contentEquals("on-prem".toByteArray()) } }
+            .filterNot { it.value() == null && it.headers().find { header -> header.key() == "source" }?.value().contentEquals("on-prem".toByteArray()) }
             .forEach {
                 val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
                 try {
