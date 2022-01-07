@@ -27,19 +27,11 @@ class KafkaFactory private constructor() {
             return nyKafkaConsumer
         }
 
-        fun getKafkaStatusConsumer(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
-            val properties = kafkaBaseConfig.toConsumerConfig("syfosmvarsel-consumer-3", JacksonKafkaDeserializer::class)
-            properties.let { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1" }
-            val kafkaStatusConsumer = KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
-            kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusTopic))
-            return kafkaStatusConsumer
-        }
-
         fun getKafkaStatusConsumerAiven(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
             val properties = kafkaBaseConfig.toConsumerConfig("syfosmvarsel-consumer", JacksonKafkaDeserializer::class)
             properties.let {
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
             }
             val kafkaStatusConsumer = KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusAivenTopic))

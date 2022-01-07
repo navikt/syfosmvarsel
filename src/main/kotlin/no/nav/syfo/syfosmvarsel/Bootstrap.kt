@@ -40,7 +40,6 @@ import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
 import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
-import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.util.util.Unbounded
@@ -120,7 +119,6 @@ fun main() {
     val pdlService = PdlPersonService(pdlClient, accessTokenClientV2, env.pdlScope)
 
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
-    val kafkaStatusConsumer = getKafkaStatusConsumer(kafkaBaseConfig, env)
 
     val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig()
     val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(kafkaBaseConfigAiven, env)
@@ -143,7 +141,6 @@ fun main() {
         nyKafkaConsumer = nyKafkaConsumer,
         nySykmeldingService = nySykmeldingService,
         avvistSykmeldingService = avvistSykmeldingService,
-        kafkaStatusConsumer = kafkaStatusConsumer,
         kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
         statusendringService = statusendringService,
         environment = env
@@ -167,17 +164,12 @@ fun launchListeners(
     nyKafkaConsumer: KafkaConsumer<String, String>,
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
-    kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     statusendringService: StatusendringService,
     environment: Environment
 ) {
     createListener(applicationState) {
         blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, avvistSykmeldingService, environment)
-    }
-
-    createListener(applicationState) {
-        blockingApplicationLogicStatusendring(applicationState, kafkaStatusConsumer, statusendringService)
     }
 
     createListener(applicationState) {
@@ -212,25 +204,6 @@ suspend fun blockingApplicationLogicNySykmelding(
     }
 }
 
-fun blockingApplicationLogicStatusendring(
-    applicationState: ApplicationState,
-    kafkaStatusConsumer: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
-    statusendringService: StatusendringService
-) {
-    while (applicationState.ready) {
-        kafkaStatusConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
-            val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
-            try {
-                log.info("Mottatt statusmelding fra onprem ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}")
-                statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
-            } catch (e: Exception) {
-                log.error("Noe gikk galt ved behandling av statusendring fra on-prem for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
-                throw e
-            }
-        }
-    }
-}
-
 fun blockingApplicationLogicStatusendringAiven(
     applicationState: ApplicationState,
     statusendringService: StatusendringService,
@@ -238,7 +211,7 @@ fun blockingApplicationLogicStatusendringAiven(
 ) {
     while (applicationState.ready) {
         kafkaStatusConsumerAiven.poll(Duration.ofMillis(1000))
-            .filter { it.value() != null && !(it.headers().any { header -> header.value().contentEquals("on-prem".toByteArray()) }) }
+            .filter { it.value() != null }
             .forEach {
                 val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
                 try {

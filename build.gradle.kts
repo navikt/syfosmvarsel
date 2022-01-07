@@ -18,7 +18,6 @@ val smCommonVersion = "1.a92720c"
 val avroVersion = "1.8.2"
 val confluentVersion = "6.2.2"
 val postgresVersion = "42.3.1"
-val h2Version = "2.0.202"
 val flywayVersion = "8.1.0"
 val hikariVersion = "5.0.0"
 val vaultJavaDriveVersion = "3.1.0"
@@ -77,7 +76,6 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
-    implementation("com.h2database:h2:$h2Version")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
