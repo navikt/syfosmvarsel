@@ -10,7 +10,7 @@ import java.sql.ResultSet
 enum class Role {
     ADMIN, USER, READONLY;
 
-    override fun toString() = name.toLowerCase()
+    override fun toString() = name.lowercase()
 }
 
 class Database(private val env: Environment, private val vaultCredentialService: VaultCredentialService) : DatabaseInterface {
