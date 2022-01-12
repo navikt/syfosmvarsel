@@ -1,11 +1,13 @@
 package no.nav.syfo.syfosmvarsel.application
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.application.vault.Vault
 import no.nav.syfo.syfosmvarsel.log
 
+@DelicateCoroutinesApi
 class RenewVaultService(private val vaultCredentialService: VaultCredentialService, private val applicationState: ApplicationState) {
     fun startRenewTasks() {
         GlobalScope.launch {

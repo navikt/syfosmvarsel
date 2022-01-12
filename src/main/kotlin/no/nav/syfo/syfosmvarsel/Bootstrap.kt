@@ -15,13 +15,13 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.exception.ServiceUnavailableException
-import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
@@ -41,6 +41,7 @@ import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
+import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaAivenConsumer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.util.util.Unbounded
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
@@ -58,6 +59,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 }
 
+@DelicateCoroutinesApi
 fun main() {
     val env = Environment()
     val vaultServiceUser = VaultServiceUser()
@@ -120,8 +122,8 @@ fun main() {
 
     val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
 
-    val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig()
-    val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(kafkaBaseConfigAiven, env)
+    val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(env)
+    val nySykmeldingConsumerAiven = getNyKafkaAivenConsumer(env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(
@@ -143,10 +145,12 @@ fun main() {
         avvistSykmeldingService = avvistSykmeldingService,
         kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
         statusendringService = statusendringService,
-        environment = env
+        environment = env,
+        nyKafkaConsumerAiven = nySykmeldingConsumerAiven
     )
 }
 
+@DelicateCoroutinesApi
 fun createListener(applicationState: ApplicationState, applicationLogic: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {
@@ -159,6 +163,7 @@ fun createListener(applicationState: ApplicationState, applicationLogic: suspend
         }
     }
 
+@DelicateCoroutinesApi
 fun launchListeners(
     applicationState: ApplicationState,
     nyKafkaConsumer: KafkaConsumer<String, String>,
@@ -166,10 +171,15 @@ fun launchListeners(
     avvistSykmeldingService: AvvistSykmeldingService,
     kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     statusendringService: StatusendringService,
-    environment: Environment
+    environment: Environment,
+    nyKafkaConsumerAiven: KafkaConsumer<String, String>
 ) {
     createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, avvistSykmeldingService, environment)
+        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, avvistSykmeldingService, environment, "on-prem")
+    }
+
+    createListener(applicationState) {
+        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumerAiven, nySykmeldingService, avvistSykmeldingService, environment, "aiven")
     }
 
     createListener(applicationState) {
@@ -182,7 +192,8 @@ suspend fun blockingApplicationLogicNySykmelding(
     kafkaConsumer: KafkaConsumer<String, String>,
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
-    environment: Environment
+    environment: Environment,
+    source: String
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
@@ -192,11 +203,13 @@ suspend fun blockingApplicationLogicNySykmelding(
                 mottakId = receivedSykmelding.navLogId,
                 orgNr = receivedSykmelding.legekontorOrgNr,
                 msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id
+                sykmeldingId = receivedSykmelding.sykmelding.id,
+                source = source
             )
             wrapExceptions(loggingMeta) {
                 when (it.topic()) {
                     environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
+                    environment.avvistSykmeldingTopicAiven -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
                     else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
                 }
             }

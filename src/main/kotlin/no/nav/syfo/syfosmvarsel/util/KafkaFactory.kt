@@ -4,6 +4,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer
 import no.nav.brukernotifikasjon.schemas.Done
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.brukernotifikasjon.schemas.Oppgave
+import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
@@ -27,13 +28,23 @@ class KafkaFactory private constructor() {
             return nyKafkaConsumer
         }
 
-        fun getKafkaStatusConsumerAiven(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
-            val properties = kafkaBaseConfig.toConsumerConfig("syfosmvarsel-consumer", JacksonKafkaDeserializer::class)
+        fun getNyKafkaAivenConsumer(environment: Environment): KafkaConsumer<String, String> {
+            val consumerProperties = KafkaUtils.getAivenKafkaConfig().toConsumerConfig(
+                "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
+            )
+            val consumer = KafkaConsumer<String, String>(consumerProperties)
+            consumer.subscribe(listOf(environment.okSykmeldingTopicAiven, environment.avvistSykmeldingTopicAiven, environment.manuellSykmeldingTopicAiven))
+            return consumer
+        }
+
+        fun getKafkaStatusConsumerAiven(environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
+            val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig()
+            val properties = kafkaBaseConfigAiven.toConsumerConfig("syfosmvarsel-consumer", JacksonKafkaDeserializer::class)
             properties.let {
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
                 it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
             }
-            val kafkaStatusConsumer = KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
+            val kafkaStatusConsumer = KafkaConsumer(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusAivenTopic))
             return kafkaStatusConsumer
         }

@@ -27,7 +27,10 @@ data class Environment(
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
-    val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET")
+    val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val okSykmeldingTopicAiven: String = "teamsykmelding.ok-sykmelding",
+    val avvistSykmeldingTopicAiven: String = "teamsykmelding.avvist-sykmelding",
+    val manuellSykmeldingTopicAiven: String = "teamsykmelding.manuell-behandling-sykmelding"
 ) : KafkaConfig
 
 data class VaultServiceUser(
