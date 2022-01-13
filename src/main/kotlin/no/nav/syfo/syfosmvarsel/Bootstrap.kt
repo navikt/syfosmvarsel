@@ -50,6 +50,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.ProxySelector
 import java.time.Duration
+import java.util.UUID
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
@@ -225,6 +226,7 @@ fun blockingApplicationLogicStatusendringAiven(
     while (applicationState.ready) {
         kafkaStatusConsumerAiven.poll(Duration.ofMillis(1000))
             .filter { it.value() != null }
+            .filter { it.key().erUuid() }
             .forEach {
                 val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
                 try {
@@ -235,5 +237,15 @@ fun blockingApplicationLogicStatusendringAiven(
                     throw e
                 }
             }
+    }
+}
+
+fun String.erUuid(): Boolean {
+    return try {
+        UUID.fromString(this)
+        true
+    } catch (e: Exception) {
+        log.warn("Sykmeldingid $this er ikke uuid, ignorerer melding")
+        false
     }
 }
