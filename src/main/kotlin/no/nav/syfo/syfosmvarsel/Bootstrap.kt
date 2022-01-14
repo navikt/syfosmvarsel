@@ -42,7 +42,6 @@ import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaAivenConsumer
-import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaConsumer
 import no.nav.syfo.util.util.Unbounded
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -121,8 +120,6 @@ fun main() {
 
     val pdlService = PdlPersonService(pdlClient, accessTokenClientV2, env.pdlScope)
 
-    val nyKafkaConsumer = getNyKafkaConsumer(kafkaBaseConfig, env)
-
     val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(env)
     val nySykmeldingConsumerAiven = getNyKafkaAivenConsumer(env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
@@ -141,7 +138,6 @@ fun main() {
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     launchListeners(
         applicationState = applicationState,
-        nyKafkaConsumer = nyKafkaConsumer,
         nySykmeldingService = nySykmeldingService,
         avvistSykmeldingService = avvistSykmeldingService,
         kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
@@ -167,7 +163,6 @@ fun createListener(applicationState: ApplicationState, applicationLogic: suspend
 @DelicateCoroutinesApi
 fun launchListeners(
     applicationState: ApplicationState,
-    nyKafkaConsumer: KafkaConsumer<String, String>,
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
     kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
@@ -175,10 +170,6 @@ fun launchListeners(
     environment: Environment,
     nyKafkaConsumerAiven: KafkaConsumer<String, String>
 ) {
-    createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumer, nySykmeldingService, avvistSykmeldingService, environment, "on-prem")
-    }
-
     createListener(applicationState) {
         blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumerAiven, nySykmeldingService, avvistSykmeldingService, environment, "aiven")
     }
@@ -209,7 +200,6 @@ suspend fun blockingApplicationLogicNySykmelding(
             )
             wrapExceptions(loggingMeta) {
                 when (it.topic()) {
-                    environment.avvistSykmeldingTopic -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
                     environment.avvistSykmeldingTopicAiven -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
                     else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
                 }
