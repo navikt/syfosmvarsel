@@ -18,20 +18,13 @@ import java.util.Properties
 
 class KafkaFactory private constructor() {
     companion object {
-        fun getNyKafkaConsumer(kafkaBaseConfig: Properties, environment: Environment): KafkaConsumer<String, String> {
-            val consumerProperties = kafkaBaseConfig.toConsumerConfig(
-                "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
-            )
-            consumerProperties.let { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1" }
-            val nyKafkaConsumer = KafkaConsumer<String, String>(consumerProperties)
-            nyKafkaConsumer.subscribe(listOf(environment.sykmeldingAutomatiskBehandlingTopic, environment.sykmeldingManuellBehandlingTopic, environment.avvistSykmeldingTopic))
-            return nyKafkaConsumer
-        }
-
         fun getNyKafkaAivenConsumer(environment: Environment): KafkaConsumer<String, String> {
             val consumerProperties = KafkaUtils.getAivenKafkaConfig().toConsumerConfig(
                 "syfosmvarsel-consumer", valueDeserializer = StringDeserializer::class
-            )
+            ).also {
+                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            }
             val consumer = KafkaConsumer<String, String>(consumerProperties)
             consumer.subscribe(listOf(environment.okSykmeldingTopicAiven, environment.avvistSykmeldingTopicAiven, environment.manuellSykmeldingTopicAiven))
             return consumer
