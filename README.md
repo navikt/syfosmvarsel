@@ -2,6 +2,17 @@
 # syfosmvarsel
 Application for creating sykmeldingsvarsler
 
+## Technologies used
+* Kotlin
+* Ktor
+* Gradle
+* Spek
+* Jackson
+
+#### Requirements
+
+* JDK 17
+
 ### Getting github-package-registry packages NAV-IT
 Some packages used in this repo is uploaded to the Github Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
 ```
