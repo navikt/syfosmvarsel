@@ -34,7 +34,7 @@ object NySykmeldingServiceKtTest : Spek({
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
     val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "dittsykefravaer", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar/", pdlPersonService)
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
 
@@ -69,7 +69,7 @@ object NySykmeldingServiceKtTest : Spek({
                     brukernotifikasjonKafkaProducer.sendOpprettmelding(
                         any(),
                         withArg {
-                            it.eksternVarsling shouldBeEqualTo true
+                            it.getEksternVarsling() shouldBeEqualTo true
                         }
                     )
                 }
@@ -99,7 +99,7 @@ object NySykmeldingServiceKtTest : Spek({
                     brukernotifikasjonKafkaProducer.sendOpprettmelding(
                         any(),
                         withArg {
-                            it.eksternVarsling shouldBeEqualTo false
+                            it.getEksternVarsling() shouldBeEqualTo false
                         }
                     )
                 }

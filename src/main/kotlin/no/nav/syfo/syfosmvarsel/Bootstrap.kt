@@ -22,8 +22,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.exception.ServiceUnavailableException
-import no.nav.syfo.kafka.envOverrides
-import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
@@ -62,7 +60,6 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
-    val vaultServiceUser = VaultServiceUser()
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
@@ -75,9 +72,6 @@ fun main() {
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
-
-    val kafkaBaseConfig = loadBaseConfig(env, vaultServiceUser).envOverrides()
-    kafkaBaseConfig["auto.offset.reset"] = "none"
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
@@ -122,11 +116,13 @@ fun main() {
 
     val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(env)
     val nySykmeldingConsumerAiven = getNyKafkaAivenConsumer(env)
-    val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(kafkaBaseConfig, env)
+    val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(env)
 
     val brukernotifikasjonService = BrukernotifikasjonService(
-        database = database, brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        servicebruker = vaultServiceUser.serviceuserUsername, dittSykefravaerUrl = env.dittSykefravaerUrl, pdlPersonService = pdlService
+        database = database,
+        brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
+        dittSykefravaerUrl = env.dittSykefravaerUrl,
+        pdlPersonService = pdlService
     )
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)

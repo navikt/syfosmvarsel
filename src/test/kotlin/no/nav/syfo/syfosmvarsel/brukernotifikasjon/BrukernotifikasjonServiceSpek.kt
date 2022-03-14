@@ -6,9 +6,9 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.brukernotifikasjon.schemas.Done
-import no.nav.brukernotifikasjon.schemas.Nokkel
-import no.nav.brukernotifikasjon.schemas.Oppgave
+import no.nav.brukernotifikasjon.schemas.input.DoneInput
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
@@ -24,7 +24,6 @@ import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.util.KafkaTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
@@ -38,19 +37,18 @@ import java.util.UUID
 class BrukernotifikasjonServiceSpek : Spek({
     val kafkaConfig = KafkaTest.setupKafkaConfig()
     val config = Environment(
-        kafkaBootstrapServers = KafkaTest.kafka.bootstrapServers,
-        dittSykefravaerUrl = "dittsykefravaer", cluster = "local", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
+        dittSykefravaerUrl = "https://dittsykefravaer", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
         mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic",
         brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti", pdlScope = "scope",
-        aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret", truststore = "", truststorePassword = ""
+        aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret"
     )
 
     val kafkaBrukernotifikasjonProducerConfig = kafkaConfig.toProducerConfig(
         "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class
     )
 
-    val kafkaproducerOpprett = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerConfig)
-    val kafkaproducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerConfig)
+    val kafkaproducerOpprett = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
+    val kafkaproducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerConfig)
     val brukernotifikasjonKafkaProducer = BrukernotifikasjonKafkaProducer(
         kafkaproducerOpprett = kafkaproducerOpprett,
         kafkaproducerDone = kafkaproducerDone,
@@ -60,12 +58,12 @@ class BrukernotifikasjonServiceSpek : Spek({
 
     val consumerProperties = kafkaConfig
         .toConsumerConfig("spek.integration-consumer", keyDeserializer = KafkaAvroDeserializer::class, valueDeserializer = KafkaAvroDeserializer::class)
-    val kafkaConsumerOppgave = KafkaConsumer<GenericRecord, GenericRecord>(consumerProperties)
+    val kafkaConsumerOppgave = KafkaConsumer<NokkelInput, OppgaveInput>(consumerProperties)
     kafkaConsumerOppgave.subscribe(listOf("opprett-topic"))
 
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "srvsyfosmvarsel", "dittsykefravaer", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar", pdlPersonService)
 
     val sykmeldingId = UUID.randomUUID()
     val timestampOpprettet = OffsetDateTime.of(2020, 2, 10, 11, 0, 0, 0, ZoneOffset.UTC)
@@ -93,7 +91,7 @@ class BrukernotifikasjonServiceSpek : Spek({
         kafkaMetadata = KafkaMetadataDTO(
             sykmeldingId = sykmeldingId.toString(),
             timestamp = timestampFerdig,
-            fnr = "fnr",
+            fnr = "12345678912",
             source = "syfoservice"
         )
     )
@@ -114,7 +112,7 @@ class BrukernotifikasjonServiceSpek : Spek({
                     sykmeldingId = sykmeldingId.toString(),
                     mottattDato = timestampOpprettetLocalDateTime,
                     tekst = "tekst",
-                    fnr = "fnr",
+                    fnr = "12345678912",
                     loggingMeta = LoggingMeta("mottakId", "12315", "", "")
                 )
 
@@ -198,20 +196,21 @@ class BrukernotifikasjonServiceSpek : Spek({
                     sykmeldingId = sykmeldingId.toString(),
                     mottattDato = timestampOpprettetLocalDateTime,
                     tekst = "tekst",
-                    fnr = "fnr",
+                    fnr = "12345678912",
                     loggingMeta = LoggingMeta("mottakId", "12315", "", "")
                 )
             }
             val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldBeEqualTo 1
-            val nokkel: Nokkel = messages[0].key().toNokkel()
-            val oppgave: Oppgave = messages[0].value().toOppgave()
+            val nokkel: NokkelInput = messages[0].key()
 
-            nokkel.getSystembruker() shouldBeEqualTo "srvsyfosmvarsel"
+            val oppgave: OppgaveInput = messages[0].value()
+
+            nokkel.getAppnavn() shouldBeEqualTo "syfosmvarsel"
             nokkel.getEventId() shouldBeEqualTo sykmeldingId.toString()
-            oppgave.getFodselsnummer() shouldBeEqualTo "fnr"
-            oppgave.getLink() shouldBeEqualTo "dittsykefravaer/syk/sykefravaer"
+            nokkel.getFodselsnummer() shouldBeEqualTo "12345678912"
+            oppgave.getLink() shouldBeEqualTo "https://dittsykefravar/syk/sykefravaer"
             oppgave.getSikkerhetsnivaa() shouldBeEqualTo 4
             oppgave.getTekst() shouldBeEqualTo "tekst"
             oppgave.getTidspunkt() shouldBeEqualTo timestampOpprettet.toInstant().toEpochMilli()
@@ -242,20 +241,3 @@ class BrukernotifikasjonServiceSpek : Spek({
         }
     }
 })
-
-private fun GenericRecord.toNokkel(): Nokkel {
-    return Nokkel(get("systembruker").toString(), get("eventId").toString())
-}
-
-private fun GenericRecord.toOppgave(): Oppgave {
-    return Oppgave(
-        get("tidspunkt").toString().toLong(),
-        get("fodselsnummer").toString(),
-        get("grupperingsId").toString(),
-        get("tekst").toString(),
-        get("link").toString(),
-        get("sikkerhetsnivaa").toString().toInt(),
-        get("eksternVarsling").toString().toBoolean(),
-        emptyList()
-    )
-}
