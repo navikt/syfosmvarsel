@@ -33,7 +33,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
     val database = TestDB()
     val pdlPersonService = mockk<PdlPersonService>()
     val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "", "dittsykefravaer", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar", pdlPersonService)
 
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
 
@@ -50,7 +50,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
 
     describe("Ende til ende-test avvist sykmelding") {
         val sykmelding = String(Files.readAllBytes(Paths.get("src/test/resources/dummysykmelding.json")), StandardCharsets.UTF_8)
-        val cr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", sykmelding)
+        val cr = ConsumerRecord("test-topic", 0, 42L, "key", sykmelding)
         it("Oppretter brukernotifikasjon med eksternt varsel for avvist sykmelding") {
             runBlocking {
                 avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(
@@ -67,7 +67,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
                     brukernotifikasjonKafkaProducer.sendOpprettmelding(
                         any(),
                         withArg {
-                            it.eksternVarsling shouldBeEqualTo true
+                            it.getEksternVarsling() shouldBeEqualTo true
                         }
                     )
                 }
@@ -96,7 +96,7 @@ object AvvistSykmeldingServiceKtTest : Spek({
                     brukernotifikasjonKafkaProducer.sendOpprettmelding(
                         any(),
                         withArg {
-                            it.eksternVarsling shouldBeEqualTo false
+                            it.getEksternVarsling() shouldBeEqualTo false
                         }
                     )
                 }

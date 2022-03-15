@@ -1,9 +1,9 @@
 package no.nav.syfo.syfosmvarsel.util
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer
-import no.nav.brukernotifikasjon.schemas.Done
-import no.nav.brukernotifikasjon.schemas.Nokkel
-import no.nav.brukernotifikasjon.schemas.Oppgave
+import no.nav.brukernotifikasjon.schemas.input.DoneInput
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
@@ -14,7 +14,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
-import java.util.Properties
 
 class KafkaFactory private constructor() {
     companion object {
@@ -42,13 +41,16 @@ class KafkaFactory private constructor() {
             return kafkaStatusConsumer
         }
 
-        fun getBrukernotifikasjonKafkaProducer(kafkaBaseConfig: Properties, environment: Environment): BrukernotifikasjonKafkaProducer {
-            val kafkaBrukernotifikasjonProducerConfig = kafkaBaseConfig.toProducerConfig(
+        fun getBrukernotifikasjonKafkaProducer(environment: Environment): BrukernotifikasjonKafkaProducer {
+            val kafkaBrukernotifikasjonProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
                 "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class
-            )
-
-            val kafkaproducerOpprett = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerConfig)
-            val kafkaproducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerConfig)
+            ).also {
+                it["schema.registry.url"] = environment.kafkaSchemaRegistryUrl
+                it["basic.auth.credentials.source"] = "USER_INFO"
+                it["basic.auth.user.info"] = "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
+            }
+            val kafkaproducerOpprett = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
+            val kafkaproducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerConfig)
             return BrukernotifikasjonKafkaProducer(
                 kafkaproducerOpprett = kafkaproducerOpprett,
                 kafkaproducerDone = kafkaproducerDone,

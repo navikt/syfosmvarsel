@@ -21,7 +21,7 @@ val postgresVersion = "42.3.2"
 val flywayVersion = "8.4.3"
 val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
-val brukernotifikasjonAvroVersion = "1.2021.06.21-08.21-7998a39f216a"
+val brukernotifikasjonAvroVersion = "2.5.1"
 val mockkVersion = "1.12.2"
 val kotlinVersion = "1.6.0"
 val testContainerVersion = "1.16.3"
@@ -52,7 +52,6 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")

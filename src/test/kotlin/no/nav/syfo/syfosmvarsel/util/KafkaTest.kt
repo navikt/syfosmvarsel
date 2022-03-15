@@ -23,7 +23,7 @@ class KafkaTest {
             kafkaConfig.let {
                 it["bootstrap.servers"] = kafka.bootstrapServers
                 it["schema.registry.url"] = "mock://url"
-                it["specific.avro.reader"] = false
+                it["specific.avro.reader"] = true
                 it[ConsumerConfig.GROUP_ID_CONFIG] = "groupId"
                 it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = KafkaAvroDeserializer::class.java
                 it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = KafkaAvroDeserializer::class.java
