@@ -44,7 +44,11 @@ class KafkaFactory private constructor() {
         fun getBrukernotifikasjonKafkaProducer(environment: Environment): BrukernotifikasjonKafkaProducer {
             val kafkaBrukernotifikasjonProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
                 "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class
-            )
+            ).also {
+                it["schema.registry.url"] = environment.kafkaSchemaRegistryUrl
+                it["basic.auth.credentials.source"] = "USER_INFO"
+                it["basic.auth.user.info"] = "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
+            }
             val kafkaproducerOpprett = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
             val kafkaproducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerConfig)
             return BrukernotifikasjonKafkaProducer(

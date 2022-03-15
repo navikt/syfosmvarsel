@@ -17,7 +17,10 @@ data class Environment(
     val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val okSykmeldingTopicAiven: String = "teamsykmelding.ok-sykmelding",
     val avvistSykmeldingTopicAiven: String = "teamsykmelding.avvist-sykmelding",
-    val manuellSykmeldingTopicAiven: String = "teamsykmelding.manuell-behandling-sykmelding"
+    val manuellSykmeldingTopicAiven: String = "teamsykmelding.manuell-behandling-sykmelding",
+    val kafkaSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
+    val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
+    val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

@@ -40,7 +40,8 @@ class BrukernotifikasjonServiceSpek : Spek({
         dittSykefravaerUrl = "https://dittsykefravaer", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
         mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic",
         brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti", pdlScope = "scope",
-        aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret"
+        aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret",
+        kafkaSchemaRegistryPassword = "", kafkaSchemaRegistryUrl = "", kafkaSchemaRegistryUsername = ""
     )
 
     val kafkaBrukernotifikasjonProducerConfig = kafkaConfig.toProducerConfig(
