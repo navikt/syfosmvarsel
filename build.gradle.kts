@@ -7,7 +7,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.6.1"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.7"
+val ktorVersion = "2.0.0"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.15.0"
 val kotestVersion = "5.2.3"
@@ -55,12 +55,13 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
@@ -96,8 +97,8 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.testcontainers:kafka:$testContainerVersion")
 
-    api("io.ktor:ktor-client-mock:$ktorVersion")
-    api("io.ktor:ktor-client-mock-jvm:$ktorVersion")
+    //api("io.ktor:ktor-client-mock:$ktorVersion")
+    //api("io.ktor:ktor-client-mock-jvm:$ktorVersion")
 
 }
 
