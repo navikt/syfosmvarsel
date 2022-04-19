@@ -1,5 +1,6 @@
 package no.nav.syfo.syfosmvarsel.statusendring
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -14,13 +15,11 @@ import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-class StatusendringServiceSpek : Spek({
+class StatusendringServiceSpek : FunSpec({
     val brukernotifikasjonServiceMock = mockk<BrukernotifikasjonService>()
     val statusendringService = StatusendringService(brukernotifikasjonServiceMock)
 
@@ -43,19 +42,19 @@ class StatusendringServiceSpek : Spek({
         )
     )
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         every { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(any()) } just Runs
     }
 
-    describe("Test av statusendring") {
-        it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er SENDT") {
+    context("Test av statusendring") {
+        test("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er SENDT") {
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
 
             verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO) }
         }
 
-        it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er BEKREFTET") {
+        test("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er BEKREFTET") {
             val sykmeldingStatusKafkaMessageBekreftet = SykmeldingStatusKafkaMessageDTO(
                 event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_BEKREFTET),
                 kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata
@@ -66,7 +65,7 @@ class StatusendringServiceSpek : Spek({
             verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageBekreftet) }
         }
 
-        it("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er AVBRUTT") {
+        test("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er AVBRUTT") {
             val sykmeldingStatusKafkaMessageAvbrutt = SykmeldingStatusKafkaMessageDTO(
                 event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_AVBRUTT),
                 kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata
@@ -77,7 +76,7 @@ class StatusendringServiceSpek : Spek({
             verify(exactly = 1) { brukernotifikasjonServiceMock.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageAvbrutt) }
         }
 
-        it("handterStatusendring ferdigstiller ikke brukernotifikasjon hvis sykmelding er APEN") {
+        test("handterStatusendring ferdigstiller ikke brukernotifikasjon hvis sykmelding er APEN") {
             val sykmeldingStatusKafkaMessageApen = SykmeldingStatusKafkaMessageDTO(
                 event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_APEN),
                 kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata
