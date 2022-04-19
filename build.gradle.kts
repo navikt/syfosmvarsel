@@ -96,10 +96,6 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.testcontainers:kafka:$testContainerVersion")
-
-    //api("io.ktor:ktor-client-mock:$ktorVersion")
-    //api("io.ktor:ktor-client-mock-jvm:$ktorVersion")
-
 }
 
 
