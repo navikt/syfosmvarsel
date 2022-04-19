@@ -10,10 +10,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
+import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -74,8 +74,8 @@ fun main() {
     applicationServer.start()
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
+        install(ContentNegotiation) {
+            jackson {
                 registerKotlinModule()
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -84,7 +84,7 @@ fun main() {
         }
         expectSuccess = false
         HttpResponseValidator {
-            handleResponseException { exception ->
+            handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
                     is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
                 }

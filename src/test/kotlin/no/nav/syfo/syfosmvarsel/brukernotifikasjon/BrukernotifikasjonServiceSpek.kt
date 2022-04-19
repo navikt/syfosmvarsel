@@ -2,10 +2,10 @@ package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroSerializer
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import no.nav.brukernotifikasjon.schemas.input.DoneInput
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
@@ -26,15 +26,13 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-class BrukernotifikasjonServiceSpek : Spek({
+class BrukernotifikasjonServiceSpek : FunSpec({
     val kafkaConfig = KafkaTest.setupKafkaConfig()
     val config = Environment(
         dittSykefravaerUrl = "https://dittsykefravaer", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
@@ -97,57 +95,53 @@ class BrukernotifikasjonServiceSpek : Spek({
         )
     )
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(pdlPersonService)
         coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
     }
 
-    afterEachTest {
+    afterTest {
         database.connection.dropData()
     }
 
-    describe("Test av opprettBrukernotifikasjon") {
-        it("opprettBrukernotifikasjon oppretter ny rad i databasen for oppretting av notifikasjon") {
-            runBlocking {
-                brukernotifikasjonService.opprettBrukernotifikasjon(
-                    sykmeldingId = sykmeldingId.toString(),
-                    mottattDato = timestampOpprettetLocalDateTime,
-                    tekst = "tekst",
-                    fnr = "12345678912",
-                    loggingMeta = LoggingMeta("mottakId", "12315", "", "")
-                )
+    context("Test av opprettBrukernotifikasjon") {
+        test("opprettBrukernotifikasjon oppretter ny rad i databasen for oppretting av notifikasjon") {
+            brukernotifikasjonService.opprettBrukernotifikasjon(
+                sykmeldingId = sykmeldingId.toString(),
+                mottattDato = timestampOpprettetLocalDateTime,
+                tekst = "tekst",
+                fnr = "12345678912",
+                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
+            )
 
-                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
-                brukernotifikasjoner.size shouldBeEqualTo 1
-                brukernotifikasjoner[0].sykmeldingId shouldBeEqualTo sykmeldingId
-                brukernotifikasjoner[0].timestamp shouldBeEqualTo timestampOpprettet
-                brukernotifikasjoner[0].event shouldBeEqualTo "APEN"
-                brukernotifikasjoner[0].grupperingsId shouldBeEqualTo sykmeldingId
-                brukernotifikasjoner[0].eventId shouldNotBe null
-                brukernotifikasjoner[0].notifikasjonstatus shouldBeEqualTo Notifikasjonstatus.OPPRETTET
-            }
+            val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+            brukernotifikasjoner.size shouldBeEqualTo 1
+            brukernotifikasjoner[0].sykmeldingId shouldBeEqualTo sykmeldingId
+            brukernotifikasjoner[0].timestamp shouldBeEqualTo timestampOpprettet
+            brukernotifikasjoner[0].event shouldBeEqualTo "APEN"
+            brukernotifikasjoner[0].grupperingsId shouldBeEqualTo sykmeldingId
+            brukernotifikasjoner[0].eventId shouldNotBe null
+            brukernotifikasjoner[0].notifikasjonstatus shouldBeEqualTo Notifikasjonstatus.OPPRETTET
         }
 
-        it("opprettBrukernotifikasjon gjør ingenting hvis det allerede finnes en opprett-notifikasjon for sykmeldingen") {
+        test("opprettBrukernotifikasjon gjør ingenting hvis det allerede finnes en opprett-notifikasjon for sykmeldingen") {
             database.registrerBrukernotifikasjon(brukernotifikasjonDB)
 
-            runBlocking {
-                brukernotifikasjonService.opprettBrukernotifikasjon(
-                    sykmeldingId = sykmeldingId.toString(),
-                    mottattDato = timestampOpprettetLocalDateTime,
-                    tekst = "tekst",
-                    fnr = "fnr",
-                    loggingMeta = LoggingMeta("mottakId", "12315", "", "")
-                )
+            brukernotifikasjonService.opprettBrukernotifikasjon(
+                sykmeldingId = sykmeldingId.toString(),
+                mottattDato = timestampOpprettetLocalDateTime,
+                tekst = "tekst",
+                fnr = "fnr",
+                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
+            )
 
-                val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
-                brukernotifikasjoner.size shouldBeEqualTo 1
-            }
+            val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+            brukernotifikasjoner.size shouldBeEqualTo 1
         }
     }
 
-    describe("Test av ferdigstillBrukernotifikasjon") {
-        it("ferdigstillBrukernotifikasjon oppretter ny rad i databasen for ferdigstilling av notifikasjon") {
+    context("Test av ferdigstillBrukernotifikasjon") {
+        test("ferdigstillBrukernotifikasjon oppretter ny rad i databasen for ferdigstilling av notifikasjon") {
             database.registrerBrukernotifikasjon(brukernotifikasjonDB)
 
             brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
@@ -164,14 +158,14 @@ class BrukernotifikasjonServiceSpek : Spek({
             brukernotifikasjoner[1] shouldBeEqualTo brukernotifikasjonDB
         }
 
-        it("ferdigstillBrukernotifikasjon gjør ingenting hvis den ikke finner noen notifikasjon for sykmeldingen") {
+        test("ferdigstillBrukernotifikasjon gjør ingenting hvis den ikke finner noen notifikasjon for sykmeldingen") {
             brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
 
             val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
             brukernotifikasjoner.size shouldBeEqualTo 0
         }
 
-        it("ferdigstillBrukernotifikasjon oppretter kun done en gang") {
+        test("ferdigstillBrukernotifikasjon oppretter kun done en gang") {
             database.registrerBrukernotifikasjon(brukernotifikasjonDB)
 
             brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
@@ -190,17 +184,16 @@ class BrukernotifikasjonServiceSpek : Spek({
         }
     }
 
-    describe("Ende til ende-test oppgave") {
-        it("Oppretter brukernotifikasjon-oppgave korrekt") {
-            runBlocking {
-                brukernotifikasjonService.opprettBrukernotifikasjon(
-                    sykmeldingId = sykmeldingId.toString(),
-                    mottattDato = timestampOpprettetLocalDateTime,
-                    tekst = "tekst",
-                    fnr = "12345678912",
-                    loggingMeta = LoggingMeta("mottakId", "12315", "", "")
-                )
-            }
+    context("Ende til ende-test oppgave") {
+        test("Oppretter brukernotifikasjon-oppgave korrekt") {
+            brukernotifikasjonService.opprettBrukernotifikasjon(
+                sykmeldingId = sykmeldingId.toString(),
+                mottattDato = timestampOpprettetLocalDateTime,
+                tekst = "tekst",
+                fnr = "12345678912",
+                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
+            )
+
             val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()
 
             messages.size shouldBeEqualTo 1
@@ -218,25 +211,19 @@ class BrukernotifikasjonServiceSpek : Spek({
         }
     }
 
-    describe("Test av skalSendeEksterntVarsel") {
-        it("Skal sende eksternt varsel hvis bruker ikke har diskresjonskode") {
+    context("Test av skalSendeEksterntVarsel") {
+        test("Skal sende eksternt varsel hvis bruker ikke har diskresjonskode") {
             coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
 
-            var skalSendeEksterntVarsel: Boolean?
-            runBlocking {
-                skalSendeEksterntVarsel = brukernotifikasjonService.skalSendeEksterntVarsel("mottaker", "id")
-            }
+            val skalSendeEksterntVarsel = brukernotifikasjonService.skalSendeEksterntVarsel("mottaker", "id")
 
             skalSendeEksterntVarsel shouldBeEqualTo true
         }
 
-        it("Skal ikke sende eksternt varsel hvis bruker har diskresjonskode") {
+        test("Skal ikke sende eksternt varsel hvis bruker har diskresjonskode") {
             coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns true
 
-            var skalSendeEksterntVarsel: Boolean?
-            runBlocking {
-                skalSendeEksterntVarsel = brukernotifikasjonService.skalSendeEksterntVarsel("mottaker", "id")
-            }
+            val skalSendeEksterntVarsel = brukernotifikasjonService.skalSendeEksterntVarsel("mottaker", "id")
 
             skalSendeEksterntVarsel shouldBeEqualTo false
         }

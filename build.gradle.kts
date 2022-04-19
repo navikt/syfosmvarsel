@@ -5,29 +5,31 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.0"
+val coroutinesVersion = "1.6.1"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.7"
-val logbackVersion = "1.2.10"
-val prometheusVersion = "0.14.1"
-val spekVersion = "2.0.17"
+val ktorVersion = "2.0.0"
+val logbackVersion = "1.2.11"
+val prometheusVersion = "0.15.0"
+val kotestVersion = "5.2.3"
 val logstashEncoderVersion = "7.0.1"
 val kafkaVersion = "2.8.0"
-val jacksonVersion = "2.13.1"
+val jacksonVersion = "2.13.2"
+val jacksonPatchVersion = "2.13.2.2"
+val jacksonBomVersion = "2.13.2.20220328"
 val smCommonVersion = "1.a92720c"
-val avroVersion = "1.8.2"
+val avroVersion = "1.9.2"
 val confluentVersion = "6.2.2"
-val postgresVersion = "42.3.2"
-val flywayVersion = "8.4.3"
+val postgresVersion = "42.3.3"
+val flywayVersion = "8.5.7"
 val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
-val brukernotifikasjonAvroVersion = "2.5.1"
-val mockkVersion = "1.12.2"
-val kotlinVersion = "1.6.0"
+val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
+val mockkVersion = "1.12.3"
+val kotlinVersion = "1.6.20"
 val testContainerVersion = "1.16.3"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.0"
+    id("org.jetbrains.kotlin.jvm") version "1.6.20"
     id("org.jmailen.kotlinter") version "3.6.0"
     id("com.diffplug.spotless") version "5.16.0"
     id("com.github.johnrengelman.shadow") version "7.0.0"
@@ -53,12 +55,13 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
@@ -69,6 +72,8 @@ dependencies {
     implementation("com.github.navikt:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
@@ -84,24 +89,13 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty") // conflicts with WireMock
     }
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.testcontainers:kafka:$testContainerVersion")
-
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-
-    api("io.ktor:ktor-client-mock:$ktorVersion")
-    api("io.ktor:ktor-client-mock-jvm:$ktorVersion")
-
 }
 
 
@@ -130,7 +124,6 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform {
-            includeEngines("spek2")
         }
         testLogging {
             showStandardStreams = true
