@@ -71,7 +71,6 @@ fun main() {
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
-    applicationServer.start()
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
@@ -129,8 +128,6 @@ fun main() {
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
     val statusendringService = StatusendringService(brukernotifikasjonService)
 
-    applicationState.ready = true
-
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     launchListeners(
         applicationState = applicationState,
@@ -141,6 +138,7 @@ fun main() {
         environment = env,
         nyKafkaConsumerAiven = nySykmeldingConsumerAiven
     )
+    applicationServer.start()
 }
 
 @DelicateCoroutinesApi
