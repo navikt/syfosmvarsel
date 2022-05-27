@@ -7,15 +7,13 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.6.1"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.0"
+val ktorVersion = "2.0.1"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.15.0"
 val kotestVersion = "5.2.3"
 val logstashEncoderVersion = "7.0.1"
 val kafkaVersion = "2.8.0"
-val jacksonVersion = "2.13.2"
-val jacksonPatchVersion = "2.13.2.2"
-val jacksonBomVersion = "2.13.2.20220328"
+val jacksonVersion = "2.13.3"
 val smCommonVersion = "1.a92720c"
 val avroVersion = "1.9.2"
 val confluentVersion = "6.2.2"
@@ -25,14 +23,14 @@ val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.12.3"
-val kotlinVersion = "1.6.20"
+val kotlinVersion = "1.6.21"
 val testContainerVersion = "1.16.3"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.20"
-    id("org.jmailen.kotlinter") version "3.6.0"
-    id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jmailen.kotlinter") version "3.10.0"
+    id("com.diffplug.spotless") version "6.5.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 val githubUser: String by project
@@ -72,8 +70,6 @@ dependencies {
     implementation("com.github.navikt:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
