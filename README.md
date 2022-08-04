@@ -6,7 +6,7 @@ Application for creating sykmeldingsvarsler
 * Kotlin
 * Ktor
 * Gradle
-* Spek
+* Kotest
 * Jackson
 
 #### Requirements
@@ -14,7 +14,7 @@ Application for creating sykmeldingsvarsler
 * JDK 17
 
 ### Getting github-package-registry packages NAV-IT
-Some packages used in this repo is uploaded to the Github Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
+Some packages used in this repo is uploaded to the GitHub Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
 ```
 val githubUser: String by project
 val githubPassword: String by project
@@ -58,3 +58,14 @@ Creating a docker image should be as simple as `docker build -t syfosmvarsel .`
 
 #### Running a docker image
 `docker run --rm -it -p 8080:8080 syfosmvarsel`
+
+### Upgrading the gradle wrapper
+Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+
+```./gradlew wrapper --gradle-version $gradleVersjon```
+
+### Inquiries
+Questions related to the code or the project can be asked as issues here on GitHub
+
+### For NAV employees
+We are available at the Slack channel #team-sykmelding
