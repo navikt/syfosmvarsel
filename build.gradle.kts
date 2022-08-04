@@ -5,12 +5,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.1"
+val coroutinesVersion = "1.6.4"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.1"
+val ktorVersion = "2.0.3"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.15.0"
-val kotestVersion = "5.2.3"
+val kotestVersion = "5.4.1"
 val logstashEncoderVersion = "7.0.1"
 val kafkaVersion = "2.8.0"
 val jacksonVersion = "2.13.3"
@@ -23,11 +23,11 @@ val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.12.3"
-val kotlinVersion = "1.6.21"
+val kotlinVersion = "1.7.10"
 val testContainerVersion = "1.16.3"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.jvm") version "1.7.10"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -122,7 +122,9 @@ tasks {
         useJUnitPlatform {
         }
         testLogging {
-            showStandardStreams = true
+            events("skipped", "failed")
+            showStackTraces = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
         maxHeapSize = "512m"
     }
