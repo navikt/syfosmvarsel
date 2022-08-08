@@ -9,22 +9,22 @@ val coroutinesVersion = "1.6.4"
 val kluentVersion = "1.68"
 val ktorVersion = "2.0.3"
 val logbackVersion = "1.2.11"
-val prometheusVersion = "0.15.0"
+val prometheusVersion = "0.16.0"
 val kotestVersion = "5.4.1"
-val logstashEncoderVersion = "7.0.1"
-val kafkaVersion = "2.8.0"
+val logstashEncoderVersion = "7.2"
+val kafkaVersion = "3.2.1"
 val jacksonVersion = "2.13.3"
-val smCommonVersion = "1.a92720c"
-val avroVersion = "1.9.2"
+val smCommonVersion = "1.f132f2b"
+val avroVersion = "1.11.0"
 val confluentVersion = "6.2.2"
-val postgresVersion = "42.3.3"
-val flywayVersion = "8.5.7"
+val postgresVersion = "42.3.6"
+val flywayVersion = "9.0.4"
 val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
-val mockkVersion = "1.12.3"
+val mockkVersion = "1.12.5"
 val kotlinVersion = "1.7.10"
-val testContainerVersion = "1.16.3"
+val testContainerVersion = "1.17.3"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.7.10"
@@ -87,7 +87,7 @@ dependencies {
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
-        exclude(group = "org.eclipse.jetty") // conflicts with WireMock
+        exclude(group = "org.eclipse.jetty")
     }
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
