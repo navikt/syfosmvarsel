@@ -1,9 +1,9 @@
-name: Deploy to dev
+name: Deploy to dev gcp
 on:
   push:
-    branches-ignore:
+    branches:
       - 'gcp**'
-      - 'master'
+      - '!gcp'
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/syfosmvarsel:${{ github.sha }}
 
@@ -74,5 +74,5 @@ jobs:
         uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
-          CLUSTER: dev-fss
+          CLUSTER: dev-gcp
           RESOURCE: naiserator-dev.yaml

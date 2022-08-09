@@ -35,11 +35,12 @@ import java.util.UUID
 class BrukernotifikasjonServiceSpek : FunSpec({
     val kafkaConfig = KafkaTest.setupKafkaConfig()
     val config = Environment(
-        dittSykefravaerUrl = "https://dittsykefravaer", securityTokenServiceURL = "security-token-url", syfosmvarselDBURL = "url",
-        mountPathVault = "path", brukernotifikasjonOpprettTopic = "opprett-topic",
+        dittSykefravaerUrl = "https://dittsykefravaer", brukernotifikasjonOpprettTopic = "opprett-topic",
         brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti", pdlScope = "scope",
         aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret",
-        kafkaSchemaRegistryPassword = "", kafkaSchemaRegistryUrl = "", kafkaSchemaRegistryUsername = ""
+        kafkaSchemaRegistryPassword = "", kafkaSchemaRegistryUrl = "", kafkaSchemaRegistryUsername = "",
+        cluster = "dev-fss", databaseUsername = "user", databasePassword = "pwd", dbHost = "host",
+        dbName = "smvarsel", dbPort = "5089"
     )
 
     val kafkaBrukernotifikasjonProducerConfig = kafkaConfig.toProducerConfig(

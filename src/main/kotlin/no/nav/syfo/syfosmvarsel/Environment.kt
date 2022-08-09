@@ -6,10 +6,6 @@ data class Environment(
     val brukernotifikasjonOpprettTopic: String = "min-side.aapen-brukernotifikasjon-oppgave-v1",
     val brukernotifikasjonDoneTopic: String = "min-side.aapen-brukernotifikasjon-done-v1",
     val dittSykefravaerUrl: String = getEnvVar("DITT_SYKEFRAVAER_URL"),
-    val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
-    val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmvarsel"),
-    val syfosmvarselDBURL: String = getEnvVar("DB_URL"),
-    val mountPathVault: String = getEnvVar("MOUNT_PATH_VAULT"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -20,8 +16,18 @@ data class Environment(
     val manuellSykmeldingTopicAiven: String = "teamsykmelding.manuell-behandling-sykmelding",
     val kafkaSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
-    val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD")
-)
+    val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
+    val databaseUsername: String = getEnvVar("NAIS_DATABASE_USERNAME"),
+    val databasePassword: String = getEnvVar("NAIS_DATABASE_PASSWORD"),
+    val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
+    val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
+    val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE")
+) {
+    fun jdbcUrl(): String {
+        return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    }
+}
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")

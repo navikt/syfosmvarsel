@@ -6,6 +6,20 @@ metadata:
   labels:
     team: teamsykmelding
 spec:
+  gcp:
+    sqlInstances:
+      - name: smvarsel-instance
+        type: POSTGRES_14
+        tier: db-custom-2-5120
+        diskSize: 100
+        databases:
+          - name: smvarsel
+            envVarPrefix: NAIS_DATABASE
+        diskAutoresize: true
+        highAvailability: true
+        diskType: SSD
+        insights:
+          enabled: true
   image: {{ image }}
   replicas:
     min: 1
@@ -13,19 +27,19 @@ spec:
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
-    path: /is_alive
+    path: /internal/is_alive
     initialDelay: 10
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
-    path: /is_ready
+    path: /internal/is_ready
     initialDelay: 30
     periodSeconds: 5
     timeout: 1
   prometheus:
     enabled: true
-    path: /prometheus
+    path: /internal/prometheus
   resources:
     limits:
       cpu: 500m
@@ -39,22 +53,13 @@ spec:
     application:
       enabled: true
       tenant: nav.no
-  webproxy: true
+  webproxy: false
   vault:
-    enabled: true
-    paths:
-      - kvPath: serviceuser/data/prod/srvsyfosmvarsel
-        mountPath: /secrets/serviceuser
-      - kvPath: /kv/prod/fss/syfosmvarsel/teamsykmelding
-        mountPath: /var/run/secrets/nais.io/vault
-  ingresses:
-    - "https://syfosmvarsel.nais.adeo.no"
+    enabled: false
   env:
     - name: DITT_SYKEFRAVAER_URL
       value: https://www.nav.no
-    - name: MOUNT_PATH_VAULT
-      value: /postgresql/prod-fss
     - name: PDL_GRAPHQL_PATH
-      value: https://pdl-api.nais.adeo.no/graphql
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default

@@ -26,10 +26,8 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
 import no.nav.syfo.syfosmvarsel.application.ApplicationState
-import no.nav.syfo.syfosmvarsel.application.RenewVaultService
 import no.nav.syfo.syfosmvarsel.application.createApplicationEngine
 import no.nav.syfo.syfosmvarsel.application.db.Database
-import no.nav.syfo.syfosmvarsel.application.db.VaultCredentialService
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.client.AccessTokenClientV2
@@ -41,11 +39,9 @@ import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjo
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaAivenConsumer
 import no.nav.syfo.util.util.Unbounded
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.ProxySelector
 import java.time.Duration
 import java.util.UUID
 
@@ -60,9 +56,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
-
-    val vaultCredentialService = VaultCredentialService()
-    val database = Database(env, vaultCredentialService)
+    val database = Database(env)
 
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
@@ -91,19 +85,9 @@ fun main() {
         }
     }
 
-    val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        config()
-        engine {
-            customizeClient {
-                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-            }
-        }
-    }
-
     val httpClient = HttpClient(Apache, config)
-    val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
-    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClientWithProxy)
+    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
 
     val pdlClient = PdlClient(
         httpClient,
@@ -128,16 +112,19 @@ fun main() {
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
     val statusendringService = StatusendringService(brukernotifikasjonService)
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
-    launchListeners(
-        applicationState = applicationState,
-        nySykmeldingService = nySykmeldingService,
-        avvistSykmeldingService = avvistSykmeldingService,
-        kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
-        statusendringService = statusendringService,
-        environment = env,
-        nyKafkaConsumerAiven = nySykmeldingConsumerAiven
-    )
+    if (env.cluster == "dev-fss" || env.cluster == "prod-fss") {
+        launchListeners(
+            applicationState = applicationState,
+            nySykmeldingService = nySykmeldingService,
+            avvistSykmeldingService = avvistSykmeldingService,
+            kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
+            statusendringService = statusendringService,
+            environment = env,
+            nyKafkaConsumerAiven = nySykmeldingConsumerAiven
+        )
+    } else {
+        log.info("Starter ikke lyttere i gcp")
+    }
     applicationServer.start()
 }
 
@@ -165,7 +152,7 @@ fun launchListeners(
     nyKafkaConsumerAiven: KafkaConsumer<String, String>
 ) {
     createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumerAiven, nySykmeldingService, avvistSykmeldingService, environment, "aiven")
+        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumerAiven, nySykmeldingService, avvistSykmeldingService, environment)
     }
 
     createListener(applicationState) {
@@ -178,8 +165,7 @@ suspend fun blockingApplicationLogicNySykmelding(
     kafkaConsumer: KafkaConsumer<String, String>,
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
-    environment: Environment,
-    source: String
+    environment: Environment
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
@@ -189,8 +175,7 @@ suspend fun blockingApplicationLogicNySykmelding(
                 mottakId = receivedSykmelding.navLogId,
                 orgNr = receivedSykmelding.legekontorOrgNr,
                 msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id,
-                source = source
+                sykmeldingId = receivedSykmelding.sykmelding.id
             )
             wrapExceptions(loggingMeta) {
                 when (it.topic()) {
