@@ -112,19 +112,15 @@ fun main() {
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
     val statusendringService = StatusendringService(brukernotifikasjonService)
 
-    if (env.cluster == "dev-fss" || env.cluster == "prod-fss") {
-        launchListeners(
-            applicationState = applicationState,
-            nySykmeldingService = nySykmeldingService,
-            avvistSykmeldingService = avvistSykmeldingService,
-            kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
-            statusendringService = statusendringService,
-            environment = env,
-            nyKafkaConsumerAiven = nySykmeldingConsumerAiven
-        )
-    } else {
-        log.info("Starter ikke lyttere i gcp")
-    }
+    launchListeners(
+        applicationState = applicationState,
+        nySykmeldingService = nySykmeldingService,
+        avvistSykmeldingService = avvistSykmeldingService,
+        kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
+        statusendringService = statusendringService,
+        environment = env,
+        nyKafkaConsumerAiven = nySykmeldingConsumerAiven
+    )
     applicationServer.start()
 }
 
