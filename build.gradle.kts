@@ -7,20 +7,19 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.3"
+val ktorVersion = "2.1.0"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.4.1"
+val kotestVersion = "5.4.2"
 val logstashEncoderVersion = "7.2"
 val kafkaVersion = "3.2.1"
 val jacksonVersion = "2.13.3"
 val smCommonVersion = "1.f132f2b"
 val avroVersion = "1.11.0"
 val confluentVersion = "6.2.2"
-val postgresVersion = "42.4.1"
-val flywayVersion = "9.0.4"
+val postgresVersion = "42.4.2"
+val flywayVersion = "9.1.6"
 val hikariVersion = "5.0.1"
-val vaultJavaDriveVersion = "3.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.12.5"
 val kotlinVersion = "1.7.10"
@@ -78,7 +77,6 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
-    implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
