@@ -7,13 +7,13 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
 val kluentVersion = "1.68"
-val ktorVersion = "2.1.0"
-val logbackVersion = "1.2.11"
+val ktorVersion = "2.1.1"
+val logbackVersion = "1.4.0"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.4.2"
 val logstashEncoderVersion = "7.2"
 val kafkaVersion = "3.2.1"
-val jacksonVersion = "2.13.3"
+val jacksonVersion = "2.13.4"
 val smCommonVersion = "1.f132f2b"
 val avroVersion = "1.11.0"
 val confluentVersion = "7.2.1"
@@ -58,7 +58,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
