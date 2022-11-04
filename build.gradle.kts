@@ -6,11 +6,11 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val kluentVersion = "1.68"
-val ktorVersion = "2.1.1"
-val logbackVersion = "1.4.0"
+val kluentVersion = "1.72"
+val ktorVersion = "2.1.3"
+val logbackVersion = "1.4.4"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.4.2"
+val kotestVersion = "5.5.3"
 val logstashEncoderVersion = "7.2"
 val kafkaVersion = "3.2.1"
 val jacksonVersion = "2.13.4"
@@ -21,12 +21,12 @@ val postgresVersion = "42.5.0"
 val flywayVersion = "9.2.0"
 val hikariVersion = "5.0.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
-val mockkVersion = "1.12.7"
-val kotlinVersion = "1.7.10"
-val testContainerVersion = "1.17.3"
+val mockkVersion = "1.13.2"
+val kotlinVersion = "1.7.20"
+val testContainerVersion = "1.17.4"
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.10"
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -58,7 +58,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
