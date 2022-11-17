@@ -44,7 +44,9 @@ class BrukernotifikasjonServiceSpek : FunSpec({
     )
 
     val kafkaBrukernotifikasjonProducerConfig = kafkaConfig.toProducerConfig(
-        "syfosmvarsel", valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class
+        "syfosmvarsel",
+        valueSerializer = KafkaAvroSerializer::class,
+        keySerializer = KafkaAvroSerializer::class
     )
 
     val kafkaproducerOpprett = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
