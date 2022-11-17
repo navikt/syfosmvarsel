@@ -3,9 +3,6 @@ package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.kotest.core.spec.style.FunSpec
-import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.mockk
 import no.nav.brukernotifikasjon.schemas.input.DoneInput
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
@@ -20,7 +17,6 @@ import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
-import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.util.KafkaTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
@@ -36,11 +32,9 @@ class BrukernotifikasjonServiceSpek : FunSpec({
     val kafkaConfig = KafkaTest.setupKafkaConfig()
     val config = Environment(
         dittSykefravaerUrl = "https://dittsykefravaer", brukernotifikasjonOpprettTopic = "opprett-topic",
-        brukernotifikasjonDoneTopic = "done-topic", pdlGraphqlPath = "pdl-sti", pdlScope = "scope",
-        aadAccessTokenV2Url = "aadAccessTokenV2Url", clientIdV2 = "clientid", clientSecretV2 = "secret",
-        kafkaSchemaRegistryPassword = "", kafkaSchemaRegistryUrl = "", kafkaSchemaRegistryUsername = "",
-        cluster = "dev-fss", databaseUsername = "user", databasePassword = "pwd", dbHost = "host",
-        dbName = "smvarsel", dbPort = "5089"
+        brukernotifikasjonDoneTopic = "done-topic", kafkaSchemaRegistryPassword = "",
+        kafkaSchemaRegistryUrl = "", kafkaSchemaRegistryUsername = "", databaseUsername = "user",
+        databasePassword = "pwd", dbHost = "host", dbName = "smvarsel", dbPort = "5089"
     )
 
     val kafkaBrukernotifikasjonProducerConfig = kafkaConfig.toProducerConfig(
@@ -64,8 +58,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
     kafkaConsumerOppgave.subscribe(listOf("opprett-topic"))
 
     val database = TestDB()
-    val pdlPersonService = mockk<PdlPersonService>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar")
 
     val sykmeldingId = UUID.randomUUID()
     val timestampOpprettet = OffsetDateTime.of(2020, 2, 10, 11, 0, 0, 0, ZoneOffset.UTC)
@@ -97,11 +90,6 @@ class BrukernotifikasjonServiceSpek : FunSpec({
             source = "syfoservice"
         )
     )
-
-    beforeTest {
-        clearMocks(pdlPersonService)
-        coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
-    }
 
     afterTest {
         database.connection.dropData()
@@ -211,24 +199,6 @@ class BrukernotifikasjonServiceSpek : FunSpec({
             oppgave.getSikkerhetsnivaa() shouldBeEqualTo 4
             oppgave.getTekst() shouldBeEqualTo "tekst"
             oppgave.getTidspunkt() shouldBeEqualTo timestampOpprettet.toInstant().toEpochMilli()
-        }
-    }
-
-    context("Test av skalSendeEksterntVarsel") {
-        test("Skal sende eksternt varsel hvis bruker ikke har diskresjonskode") {
-            coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
-
-            val skalSendeEksterntVarsel = brukernotifikasjonService.skalSendeEksterntVarsel("mottaker", "id")
-
-            skalSendeEksterntVarsel shouldBeEqualTo true
-        }
-
-        test("Skal ikke sende eksternt varsel hvis bruker har diskresjonskode") {
-            coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns true
-
-            val skalSendeEksterntVarsel = brukernotifikasjonService.skalSendeEksterntVarsel("mottaker", "id")
-
-            skalSendeEksterntVarsel shouldBeEqualTo false
         }
     }
 })

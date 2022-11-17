@@ -49,17 +49,9 @@ spec:
       memory: 512Mi
   kafka:
     pool: nav-prod
-  azure:
-    application:
-      enabled: true
-      tenant: nav.no
   webproxy: false
   vault:
     enabled: false
   env:
     - name: DITT_SYKEFRAVAER_URL
       value: https://www.nav.no
-    - name: PDL_GRAPHQL_PATH
-      value: https://pdl-api.prod-fss-pub.nais.io/graphql
-    - name: PDL_SCOPE
-      value: api://prod-fss.pdl.pdl-api/.default

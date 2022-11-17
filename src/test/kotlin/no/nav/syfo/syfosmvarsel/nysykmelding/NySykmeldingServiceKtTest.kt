@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -19,7 +18,6 @@ import no.nav.syfo.syfosmvarsel.brukernotifikasjon.Notifikasjonstatus
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
 import no.nav.syfo.syfosmvarsel.objectMapper
-import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.nio.charset.StandardCharsets
@@ -30,9 +28,8 @@ import kotlin.test.assertFailsWith
 
 class NySykmeldingServiceKtTest : FunSpec({
     val database = TestDB()
-    val pdlPersonService = mockk<PdlPersonService>()
     val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>()
-    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar/", pdlPersonService)
+    val brukernotifikasjonService = BrukernotifikasjonService(database, brukernotifikasjonKafkaProducer, "https://dittsykefravar/")
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
 
@@ -40,7 +37,6 @@ class NySykmeldingServiceKtTest : FunSpec({
         clearAllMocks()
         every { brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), any()) } just Runs
         every { brukernotifikasjonKafkaProducer.sendDonemelding(any(), any()) } just Runs
-        coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns false
     }
 
     afterTest {
@@ -77,27 +73,6 @@ class NySykmeldingServiceKtTest : FunSpec({
             val ugyldigCr = ConsumerRecord<String, String>("test-topic", 0, 42L, "key", "{ikke gyldig...}")
 
             assertFailsWith<JsonParseException> { nySykmeldingService.opprettVarselForNySykmelding(objectMapper.readValue(ugyldigCr.value()), LoggingMeta("mottakId", "12315", "", "")) }
-        }
-
-        test("Oppretter brukernotifikasjon, men ikke eksternt varsel for ny sykmelding hvis bruker har diskresjonskode") {
-            coEvery { pdlPersonService.harDiskresjonskode(any(), any()) } returns true
-            nySykmeldingService.opprettVarselForNySykmelding(
-                objectMapper.readValue(cr.value()),
-                LoggingMeta("mottakId", "12315", "", "")
-            )
-
-            val brukernotifikasjoner =
-                database.connection.hentBrukernotifikasjonListe(UUID.fromString("d6112773-9587-41d8-9a3f-c8cb42364936"))
-            brukernotifikasjoner.size shouldBeEqualTo 1
-
-            verify(exactly = 1) {
-                brukernotifikasjonKafkaProducer.sendOpprettmelding(
-                    any(),
-                    withArg {
-                        it.getEksternVarsling() shouldBeEqualTo false
-                    }
-                )
-            }
         }
     }
 

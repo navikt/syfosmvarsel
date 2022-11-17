@@ -11,8 +11,6 @@ import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
-import no.nav.syfo.syfosmvarsel.metrics.SM_VARSEL_AVBRUTT
-import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import java.net.URL
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -21,8 +19,7 @@ import java.util.UUID
 class BrukernotifikasjonService(
     private val database: DatabaseInterface,
     private val brukernotifikasjonKafkaProducer: BrukernotifikasjonKafkaProducer,
-    private val dittSykefravaerUrl: String,
-    private val pdlPersonService: PdlPersonService
+    private val dittSykefravaerUrl: String
 ) {
     companion object {
         private const val NAMESPACE = "teamsykmelding"
@@ -45,7 +42,6 @@ class BrukernotifikasjonService(
             )
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
-            val skalSendeEksterntVarsel = skalSendeEksterntVarsel(fnr, sykmeldingId)
             val nokkelInput = NokkelInputBuilder()
                 .withAppnavn(APP)
                 .withNamespace(NAMESPACE)
@@ -58,10 +54,8 @@ class BrukernotifikasjonService(
                 .withTekst(tekst)
                 .withLink(URL(lagOppgavelenke(dittSykefravaerUrl)))
                 .withSikkerhetsnivaa(4)
-                .withEksternVarsling(skalSendeEksterntVarsel).apply {
-                    if (skalSendeEksterntVarsel) {
-                        withPrefererteKanaler(PreferertKanal.SMS)
-                    }
+                .withEksternVarsling(true).apply {
+                    withPrefererteKanaler(PreferertKanal.SMS)
                 }.build()
 
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
@@ -105,27 +99,6 @@ class BrukernotifikasjonService(
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
             database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
             BRUKERNOT_FERDIG.inc()
-        }
-    }
-
-    suspend fun skalSendeEksterntVarsel(mottaker: String, sykmeldingId: String): Boolean {
-        if (harDiskresjonskode(mottaker = mottaker, sykmeldingId = sykmeldingId)) {
-            log.info("Bruker har diskresjonskode, sender ikke eksternt varsel for sykmeldingId {}", sykmeldingId)
-            SM_VARSEL_AVBRUTT.inc()
-            return false
-        }
-        return true
-    }
-
-    private suspend fun harDiskresjonskode(mottaker: String, sykmeldingId: String): Boolean {
-        try {
-            return pdlPersonService.harDiskresjonskode(mottaker, sykmeldingId)
-        } catch (e: Exception) {
-            log.error(
-                "Det skjedde en feil ved henting av diskresjonskode for sykmeldingId {}, ${e.message}",
-                sykmeldingId
-            )
-            throw e
         }
     }
 

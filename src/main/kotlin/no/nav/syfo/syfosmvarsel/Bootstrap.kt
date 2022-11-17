@@ -2,19 +2,9 @@ package no.nav.syfo.syfosmvarsel
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +12,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
@@ -31,10 +20,7 @@ import no.nav.syfo.syfosmvarsel.application.createApplicationEngine
 import no.nav.syfo.syfosmvarsel.application.db.Database
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
-import no.nav.syfo.syfosmvarsel.client.AccessTokenClientV2
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
-import no.nav.syfo.syfosmvarsel.pdl.client.PdlClient
-import no.nav.syfo.syfosmvarsel.pdl.service.PdlPersonService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
@@ -67,52 +53,6 @@ fun main() {
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        expectSuccess = false
-        HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
-                when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
-                }
-            }
-        }
-        install(HttpRequestRetry) {
-            constantDelay(100, 0, false)
-            retryOnExceptionIf(3) { _, throwable ->
-                log.warn("Caught exception ${throwable.message}")
-                true
-            }
-            retryIf(maxRetries) { _, response ->
-                if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}")
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-    }
-
-    val httpClient = HttpClient(Apache, config)
-
-    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
-
-    val pdlClient = PdlClient(
-        httpClient,
-        env.pdlGraphqlPath,
-        PdlClient::class.java.getResource("/graphql/getPerson.graphql")!!.readText().replace(Regex("[\n\t]"), "")
-    )
-
-    val pdlService = PdlPersonService(pdlClient, accessTokenClientV2, env.pdlScope)
-
     val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(env)
     val nySykmeldingConsumerAiven = getNyKafkaAivenConsumer(env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(env)
@@ -120,8 +60,7 @@ fun main() {
     val brukernotifikasjonService = BrukernotifikasjonService(
         database = database,
         brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        dittSykefravaerUrl = env.dittSykefravaerUrl,
-        pdlPersonService = pdlService
+        dittSykefravaerUrl = env.dittSykefravaerUrl
     )
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
