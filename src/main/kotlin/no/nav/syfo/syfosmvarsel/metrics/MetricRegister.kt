@@ -16,18 +16,6 @@ val NY_SM_VARSEL_OPPRETTET: Counter = Counter.build()
     .help("Antall opprettede varsel for nye sykmeldinger")
     .register()
 
-val SM_VARSEL_AVBRUTT: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name("sykmelding_avbruttvarsel_count")
-    .help("Antall varsel avbrutt pga diskresjonskode")
-    .register()
-
-val SM_VARSEL_RESERVERT: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name("sykmelding_reservert_count")
-    .help("Antall varsel avbrutt pga reservert bruker")
-    .register()
-
 val BRUKERNOT_OPPRETTET: Counter = Counter.build()
     .namespace(METRICS_NS)
     .name("brukernot_opprettet_count")
