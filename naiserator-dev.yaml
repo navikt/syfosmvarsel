@@ -48,17 +48,9 @@ spec:
       memory: 128Mi
   kafka:
     pool: nav-dev
-  azure:
-    application:
-      enabled: true
-      tenant: trygdeetaten.no
   webproxy: false
   vault:
     enabled: false
   env:
     - name: DITT_SYKEFRAVAER_URL
       value: https://www-gcp.dev.nav.no
-    - name: PDL_GRAPHQL_PATH
-      value: https://pdl-api.dev-fss-pub.nais.io/graphql
-    - name: PDL_SCOPE
-      value: api://dev-fss.pdl.pdl-api/.default
