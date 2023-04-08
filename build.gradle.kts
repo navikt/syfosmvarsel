@@ -21,7 +21,7 @@ val postgresVersion = "42.5.1"
 val flywayVersion = "9.8.3"
 val hikariVersion = "5.0.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
-val mockkVersion = "1.13.2"
+val mockkVersion = "1.13.4"
 val kotlinVersion = "1.8.20"
 val testContainerVersion = "1.17.6"
 
