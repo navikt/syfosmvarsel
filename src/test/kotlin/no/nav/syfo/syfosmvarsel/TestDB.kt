@@ -58,7 +58,7 @@ fun Connection.hentBrukernotifikasjonListe(sykmeldingId: UUID): List<Brukernotif
                  SELECT *
                    FROM brukernotifikasjon
                   WHERE sykmelding_id = ?
-            """
+            """,
         ).use {
             it.setObject(1, sykmeldingId)
             it.executeQuery().toList { tilBrukernotifikasjon() }

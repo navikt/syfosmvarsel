@@ -15,7 +15,7 @@ class NySykmeldingService(private val brukernotifikasjonService: Brukernotifikas
 
     suspend fun opprettVarselForNySykmelding(
         receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         try {
             log.info("Mottatt ny sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))

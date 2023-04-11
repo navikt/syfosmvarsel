@@ -50,7 +50,7 @@ class NySykmeldingServiceKtTest : FunSpec({
         test("Oppretter brukernotifikasjon med eksternt varsel for ny sykmelding") {
             nySykmeldingService.opprettVarselForNySykmelding(
                 objectMapper.readValue(cr.value()),
-                LoggingMeta("mottakId", "12315", "", "")
+                LoggingMeta("mottakId", "12315", "", ""),
             )
 
             val brukernotifikasjoner =
@@ -64,7 +64,7 @@ class NySykmeldingServiceKtTest : FunSpec({
                     any(),
                     withArg {
                         it.getEksternVarsling() shouldBeEqualTo true
-                    }
+                    },
                 )
             }
         }

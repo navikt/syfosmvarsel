@@ -9,7 +9,7 @@ data class BrukernotifikasjonDB(
     val event: String,
     val grupperingsId: UUID,
     val eventId: UUID,
-    val notifikasjonstatus: Notifikasjonstatus
+    val notifikasjonstatus: Notifikasjonstatus,
 )
 
 enum class Notifikasjonstatus {

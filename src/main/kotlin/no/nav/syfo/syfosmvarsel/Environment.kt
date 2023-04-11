@@ -16,7 +16,7 @@ data class Environment(
     val databasePassword: String = getEnvVar("NAIS_DATABASE_PASSWORD"),
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
     val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
-    val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE")
+    val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
