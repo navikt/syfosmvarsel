@@ -34,7 +34,7 @@ private fun Connection.finnesFraFor(sykmeldingId: UUID, event: String): Boolean 
     this.prepareStatement(
         """
                 SELECT 1 FROM brukernotifikasjon WHERE sykmelding_id=? AND event=?;
-                """
+                """,
     ).use {
         it.setObject(1, sykmeldingId)
         it.setString(2, event)
@@ -45,7 +45,7 @@ fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: Brukernotifikas
     this.prepareStatement(
         """
                 INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?)
-                """
+                """,
     ).use {
         it.setObject(1, brukernotifikasjonDB.sykmeldingId)
         it.setTimestamp(2, Timestamp.from(brukernotifikasjonDB.timestamp.toInstant()))
@@ -63,7 +63,7 @@ private fun Connection.hentApenBrukernotifikasjon(sykmeldingId: UUID): List<Bruk
                  SELECT *
                    FROM brukernotifikasjon
                   WHERE sykmelding_id = ? AND event = 'APEN'
-            """
+            """,
     ).use {
         it.setObject(1, sykmeldingId)
         it.executeQuery().toList { tilBrukernotifikasjon() }
@@ -76,7 +76,7 @@ fun ResultSet.tilBrukernotifikasjon(): BrukernotifikasjonDB =
         event = getString("event"),
         grupperingsId = UUID.fromString(getString("grupperingsId")),
         eventId = UUID.fromString(getString("eventId")),
-        notifikasjonstatus = tilNotifikasjonstatus(getString("notifikasjonstatus"))
+        notifikasjonstatus = tilNotifikasjonstatus(getString("notifikasjonstatus")),
     )
 
 private fun tilNotifikasjonstatus(status: String): Notifikasjonstatus {

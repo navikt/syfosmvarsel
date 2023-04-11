@@ -48,7 +48,7 @@ fun main() {
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
-        applicationState
+        applicationState,
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
@@ -60,7 +60,7 @@ fun main() {
     val brukernotifikasjonService = BrukernotifikasjonService(
         database = database,
         brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        dittSykefravaerUrl = env.dittSykefravaerUrl
+        dittSykefravaerUrl = env.dittSykefravaerUrl,
     )
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
@@ -74,7 +74,7 @@ fun main() {
         kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
         statusendringService = statusendringService,
         environment = env,
-        nyKafkaConsumerAiven = nySykmeldingConsumerAiven
+        nyKafkaConsumerAiven = nySykmeldingConsumerAiven,
     )
     applicationServer.start()
 }
@@ -100,7 +100,7 @@ fun launchListeners(
     kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     statusendringService: StatusendringService,
     environment: Environment,
-    nyKafkaConsumerAiven: KafkaConsumer<String, String>
+    nyKafkaConsumerAiven: KafkaConsumer<String, String>,
 ) {
     createListener(applicationState) {
         blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumerAiven, nySykmeldingService, avvistSykmeldingService, environment)
@@ -116,7 +116,7 @@ suspend fun blockingApplicationLogicNySykmelding(
     kafkaConsumer: KafkaConsumer<String, String>,
     nySykmeldingService: NySykmeldingService,
     avvistSykmeldingService: AvvistSykmeldingService,
-    environment: Environment
+    environment: Environment,
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
@@ -126,7 +126,7 @@ suspend fun blockingApplicationLogicNySykmelding(
                 mottakId = receivedSykmelding.navLogId,
                 orgNr = receivedSykmelding.legekontorOrgNr,
                 msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id
+                sykmeldingId = receivedSykmelding.sykmelding.id,
             )
             wrapExceptions(loggingMeta) {
                 when (it.topic()) {
@@ -141,7 +141,7 @@ suspend fun blockingApplicationLogicNySykmelding(
 fun blockingApplicationLogicStatusendringAiven(
     applicationState: ApplicationState,
     statusendringService: StatusendringService,
-    kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>
+    kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
 ) {
     while (applicationState.ready) {
         kafkaStatusConsumerAiven.poll(Duration.ofMillis(1000))

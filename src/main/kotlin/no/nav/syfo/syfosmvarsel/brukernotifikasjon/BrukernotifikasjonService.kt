@@ -19,7 +19,7 @@ import java.util.UUID
 class BrukernotifikasjonService(
     private val database: DatabaseInterface,
     private val brukernotifikasjonKafkaProducer: BrukernotifikasjonKafkaProducer,
-    private val dittSykefravaerUrl: String
+    private val dittSykefravaerUrl: String,
 ) {
     companion object {
         private const val NAMESPACE = "teamsykmelding"
@@ -31,14 +31,14 @@ class BrukernotifikasjonService(
         mottattDato: LocalDateTime,
         fnr: String,
         tekst: String,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         val brukernotifikasjonFinnesFraFor =
             database.brukernotifikasjonFinnesFraFor(sykmeldingId = UUID.fromString(sykmeldingId), event = "APEN")
         if (brukernotifikasjonFinnesFraFor) {
             log.info(
                 "Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer, {}",
-                StructuredArguments.fields(loggingMeta)
+                StructuredArguments.fields(loggingMeta),
             )
         } else {
             val opprettBrukernotifikasjon = mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
@@ -60,12 +60,12 @@ class BrukernotifikasjonService(
 
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
                 nokkelInput,
-                oppgaveInput
+                oppgaveInput,
             )
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             log.info(
                 "Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId {}",
-                StructuredArguments.fields(loggingMeta)
+                StructuredArguments.fields(loggingMeta),
             )
             BRUKERNOT_OPPRETTET.inc()
         }
@@ -75,7 +75,7 @@ class BrukernotifikasjonService(
         val sykmeldingId = sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId
         val apenBrukernotifikasjon = database.hentApenBrukernotifikasjon(
             sykmeldingId = UUID.fromString(sykmeldingId),
-            event = sykmeldingStatusKafkaMessageDTO.event.statusEvent
+            event = sykmeldingStatusKafkaMessageDTO.event.statusEvent,
         )
         if (apenBrukernotifikasjon == null) {
             log.info("Fant ingen notifikasjon for sykmelding med id $sykmeldingId som ikke er ferdigstilt")
@@ -94,7 +94,7 @@ class BrukernotifikasjonService(
                 .build()
             brukernotifikasjonKafkaProducer.sendDonemelding(
                 nokkel = nokkelInput,
-                done = doneInput
+                done = doneInput,
             )
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
             database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)
@@ -104,7 +104,7 @@ class BrukernotifikasjonService(
 
     private fun mapTilOpprettetBrukernotifikasjon(
         sykmeldingId: String,
-        mottattDato: LocalDateTime
+        mottattDato: LocalDateTime,
     ): BrukernotifikasjonDB =
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(sykmeldingId),
@@ -112,12 +112,12 @@ class BrukernotifikasjonService(
             event = "APEN",
             grupperingsId = UUID.fromString(sykmeldingId),
             eventId = UUID.randomUUID(),
-            notifikasjonstatus = Notifikasjonstatus.OPPRETTET
+            notifikasjonstatus = Notifikasjonstatus.OPPRETTET,
         )
 
     private fun mapTilFerdigstiltBrukernotifikasjon(
         sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO,
-        opprettetBrukernotifikasjonDB: BrukernotifikasjonDB
+        opprettetBrukernotifikasjonDB: BrukernotifikasjonDB,
     ): BrukernotifikasjonDB =
         BrukernotifikasjonDB(
             sykmeldingId = UUID.fromString(sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId),
@@ -125,7 +125,7 @@ class BrukernotifikasjonService(
             event = sykmeldingStatusKafkaMessageDTO.event.statusEvent,
             grupperingsId = opprettetBrukernotifikasjonDB.grupperingsId,
             eventId = UUID.randomUUID(),
-            notifikasjonstatus = Notifikasjonstatus.FERDIG
+            notifikasjonstatus = Notifikasjonstatus.FERDIG,
         )
 
     private fun lagOppgavelenke(dittSykefravaerUrl: String): String {

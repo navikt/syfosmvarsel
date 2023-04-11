@@ -11,7 +11,7 @@ class BrukernotifikasjonKafkaProducer(
     private val kafkaproducerOpprett: KafkaProducer<NokkelInput, OppgaveInput>,
     private val kafkaproducerDone: KafkaProducer<NokkelInput, DoneInput>,
     private val brukernotifikasjonOpprettTopic: String,
-    private val brukernotifikasjonDoneTopic: String
+    private val brukernotifikasjonDoneTopic: String,
 ) {
     fun sendOpprettmelding(nokkel: NokkelInput, oppgave: OppgaveInput) {
         try {
