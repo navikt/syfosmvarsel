@@ -195,7 +195,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
             nokkel.getAppnavn() shouldBeEqualTo "syfosmvarsel"
             nokkel.getEventId() shouldBeEqualTo sykmeldingId.toString()
             nokkel.getFodselsnummer() shouldBeEqualTo "12345678912"
-            oppgave.getLink() shouldBeEqualTo "https://dittsykefravar/syk/sykefravaer"
+            oppgave.getLink() shouldBeEqualTo "https://dittsykefravar/syk/sykmeldinger/$sykmeldingId"
             oppgave.getSikkerhetsnivaa() shouldBeEqualTo 4
             oppgave.getTekst() shouldBeEqualTo "tekst"
             oppgave.getTidspunkt() shouldBeEqualTo timestampOpprettet.toInstant().toEpochMilli()

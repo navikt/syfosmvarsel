@@ -26,7 +26,7 @@ class BrukernotifikasjonService(
         private const val APP = "syfosmvarsel"
     }
 
-    suspend fun opprettBrukernotifikasjon(
+    fun opprettBrukernotifikasjon(
         sykmeldingId: String,
         mottattDato: LocalDateTime,
         fnr: String,
@@ -52,7 +52,7 @@ class BrukernotifikasjonService(
             val oppgaveInput = OppgaveInputBuilder()
                 .withTidspunkt(opprettBrukernotifikasjon.timestamp.toLocalDateTime())
                 .withTekst(tekst)
-                .withLink(URL(lagOppgavelenke(dittSykefravaerUrl)))
+                .withLink(URL(lagOppgavelenke(dittSykefravaerUrl, sykmeldingId)))
                 .withSikkerhetsnivaa(4)
                 .withEksternVarsling(true).apply {
                     withPrefererteKanaler(PreferertKanal.SMS)
@@ -128,7 +128,7 @@ class BrukernotifikasjonService(
             notifikasjonstatus = Notifikasjonstatus.FERDIG,
         )
 
-    private fun lagOppgavelenke(dittSykefravaerUrl: String): String {
-        return "$dittSykefravaerUrl/syk/sykefravaer"
+    private fun lagOppgavelenke(dittSykefravaerUrl: String, sykmeldingId: String): String {
+        return "$dittSykefravaerUrl/syk/sykmeldinger/$sykmeldingId"
     }
 }
