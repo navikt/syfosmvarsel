@@ -7,7 +7,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
 val kluentVersion = "1.72"
-val ktorVersion = "2.2.4"
+val ktorVersion = "2.3.0"
 val logbackVersion = "1.4.6"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.6.1"
