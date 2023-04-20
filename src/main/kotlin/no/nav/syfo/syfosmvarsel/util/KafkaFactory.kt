@@ -20,7 +20,7 @@ class KafkaFactory private constructor() {
         fun getNyKafkaAivenConsumer(environment: Environment): KafkaConsumer<String, String> {
             val consumerProperties = KafkaUtils.getAivenKafkaConfig().toConsumerConfig(
                 "syfosmvarsel-consumer",
-                valueDeserializer = StringDeserializer::class
+                valueDeserializer = StringDeserializer::class,
             ).also {
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
                 it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
@@ -46,7 +46,7 @@ class KafkaFactory private constructor() {
             val kafkaBrukernotifikasjonProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
                 "syfosmvarsel",
                 valueSerializer = KafkaAvroSerializer::class,
-                keySerializer = KafkaAvroSerializer::class
+                keySerializer = KafkaAvroSerializer::class,
             ).also {
                 it["schema.registry.url"] = environment.kafkaSchemaRegistryUrl
                 it["basic.auth.credentials.source"] = "USER_INFO"
@@ -58,7 +58,7 @@ class KafkaFactory private constructor() {
                 kafkaproducerOpprett = kafkaproducerOpprett,
                 kafkaproducerDone = kafkaproducerDone,
                 brukernotifikasjonOpprettTopic = environment.brukernotifikasjonOpprettTopic,
-                brukernotifikasjonDoneTopic = environment.brukernotifikasjonDoneTopic
+                brukernotifikasjonDoneTopic = environment.brukernotifikasjonDoneTopic,
             )
         }
     }

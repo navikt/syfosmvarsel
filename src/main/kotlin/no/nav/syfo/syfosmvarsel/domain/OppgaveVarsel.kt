@@ -9,5 +9,5 @@ data class OppgaveVarsel(
     val utlopstidspunkt: LocalDateTime,
     val utsendelsestidspunkt: LocalDateTime,
     val varseltypeId: String,
-    val varselbestillingId: UUID
+    val varselbestillingId: UUID,
 )

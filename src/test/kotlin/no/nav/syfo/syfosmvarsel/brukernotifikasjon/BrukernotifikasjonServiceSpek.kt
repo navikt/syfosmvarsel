@@ -34,13 +34,13 @@ class BrukernotifikasjonServiceSpek : FunSpec({
         dittSykefravaerUrl = "https://dittsykefravaer", brukernotifikasjonOpprettTopic = "opprett-topic",
         brukernotifikasjonDoneTopic = "done-topic", kafkaSchemaRegistryPassword = "",
         kafkaSchemaRegistryUrl = "", kafkaSchemaRegistryUsername = "", databaseUsername = "user",
-        databasePassword = "pwd", dbHost = "host", dbName = "smvarsel", dbPort = "5089"
+        databasePassword = "pwd", dbHost = "host", dbName = "smvarsel", dbPort = "5089",
     )
 
     val kafkaBrukernotifikasjonProducerConfig = kafkaConfig.toProducerConfig(
         "syfosmvarsel",
         valueSerializer = KafkaAvroSerializer::class,
-        keySerializer = KafkaAvroSerializer::class
+        keySerializer = KafkaAvroSerializer::class,
     )
 
     val kafkaproducerOpprett = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
@@ -49,7 +49,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
         kafkaproducerOpprett = kafkaproducerOpprett,
         kafkaproducerDone = kafkaproducerDone,
         brukernotifikasjonOpprettTopic = config.brukernotifikasjonOpprettTopic,
-        brukernotifikasjonDoneTopic = config.brukernotifikasjonDoneTopic
+        brukernotifikasjonDoneTopic = config.brukernotifikasjonDoneTopic,
     )
 
     val consumerProperties = kafkaConfig
@@ -72,7 +72,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
         event = "APEN",
         grupperingsId = sykmeldingId,
         eventId = eventIdOpprettet,
-        notifikasjonstatus = Notifikasjonstatus.OPPRETTET
+        notifikasjonstatus = Notifikasjonstatus.OPPRETTET,
     )
 
     val sykmeldingStatusKafkaMessageDTO = SykmeldingStatusKafkaMessageDTO(
@@ -81,14 +81,14 @@ class BrukernotifikasjonServiceSpek : FunSpec({
             timestamp = timestampFerdig,
             statusEvent = STATUS_SENDT,
             arbeidsgiver = null,
-            sporsmals = null
+            sporsmals = null,
         ),
         kafkaMetadata = KafkaMetadataDTO(
             sykmeldingId = sykmeldingId.toString(),
             timestamp = timestampFerdig,
             fnr = "12345678912",
-            source = "syfoservice"
-        )
+            source = "syfoservice",
+        ),
     )
 
     afterTest {
@@ -102,7 +102,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
                 mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst",
                 fnr = "12345678912",
-                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
+                loggingMeta = LoggingMeta("mottakId", "12315", "", ""),
             )
 
             val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
@@ -123,7 +123,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
                 mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst",
                 fnr = "fnr",
-                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
+                loggingMeta = LoggingMeta("mottakId", "12315", "", ""),
             )
 
             val brukernotifikasjoner = database.connection.hentBrukernotifikasjonListe(sykmeldingId)
@@ -182,7 +182,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
                 mottattDato = timestampOpprettetLocalDateTime,
                 tekst = "tekst",
                 fnr = "12345678912",
-                loggingMeta = LoggingMeta("mottakId", "12315", "", "")
+                loggingMeta = LoggingMeta("mottakId", "12315", "", ""),
             )
 
             val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()
@@ -195,7 +195,7 @@ class BrukernotifikasjonServiceSpek : FunSpec({
             nokkel.getAppnavn() shouldBeEqualTo "syfosmvarsel"
             nokkel.getEventId() shouldBeEqualTo sykmeldingId.toString()
             nokkel.getFodselsnummer() shouldBeEqualTo "12345678912"
-            oppgave.getLink() shouldBeEqualTo "https://dittsykefravar/syk/sykefravaer"
+            oppgave.getLink() shouldBeEqualTo "https://dittsykefravar/syk/sykmeldinger/$sykmeldingId"
             oppgave.getSikkerhetsnivaa() shouldBeEqualTo 4
             oppgave.getTekst() shouldBeEqualTo "tekst"
             oppgave.getTidspunkt() shouldBeEqualTo timestampOpprettet.toInstant().toEpochMilli()

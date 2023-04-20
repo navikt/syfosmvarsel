@@ -32,14 +32,14 @@ class StatusendringServiceSpek : FunSpec({
             timestamp = timestamp,
             statusEvent = STATUS_SENDT,
             arbeidsgiver = null,
-            sporsmals = null
+            sporsmals = null,
         ),
         kafkaMetadata = KafkaMetadataDTO(
             sykmeldingId = sykmeldingId,
             timestamp = timestamp,
             fnr = "fnr",
-            source = "syfoservice"
-        )
+            source = "syfoservice",
+        ),
     )
 
     beforeTest {
@@ -57,7 +57,7 @@ class StatusendringServiceSpek : FunSpec({
         test("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er BEKREFTET") {
             val sykmeldingStatusKafkaMessageBekreftet = SykmeldingStatusKafkaMessageDTO(
                 event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_BEKREFTET),
-                kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata
+                kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata,
             )
 
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageBekreftet)
@@ -68,7 +68,7 @@ class StatusendringServiceSpek : FunSpec({
         test("handterStatusendring ferdigstiller brukernotifikasjon hvis sykmelding er AVBRUTT") {
             val sykmeldingStatusKafkaMessageAvbrutt = SykmeldingStatusKafkaMessageDTO(
                 event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_AVBRUTT),
-                kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata
+                kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata,
             )
 
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageAvbrutt)
@@ -79,7 +79,7 @@ class StatusendringServiceSpek : FunSpec({
         test("handterStatusendring ferdigstiller ikke brukernotifikasjon hvis sykmelding er APEN") {
             val sykmeldingStatusKafkaMessageApen = SykmeldingStatusKafkaMessageDTO(
                 event = sykmeldingStatusKafkaMessageDTO.event.copy(statusEvent = STATUS_APEN),
-                kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata
+                kafkaMetadata = sykmeldingStatusKafkaMessageDTO.kafkaMetadata,
             )
 
             statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageApen)

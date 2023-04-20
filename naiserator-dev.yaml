@@ -53,4 +53,4 @@ spec:
     enabled: false
   env:
     - name: DITT_SYKEFRAVAER_URL
-      value: https://www-gcp.dev.nav.no
+      value: https://www.ekstern.dev.nav.no

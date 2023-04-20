@@ -6,4 +6,4 @@ jobs:
     uses: navikt/teamsykmelding-github-actions-workflows/.github/workflows/jar-app.yaml@main
     secrets: inherit
     with:
-      app: syfosmvarsel
+      app: smtss

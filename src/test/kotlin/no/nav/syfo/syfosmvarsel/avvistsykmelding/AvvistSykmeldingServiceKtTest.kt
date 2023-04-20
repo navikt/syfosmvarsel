@@ -49,7 +49,7 @@ class AvvistSykmeldingServiceKtTest : FunSpec({
 
             avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(
                 objectMapper.readValue(cr.value()),
-                LoggingMeta("mottakId", "12315", "", "")
+                LoggingMeta("mottakId", "12315", "", ""),
             )
 
             val brukernotifikasjoner =
@@ -62,7 +62,7 @@ class AvvistSykmeldingServiceKtTest : FunSpec({
                     any(),
                     withArg {
                         it.getEksternVarsling() shouldBeEqualTo true
-                    }
+                    },
                 )
             }
         }

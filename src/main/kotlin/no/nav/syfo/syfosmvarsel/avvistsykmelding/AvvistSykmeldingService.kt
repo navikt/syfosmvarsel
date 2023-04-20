@@ -11,7 +11,7 @@ class AvvistSykmeldingService(private val brukernotifikasjonService: Brukernotif
 
     suspend fun opprettVarselForAvvisteSykmeldinger(
         receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         try {
             log.info("Mottatt avvist sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
