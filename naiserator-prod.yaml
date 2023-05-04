@@ -49,9 +49,6 @@ spec:
       memory: 512Mi
   kafka:
     pool: nav-prod
-  webproxy: false
-  vault:
-    enabled: false
   env:
     - name: DITT_SYKEFRAVAER_URL
       value: https://www.nav.no

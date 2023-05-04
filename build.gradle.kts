@@ -14,7 +14,7 @@ val kotestVersion = "5.6.1"
 val logstashEncoderVersion = "7.3"
 val kafkaVersion = "3.3.1"
 val jacksonVersion = "2.15.0"
-val smCommonVersion = "1.4d2de6e"
+val smCommonVersion = "1.0.1"
 val avroVersion = "1.11.1"
 val confluentVersion = "7.3.3"
 val postgresVersion = "42.6.0"
@@ -28,7 +28,6 @@ val testContainerVersion = "1.18.0"
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.21"
     id("org.jmailen.kotlinter") version "3.14.0"
-    id("com.diffplug.spotless") version "6.18.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
