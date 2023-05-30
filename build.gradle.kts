@@ -27,7 +27,7 @@ val testContainerVersion = "1.18.1"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.21"
-    id("org.jmailen.kotlinter") version "3.14.0"
+    id("org.jmailen.kotlinter") version "3.15.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
