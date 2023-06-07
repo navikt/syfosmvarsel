@@ -22,7 +22,7 @@ val flywayVersion = "9.19.1"
 val hikariVersion = "5.0.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.5"
-val kotlinVersion = "1.8.21"
+val kotlinVersion = "1.8.22"
 val testContainerVersion = "1.18.3"
 
 plugins {
