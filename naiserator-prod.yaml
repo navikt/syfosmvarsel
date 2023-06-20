@@ -10,20 +10,19 @@ spec:
     sqlInstances:
       - name: smvarsel-instance
         type: POSTGRES_14
-        tier: db-custom-2-5120
         diskSize: 100
         databases:
           - name: smvarsel
             envVarPrefix: NAIS_DATABASE
         diskAutoresize: true
-        highAvailability: true
+        highAvailability: false
         diskType: SSD
         insights:
           enabled: true
   image: {{ image }}
   replicas:
-    min: 2
-    max: 4
+    min: 1
+    max: 1
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -42,11 +41,10 @@ spec:
     path: /internal/prometheus
   resources:
     limits:
-      cpu: 500m
       memory: 1Gi
     requests:
-      cpu: 300m
-      memory: 512Mi
+      cpu: 50m
+      memory: 300Mi
   kafka:
     pool: nav-prod
   env:
