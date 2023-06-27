@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.time.Duration
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -29,16 +31,15 @@ import no.nav.syfo.util.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.Duration
-import java.util.UUID
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
-val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-}
+val objectMapper: ObjectMapper =
+    ObjectMapper().apply {
+        registerKotlinModule()
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    }
 
 @DelicateCoroutinesApi
 fun main() {
@@ -46,10 +47,11 @@ fun main() {
     val database = Database(env)
 
     val applicationState = ApplicationState()
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-    )
+    val applicationEngine =
+        createApplicationEngine(
+            env,
+            applicationState,
+        )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -57,11 +59,12 @@ fun main() {
     val nySykmeldingConsumerAiven = getNyKafkaAivenConsumer(env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(env)
 
-    val brukernotifikasjonService = BrukernotifikasjonService(
-        database = database,
-        brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
-        dittSykefravaerUrl = env.dittSykefravaerUrl,
-    )
+    val brukernotifikasjonService =
+        BrukernotifikasjonService(
+            database = database,
+            brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
+            dittSykefravaerUrl = env.dittSykefravaerUrl,
+        )
 
     val nySykmeldingService = NySykmeldingService(brukernotifikasjonService)
     val avvistSykmeldingService = AvvistSykmeldingService(brukernotifikasjonService)
@@ -80,12 +83,19 @@ fun main() {
 }
 
 @DelicateCoroutinesApi
-fun createListener(applicationState: ApplicationState, applicationLogic: suspend CoroutineScope.() -> Unit): Job =
+fun createListener(
+    applicationState: ApplicationState,
+    applicationLogic: suspend CoroutineScope.() -> Unit
+): Job =
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {
             applicationLogic()
         } catch (e: TrackableException) {
-            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+            log.error(
+                "En uhåndtert feil oppstod, applikasjonen restarter {}",
+                fields(e.loggingMeta),
+                e.cause
+            )
         } finally {
             applicationState.alive = false
             applicationState.ready = false
@@ -103,11 +113,21 @@ fun launchListeners(
     nyKafkaConsumerAiven: KafkaConsumer<String, String>,
 ) {
     createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(applicationState, nyKafkaConsumerAiven, nySykmeldingService, avvistSykmeldingService, environment)
+        blockingApplicationLogicNySykmelding(
+            applicationState,
+            nyKafkaConsumerAiven,
+            nySykmeldingService,
+            avvistSykmeldingService,
+            environment
+        )
     }
 
     createListener(applicationState) {
-        blockingApplicationLogicStatusendringAiven(applicationState, statusendringService, kafkaStatusConsumerAiven)
+        blockingApplicationLogicStatusendringAiven(
+            applicationState,
+            statusendringService,
+            kafkaStatusConsumerAiven
+        )
     }
 }
 
@@ -119,22 +139,34 @@ suspend fun blockingApplicationLogicNySykmelding(
     environment: Environment,
 ) {
     while (applicationState.ready) {
-        kafkaConsumer.poll(Duration.ofMillis(1000)).filterNot { it.value() == null }.forEach {
-            val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
+        kafkaConsumer
+            .poll(Duration.ofMillis(1000))
+            .filterNot { it.value() == null }
+            .forEach {
+                val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(it.value())
 
-            val loggingMeta = LoggingMeta(
-                mottakId = receivedSykmelding.navLogId,
-                orgNr = receivedSykmelding.legekontorOrgNr,
-                msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id,
-            )
-            wrapExceptions(loggingMeta) {
-                when (it.topic()) {
-                    environment.avvistSykmeldingTopicAiven -> avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(receivedSykmelding, loggingMeta)
-                    else -> nySykmeldingService.opprettVarselForNySykmelding(receivedSykmelding, loggingMeta)
+                val loggingMeta =
+                    LoggingMeta(
+                        mottakId = receivedSykmelding.navLogId,
+                        orgNr = receivedSykmelding.legekontorOrgNr,
+                        msgId = receivedSykmelding.msgId,
+                        sykmeldingId = receivedSykmelding.sykmelding.id,
+                    )
+                wrapExceptions(loggingMeta) {
+                    when (it.topic()) {
+                        environment.avvistSykmeldingTopicAiven ->
+                            avvistSykmeldingService.opprettVarselForAvvisteSykmeldinger(
+                                receivedSykmelding,
+                                loggingMeta
+                            )
+                        else ->
+                            nySykmeldingService.opprettVarselForNySykmelding(
+                                receivedSykmelding,
+                                loggingMeta
+                            )
+                    }
                 }
             }
-        }
     }
 }
 
@@ -144,16 +176,22 @@ fun blockingApplicationLogicStatusendringAiven(
     kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
 ) {
     while (applicationState.ready) {
-        kafkaStatusConsumerAiven.poll(Duration.ofMillis(1000))
+        kafkaStatusConsumerAiven
+            .poll(Duration.ofMillis(1000))
             .filter { it.value() != null }
             .filter { it.key().erUuid() }
             .forEach {
                 val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
                 try {
-                    log.info("Mottatt statusmelding fra aiven ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}")
+                    log.info(
+                        "Mottatt statusmelding fra aiven ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}"
+                    )
                     statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
                 } catch (e: Exception) {
-                    log.error("Noe gikk galt ved behandling av statusendring fra aiven for sykmelding med id {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId)
+                    log.error(
+                        "Noe gikk galt ved behandling av statusendring fra aiven for sykmelding med id {}",
+                        sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId
+                    )
                     throw e
                 }
             }

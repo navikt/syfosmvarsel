@@ -18,42 +18,70 @@ import org.apache.kafka.common.serialization.StringDeserializer
 class KafkaFactory private constructor() {
     companion object {
         fun getNyKafkaAivenConsumer(environment: Environment): KafkaConsumer<String, String> {
-            val consumerProperties = KafkaUtils.getAivenKafkaConfig().toConsumerConfig(
-                "syfosmvarsel-consumer",
-                valueDeserializer = StringDeserializer::class,
-            ).also {
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            }
+            val consumerProperties =
+                KafkaUtils.getAivenKafkaConfig()
+                    .toConsumerConfig(
+                        "syfosmvarsel-consumer",
+                        valueDeserializer = StringDeserializer::class,
+                    )
+                    .also {
+                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                    }
             val consumer = KafkaConsumer<String, String>(consumerProperties)
-            consumer.subscribe(listOf(environment.okSykmeldingTopicAiven, environment.avvistSykmeldingTopicAiven, environment.manuellSykmeldingTopicAiven))
+            consumer.subscribe(
+                listOf(
+                    environment.okSykmeldingTopicAiven,
+                    environment.avvistSykmeldingTopicAiven,
+                    environment.manuellSykmeldingTopicAiven
+                )
+            )
             return consumer
         }
 
-        fun getKafkaStatusConsumerAiven(environment: Environment): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
+        fun getKafkaStatusConsumerAiven(
+            environment: Environment
+        ): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
             val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig()
-            val properties = kafkaBaseConfigAiven.toConsumerConfig("syfosmvarsel-consumer", JacksonKafkaDeserializer::class)
+            val properties =
+                kafkaBaseConfigAiven.toConsumerConfig(
+                    "syfosmvarsel-consumer",
+                    JacksonKafkaDeserializer::class
+                )
             properties.let {
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
                 it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
             }
-            val kafkaStatusConsumer = KafkaConsumer(properties, StringDeserializer(), JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class))
+            val kafkaStatusConsumer =
+                KafkaConsumer(
+                    properties,
+                    StringDeserializer(),
+                    JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class)
+                )
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusAivenTopic))
             return kafkaStatusConsumer
         }
 
-        fun getBrukernotifikasjonKafkaProducer(environment: Environment): BrukernotifikasjonKafkaProducer {
-            val kafkaBrukernotifikasjonProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
-                "syfosmvarsel",
-                valueSerializer = KafkaAvroSerializer::class,
-                keySerializer = KafkaAvroSerializer::class,
-            ).also {
-                it["schema.registry.url"] = environment.kafkaSchemaRegistryUrl
-                it["basic.auth.credentials.source"] = "USER_INFO"
-                it["basic.auth.user.info"] = "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
-            }
-            val kafkaproducerOpprett = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
-            val kafkaproducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerConfig)
+        fun getBrukernotifikasjonKafkaProducer(
+            environment: Environment
+        ): BrukernotifikasjonKafkaProducer {
+            val kafkaBrukernotifikasjonProducerConfig =
+                KafkaUtils.getAivenKafkaConfig()
+                    .toProducerConfig(
+                        "syfosmvarsel",
+                        valueSerializer = KafkaAvroSerializer::class,
+                        keySerializer = KafkaAvroSerializer::class,
+                    )
+                    .also {
+                        it["schema.registry.url"] = environment.kafkaSchemaRegistryUrl
+                        it["basic.auth.credentials.source"] = "USER_INFO"
+                        it["basic.auth.user.info"] =
+                            "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
+                    }
+            val kafkaproducerOpprett =
+                KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
+            val kafkaproducerDone =
+                KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerConfig)
             return BrukernotifikasjonKafkaProducer(
                 kafkaproducerOpprett = kafkaproducerOpprett,
                 kafkaproducerDone = kafkaproducerDone,

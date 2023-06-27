@@ -14,10 +14,24 @@ class AvvistSykmeldingService(private val brukernotifikasjonService: Brukernotif
         loggingMeta: LoggingMeta,
     ) {
         try {
-            log.info("Mottatt avvist sykmelding med id {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
-            brukernotifikasjonService.opprettBrukernotifikasjon(sykmeldingId = receivedSykmelding.sykmelding.id, mottattDato = receivedSykmelding.mottattDato, tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av NAV", fnr = receivedSykmelding.personNrPasient, loggingMeta = loggingMeta)
+            log.info(
+                "Mottatt avvist sykmelding med id {}, {}",
+                receivedSykmelding.sykmelding.id,
+                fields(loggingMeta)
+            )
+            brukernotifikasjonService.opprettBrukernotifikasjon(
+                sykmeldingId = receivedSykmelding.sykmelding.id,
+                mottattDato = receivedSykmelding.mottattDato,
+                tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av NAV",
+                fnr = receivedSykmelding.personNrPasient,
+                loggingMeta = loggingMeta
+            )
             AVVIST_SM_VARSEL_OPPRETTET.inc()
-            log.info("Opprettet oppgavevarsel for avvist sykmelding med {}, {}", receivedSykmelding.sykmelding.id, fields(loggingMeta))
+            log.info(
+                "Opprettet oppgavevarsel for avvist sykmelding med {}, {}",
+                receivedSykmelding.sykmelding.id,
+                fields(loggingMeta)
+            )
         } catch (e: Exception) {
             log.error("Det skjedde en feil ved oppretting av varsel for avvist sykmelding")
             throw e

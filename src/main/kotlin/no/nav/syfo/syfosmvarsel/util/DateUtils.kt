@@ -13,5 +13,8 @@ fun LocalDateTime.innenforArbeidstidEllerPaafolgendeDag(): LocalDateTime {
 }
 
 fun LocalDate.mellom9og17(): LocalDateTime {
-    return this.atTime(ThreadLocalRandom.current().nextInt(9, 16), ThreadLocalRandom.current().nextInt(0, 59))
+    return this.atTime(
+        ThreadLocalRandom.current().nextInt(9, 16),
+        ThreadLocalRandom.current().nextInt(0, 59)
+    )
 }

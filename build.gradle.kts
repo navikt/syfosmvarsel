@@ -24,10 +24,11 @@ val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.5"
 val kotlinVersion = "1.8.22"
 val testContainerVersion = "1.18.3"
+val ktfmtVersion = "0.44"
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.22"
-    id("org.jmailen.kotlinter") version "3.15.0"
+    id("com.diffplug.spotless") version "6.19.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.cyclonedx.bom") version "1.7.4"
 }
@@ -123,7 +124,10 @@ tasks {
         }
     }
 
-    "check" {
-        dependsOn("formatKotlin")
+    spotless {
+        kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
+        check {
+            dependsOn("spotlessApply")
+        }
     }
 }

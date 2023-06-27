@@ -16,7 +16,11 @@ class StatusendringService(private val brukernotifikasjonService: Brukernotifika
         if (skalFerdigstilleBrukernotifkasjon(sykmeldingStatusKafkaMessageDTO.event.statusEvent)) {
             brukernotifikasjonService.ferdigstillBrukernotifikasjon(sykmeldingStatusKafkaMessageDTO)
         } else {
-            log.info("Ignorerer statusendring for sykmelding {}, status {}", sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId, sykmeldingStatusKafkaMessageDTO.event.statusEvent)
+            log.info(
+                "Ignorerer statusendring for sykmelding {}, status {}",
+                sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId,
+                sykmeldingStatusKafkaMessageDTO.event.statusEvent
+            )
         }
     }
 
