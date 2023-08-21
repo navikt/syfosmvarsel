@@ -11,6 +11,10 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+    ignore:
+      # ignore all GitHub linguist patch updates
+      - dependency-name: "com.github.navikt:brukernotifikasjon-schemas"
+        update-types: ["version-update:semver-patch, version-update:semver-minor"]
     registries:
       - syfosm-common
     groups:
