@@ -14,7 +14,7 @@ updates:
     ignore:
       # ignore all GitHub linguist patch updates
       - dependency-name: "com.github.navikt:brukernotifikasjon-schemas"
-        update-types: ["version-update:semver-patch, version-update:semver-minor"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
     registries:
       - syfosm-common
     groups:
