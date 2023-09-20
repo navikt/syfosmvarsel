@@ -1,10 +1,4 @@
 version: 2
-registries:
-  syfosm-common:
-    type: maven-repository
-    url: https://maven.pkg.github.com/navikt
-    username: x-access-token
-    password: ${{ secrets.GITHUB_TOKEN }}
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
@@ -15,8 +9,6 @@ updates:
       # ignore all GitHub linguist patch updates
       - dependency-name: "com.github.navikt:brukernotifikasjon-schemas"
         update-types: ["version-update:semver-patch", "version-update:semver-minor"]
-    registries:
-      - syfosm-common
     groups:
       dependencies:
         patterns:
