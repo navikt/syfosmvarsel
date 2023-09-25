@@ -19,7 +19,7 @@ class KafkaFactory private constructor() {
     companion object {
         fun getNyKafkaAivenConsumer(environment: Environment): KafkaConsumer<String, String> {
             val consumerProperties =
-                KafkaUtils.getAivenKafkaConfig()
+                KafkaUtils.getAivenKafkaConfig("ny-consumer")
                     .toConsumerConfig(
                         "syfosmvarsel-consumer",
                         valueDeserializer = StringDeserializer::class,
@@ -42,7 +42,7 @@ class KafkaFactory private constructor() {
         fun getKafkaStatusConsumerAiven(
             environment: Environment
         ): KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO> {
-            val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig()
+            val kafkaBaseConfigAiven = KafkaUtils.getAivenKafkaConfig("status-consumer")
             val properties =
                 kafkaBaseConfigAiven.toConsumerConfig(
                     "syfosmvarsel-consumer",
@@ -66,7 +66,7 @@ class KafkaFactory private constructor() {
             environment: Environment
         ): BrukernotifikasjonKafkaProducer {
             val kafkaBrukernotifikasjonProducerConfig =
-                KafkaUtils.getAivenKafkaConfig()
+                KafkaUtils.getAivenKafkaConfig("bruker-notifikatsjon-produser")
                     .toProducerConfig(
                         "syfosmvarsel",
                         valueSerializer = KafkaAvroSerializer::class,
