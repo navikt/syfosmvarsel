@@ -1,7 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -25,12 +21,18 @@ val mockkVersion = "1.13.8"
 val kotlinVersion = "1.9.10"
 val testContainerVersion = "1.19.0"
 val ktfmtVersion = "0.44"
+val snappyJavaVersion = "1.1.10.5"
+
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.10"
+    id("application")
+    kotlin("jvm") version "1.9.10"
     id("com.diffplug.spotless") version "6.21.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.cyclonedx.bom") version "1.7.4"
+}
+
+application {
+    mainClass.set("no.nav.syfo.syfosmvarsel.BootstrapKt")
 }
 
 repositories {
@@ -55,6 +57,11 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    constraints {
+        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
+            because("override transient from org.apache.kafka:kafka_2.12")
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("org.apache.avro:avro:$avroVersion")
     implementation("com.github.navikt:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
@@ -75,8 +82,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
+        exclude(group = "commons-codec")
     }
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
@@ -85,33 +94,28 @@ dependencies {
 
 
 tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.syfosmvarsel.BootstrapKt"
-    }
-
-    create("printVersion") {
-
-        doLast {
-            println(project.version)
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.syfosmvarsel.BootstrapKt",
+                ),
+            )
         }
     }
 
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
-        }
-    }
-
-    withType<Test> {
-        useJUnitPlatform {
-        }
+    test {
+        useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
             showStackTraces = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
     }
+
 
     spotless {
         kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
