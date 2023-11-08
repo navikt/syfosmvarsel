@@ -3,14 +3,14 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.7.3"
 val kluentVersion = "1.73"
-val ktorVersion = "2.3.5"
+val ktorVersion = "2.3.6"
 val logbackVersion = "1.4.11"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.7.2"
+val kotestVersion = "5.8.0"
 val logstashEncoderVersion = "7.4"
 val kafkaVersion = "3.6.0"
 val jacksonVersion = "2.15.3"
-val smCommonVersion = "2.0.4"
+val smCommonVersion = "2.0.6"
 val avroVersion = "1.11.3"
 val confluentVersion = "7.5.1"
 val postgresVersion = "42.6.0"
@@ -70,7 +70,6 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
