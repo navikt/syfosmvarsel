@@ -19,7 +19,7 @@ val hikariVersion = "5.0.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.8"
 val kotlinVersion = "1.9.20"
-val testContainerVersion = "1.19.1"
+val testContainerVersion = "1.19.2"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
 
