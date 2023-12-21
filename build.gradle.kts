@@ -14,11 +14,11 @@ val smCommonVersion = "2.0.8"
 val avroVersion = "1.11.3"
 val confluentVersion = "7.5.2"
 val postgresVersion = "42.7.1"
-val flywayVersion = "10.3.0"
+val flywayVersion = "10.4.0"
 val hikariVersion = "5.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.8"
-val kotlinVersion = "1.9.21"
+val kotlinVersion = "1.9.22"
 val testContainerVersion = "1.19.3"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
@@ -26,7 +26,7 @@ val snappyJavaVersion = "1.1.10.5"
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     id("com.diffplug.spotless") version "6.23.3"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
