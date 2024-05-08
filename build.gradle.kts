@@ -22,7 +22,7 @@ val kotlinVersion = "1.9.22"
 val testContainerVersion = "1.19.6"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
-
+val opentelemetryVersion = "2.3.0"
 
 plugins {
     id("application")
@@ -78,6 +78,7 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
