@@ -14,19 +14,19 @@ val smCommonVersion = "2.0.8"
 val avroVersion = "1.11.3"
 val confluentVersion = "7.6.0"
 val postgresVersion = "42.7.3"
-val flywayVersion = "10.12.0"
+val flywayVersion = "10.13.0"
 val hikariVersion = "5.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
-val mockkVersion = "1.13.10"
-val kotlinVersion = "1.9.24"
+val mockkVersion = "1.13.11"
+val kotlinVersion = "2.0.0"
 val testContainerVersion = "1.19.8"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
-val opentelemetryVersion = "2.3.0"
+val opentelemetryVersion = "2.4.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "2.0.0"
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
@@ -96,9 +96,9 @@ dependencies {
 
 tasks {
     shadowJar {
-mergeServiceFiles {
-     setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
- }
+        mergeServiceFiles {
+            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+        }
         archiveBaseName.set("app")
         archiveClassifier.set("")
         isZip64 = true
