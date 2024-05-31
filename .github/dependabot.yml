@@ -6,7 +6,6 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     ignore:
-      - dependency-name: "com.github.navikt:brukernotifikasjon-schemas"
       - dependency-name: "org.apache.kafka:kafka_2.12"
         update-types: ["version-update:semver-major"]
     groups:
