@@ -9,10 +9,22 @@ Application for creating sykmeldingsvarsler
 * Gradle
 * Kotest
 * Jackson
+* Docker
 
-#### Requirements
+### :scroll: Prerequisites
+* JDK 21
+  Make sure you have the Java JDK 21 installed
+  You can check which version you have installed using this command:
+``` shell
+java -version
+```
 
-* JDK 17
+* Docker
+  Make sure you have the Docker installed
+  You can check which version you have installed using this command:
+``` shell
+docker -version
+```
 
 #### Build and run tests
 To build locally and run the integration tests you can simply run

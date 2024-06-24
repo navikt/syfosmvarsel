@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -23,6 +25,8 @@ val testContainerVersion = "1.19.8"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
 val opentelemetryVersion = "2.4.0"
+val javaVersion = JvmTarget.JVM_21
+
 
 plugins {
     id("application")
