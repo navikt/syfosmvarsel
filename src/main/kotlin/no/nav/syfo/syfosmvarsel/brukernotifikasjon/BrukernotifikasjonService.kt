@@ -1,6 +1,6 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
-import java.net.URL
+import java.net.URI
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -58,7 +58,7 @@ class BrukernotifikasjonService(
                 OppgaveInputBuilder()
                     .withTidspunkt(opprettBrukernotifikasjon.timestamp.toLocalDateTime())
                     .withTekst(tekst)
-                    .withLink(URL(lagOppgavelenke(dittSykefravaerUrl, sykmeldingId)))
+                    .withLink(URI.create(lagOppgavelenke(dittSykefravaerUrl, sykmeldingId)).toURL())
                     .withSikkerhetsnivaa(4)
                     .withEksternVarsling(true)
                     .apply { withPrefererteKanaler(PreferertKanal.SMS) }
