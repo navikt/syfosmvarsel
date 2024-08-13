@@ -9,12 +9,12 @@ import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.OppgaveInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 
 class BrukernotifikasjonService(
     private val database: DatabaseInterface,

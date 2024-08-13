@@ -1,11 +1,11 @@
 package no.nav.syfo.syfosmvarsel.avvistsykmelding
 
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.AVVIST_SM_VARSEL_OPPRETTET
+import no.nav.syfo.syfosmvarsel.model.ReceivedSykmelding
 
 class AvvistSykmeldingService(private val brukernotifikasjonService: BrukernotifikasjonService) {
 

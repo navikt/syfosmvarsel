@@ -4,12 +4,12 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer
 import no.nav.brukernotifikasjon.schemas.input.DoneInput
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
-import no.nav.syfo.kafka.aiven.KafkaUtils
-import no.nav.syfo.kafka.toConsumerConfig
-import no.nav.syfo.kafka.toProducerConfig
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonKafkaProducer
+import no.nav.syfo.syfosmvarsel.kafka.aiven.KafkaUtils
+import no.nav.syfo.syfosmvarsel.kafka.toConsumerConfig
+import no.nav.syfo.syfosmvarsel.kafka.toProducerConfig
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer

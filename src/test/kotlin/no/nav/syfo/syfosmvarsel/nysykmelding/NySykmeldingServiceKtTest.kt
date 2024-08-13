@@ -14,7 +14,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.UUID
 import kotlin.test.assertFailsWith
-import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonKafkaProducer
@@ -22,6 +21,7 @@ import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.Notifikasjonstatus
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
+import no.nav.syfo.syfosmvarsel.model.AvsenderSystem
 import no.nav.syfo.syfosmvarsel.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.ConsumerRecord

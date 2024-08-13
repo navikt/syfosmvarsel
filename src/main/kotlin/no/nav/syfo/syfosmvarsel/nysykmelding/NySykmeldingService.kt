@@ -1,11 +1,11 @@
 package no.nav.syfo.syfosmvarsel.nysykmelding
 
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.model.AvsenderSystem
-import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.syfo.syfosmvarsel.metrics.NY_SM_VARSEL_OPPRETTET
+import no.nav.syfo.syfosmvarsel.model.AvsenderSystem
+import no.nav.syfo.syfosmvarsel.model.ReceivedSykmelding
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

@@ -16,14 +16,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.application.ApplicationServer
 import no.nav.syfo.syfosmvarsel.application.ApplicationState
 import no.nav.syfo.syfosmvarsel.application.createApplicationEngine
 import no.nav.syfo.syfosmvarsel.application.db.Database
 import no.nav.syfo.syfosmvarsel.avvistsykmelding.AvvistSykmeldingService
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.syfo.syfosmvarsel.model.ReceivedSykmelding
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.nysykmelding.NySykmeldingService
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer

@@ -10,14 +10,14 @@ import io.mockk.verify
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
-import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
-import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
-import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
-import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.KafkaMetadataDTO
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.STATUS_APEN
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.STATUS_AVBRUTT
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.STATUS_BEKREFTET
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.STATUS_SENDT
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 
 class StatusendringServiceSpek :
     FunSpec({

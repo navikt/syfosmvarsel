@@ -12,7 +12,6 @@ val kotestVersion = "5.9.1"
 val logstashEncoderVersion = "8.0"
 val kafkaVersion = "3.8.0"
 val jacksonVersion = "2.17.2"
-val smCommonVersion = "2.0.8"
 val avroVersion = "1.12.0"
 val confluentVersion = "7.7.0"
 val postgresVersion = "42.7.3"
@@ -72,8 +71,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
