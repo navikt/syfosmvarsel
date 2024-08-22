@@ -14,12 +14,12 @@ val kafkaVersion = "3.8.0"
 val jacksonVersion = "2.17.2"
 val avroVersion = "1.12.0"
 val confluentVersion = "7.7.0"
-val postgresVersion = "42.7.3"
-val flywayVersion = "10.17.1"
+val postgresVersion = "42.7.4"
+val flywayVersion = "10.17.2"
 val hikariVersion = "5.1.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.12"
-val kotlinVersion = "2.0.10"
+val kotlinVersion = "2.0.20"
 val testContainerVersion = "1.20.1"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.6"
@@ -29,7 +29,7 @@ val javaVersion = JvmTarget.JVM_21
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.20"
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
