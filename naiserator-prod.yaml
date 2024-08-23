@@ -19,6 +19,7 @@ spec:
         diskType: SSD
         insights:
           enabled: true
+        tier: db-custom-2-5120
   image: {{ image }}
   replicas:
     min: 2
