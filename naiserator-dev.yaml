@@ -19,7 +19,7 @@ spec:
         diskType: SSD
         insights:
           enabled: true
-       tier: db-f1-micro
+        tier: db-f1-micro
   image: {{ image }}
   replicas:
     min: 1
