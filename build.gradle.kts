@@ -23,7 +23,7 @@ val kotlinVersion = "2.0.20"
 val testContainerVersion = "1.20.1"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.7"
-val opentelemetryVersion = "2.7.0"
+val opentelemetryVersion = "2.8.0"
 val javaVersion = JvmTarget.JVM_21
 
 
