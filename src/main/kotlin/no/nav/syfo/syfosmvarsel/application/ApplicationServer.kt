@@ -1,10 +1,12 @@
 package no.nav.syfo.syfosmvarsel.application
 
-import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.EmbeddedServer
+import io.ktor.server.netty.NettyApplicationEngine
 import java.util.concurrent.TimeUnit
 
 class ApplicationServer(
-    private val applicationServer: ApplicationEngine,
+    private val applicationServer:
+        EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>,
     private val applicationState: ApplicationState,
 ) {
 
