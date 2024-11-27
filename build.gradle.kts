@@ -13,13 +13,13 @@ val logstashEncoderVersion = "8.0"
 val kafkaVersion = "3.9.0"
 val jacksonVersion = "2.18.1"
 val avroVersion = "1.12.0"
-val confluentVersion = "7.7.1"
+val confluentVersion = "7.7.2"
 val postgresVersion = "42.7.4"
 val flywayVersion = "11.0.0"
 val hikariVersion = "6.2.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.13"
-val kotlinVersion = "2.0.21"
+val kotlinVersion = "2.1.0"
 val testContainerVersion = "1.20.4"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.7"
@@ -29,7 +29,7 @@ val javaVersion = JvmTarget.JVM_21
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm") version "2.1.0"
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
