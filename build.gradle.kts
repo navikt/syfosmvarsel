@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 group = "no.nav.syfo"
 version = "1.0.0"
 
+val javaVersion = JvmTarget.JVM_21
+
 val coroutinesVersion = "1.9.0"
 val kluentVersion = "1.73"
 val ktorVersion = "3.0.1"
@@ -22,9 +24,11 @@ val mockkVersion = "1.13.13"
 val kotlinVersion = "2.0.21"
 val testContainerVersion = "1.20.4"
 val ktfmtVersion = "0.44"
-val snappyJavaVersion = "1.1.10.7"
 val opentelemetryVersion = "2.10.0"
-val javaVersion = JvmTarget.JVM_21
+
+//Added due to vulnerabilities
+val snappyJavaVersion = "1.1.10.7"
+val nettycommonVersion = "4.1.115.Final"
 
 
 plugins {
@@ -36,6 +40,12 @@ plugins {
 
 application {
     mainClass.set("no.nav.syfo.syfosmvarsel.BootstrapKt")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(javaVersion)
+    }
 }
 
 repositories {
@@ -54,6 +64,11 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    constraints {
+        implementation("io.netty:netty-common:$nettycommonVersion") {
+            because("Due to vulnerabilities in io.ktor:ktor-server-netty")
+        }
+    }
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -115,7 +130,7 @@ tasks {
     test {
         useJUnitPlatform {}
         testLogging {
-            events("skipped", "failed")
+            events("passed", "skipped", "failed")
             showStackTraces = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
