@@ -17,11 +17,11 @@ val jacksonVersion = "2.18.2"
 val avroVersion = "1.12.0"
 val confluentVersion = "7.8.0"
 val postgresVersion = "42.7.5"
-val flywayVersion = "11.2.0"
+val flywayVersion = "11.3.0"
 val hikariVersion = "6.2.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.16"
-val kotlinVersion = "2.1.0"
+val kotlinVersion = "2.1.10"
 val testContainerVersion = "1.20.4"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.12.0"
@@ -33,9 +33,9 @@ val nettycommonVersion = "4.1.117.Final"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm") version "2.1.10"
     id("com.diffplug.spotless") version "7.0.2"
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "8.3.6"
 }
 
 application {
