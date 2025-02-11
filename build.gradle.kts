@@ -7,7 +7,7 @@ val javaVersion = JvmTarget.JVM_21
 
 val coroutinesVersion = "1.10.1"
 val kluentVersion = "1.73"
-val ktorVersion = "3.0.3"
+val ktorVersion = "3.1.0"
 val logbackVersion = "1.5.16"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.9.1"
@@ -15,7 +15,7 @@ val logstashEncoderVersion = "8.0"
 val kafkaVersion = "3.9.0"
 val jacksonVersion = "2.18.2"
 val avroVersion = "1.12.0"
-val confluentVersion = "7.8.0"
+val confluentVersion = "7.8.1"
 val postgresVersion = "42.7.5"
 val flywayVersion = "11.3.1"
 val hikariVersion = "6.2.1"
@@ -28,7 +28,7 @@ val opentelemetryVersion = "2.12.0"
 
 //Added due to vulnerabilities
 val snappyJavaVersion = "1.1.10.7"
-val nettycommonVersion = "4.1.117.Final"
+val nettycommonVersion = "4.1.118.Final"
 
 
 plugins {
