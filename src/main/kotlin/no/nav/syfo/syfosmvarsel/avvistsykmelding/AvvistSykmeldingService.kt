@@ -22,7 +22,7 @@ class AvvistSykmeldingService(private val brukernotifikasjonService: Brukernotif
             brukernotifikasjonService.opprettBrukernotifikasjon(
                 sykmeldingId = receivedSykmelding.sykmelding.id,
                 mottattDato = receivedSykmelding.mottattDato,
-                tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av NAV",
+                tekst = "Du har mottatt en sykmelding som har blitt avvist automatisk av Nav",
                 fnr = receivedSykmelding.personNrPasient,
                 loggingMeta = loggingMeta
             )
