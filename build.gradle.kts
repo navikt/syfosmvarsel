@@ -7,28 +7,28 @@ val javaVersion = JvmTarget.JVM_21
 
 val coroutinesVersion = "1.10.1"
 val kluentVersion = "1.73"
-val ktorVersion = "3.1.0"
-val logbackVersion = "1.5.16"
+val ktorVersion = "3.1.1"
+val logbackVersion = "1.5.17"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.9.1"
 val logstashEncoderVersion = "8.0"
 val kafkaVersion = "3.9.0"
-val jacksonVersion = "2.18.2"
+val jacksonVersion = "2.18.3"
 val avroVersion = "1.12.0"
-val confluentVersion = "7.8.1"
+val confluentVersion = "7.9.0"
 val postgresVersion = "42.7.5"
-val flywayVersion = "11.3.2"
+val flywayVersion = "11.3.4"
 val hikariVersion = "6.2.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
-val mockkVersion = "1.13.16"
+val mockkVersion = "1.13.17"
 val kotlinVersion = "2.1.10"
-val testContainerVersion = "1.20.4"
+val testContainerVersion = "1.20.5"
 val ktfmtVersion = "0.44"
-val opentelemetryVersion = "2.13.0"
+val opentelemetryVersion = "2.13.3"
 
 //Added due to vulnerabilities
 val snappyJavaVersion = "1.1.10.7"
-val nettycommonVersion = "4.1.118.Final"
+val nettycommonVersion = "4.1.119.Final"
 
 
 plugins {
