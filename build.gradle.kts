@@ -22,7 +22,7 @@ val hikariVersion = "6.2.1"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.13.17"
 val kotlinVersion = "2.1.10"
-val testContainerVersion = "1.20.5"
+val testContainerVersion = "1.20.6"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.13.3"
 
