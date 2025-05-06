@@ -4,17 +4,22 @@ import java.net.URI
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.OppgaveInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
-import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
+
+data class Brukernotifikasjon(
+    val sykmeldingId: String,
+    val mottattDato: LocalDateTime,
+    val tekst: String,
+    val fnr: String,
+)
 
 class BrukernotifikasjonService(
     private val database: DatabaseInterface,
@@ -27,38 +32,41 @@ class BrukernotifikasjonService(
     }
 
     fun opprettBrukernotifikasjon(
-        sykmeldingId: String,
-        mottattDato: LocalDateTime,
-        fnr: String,
-        tekst: String,
-        loggingMeta: LoggingMeta,
+        brukernotifikasjon: Brukernotifikasjon,
     ) {
         val brukernotifikasjonFinnesFraFor =
             database.brukernotifikasjonFinnesFraFor(
-                sykmeldingId = UUID.fromString(sykmeldingId),
+                sykmeldingId = UUID.fromString(brukernotifikasjon.sykmeldingId),
                 event = "APEN"
             )
         if (brukernotifikasjonFinnesFraFor) {
             log.info(
-                "Notifikasjon for ny sykmelding med id $sykmeldingId finnes fra før, ignorerer, {}",
-                StructuredArguments.fields(loggingMeta),
+                "Notifikasjon for ny sykmelding med id ${brukernotifikasjon.sykmeldingId} finnes fra før, ignorerer",
             )
         } else {
             val opprettBrukernotifikasjon =
-                mapTilOpprettetBrukernotifikasjon(sykmeldingId, mottattDato)
+                mapTilOpprettetBrukernotifikasjon(
+                    brukernotifikasjon.sykmeldingId,
+                    brukernotifikasjon.mottattDato
+                )
             val nokkelInput =
                 NokkelInputBuilder()
                     .withAppnavn(APP)
                     .withNamespace(NAMESPACE)
                     .withEventId(opprettBrukernotifikasjon.grupperingsId.toString())
-                    .withFodselsnummer(fnr)
+                    .withFodselsnummer(brukernotifikasjon.fnr)
                     .withGrupperingsId(opprettBrukernotifikasjon.grupperingsId.toString())
                     .build()
             val oppgaveInput =
                 OppgaveInputBuilder()
                     .withTidspunkt(opprettBrukernotifikasjon.timestamp.toLocalDateTime())
-                    .withTekst(tekst)
-                    .withLink(URI.create(lagOppgavelenke(dittSykefravaerUrl, sykmeldingId)).toURL())
+                    .withTekst(brukernotifikasjon.tekst)
+                    .withLink(
+                        URI.create(
+                                lagOppgavelenke(dittSykefravaerUrl, brukernotifikasjon.sykmeldingId)
+                            )
+                            .toURL()
+                    )
                     .withSikkerhetsnivaa(4)
                     .withEksternVarsling(true)
                     .apply { withPrefererteKanaler(PreferertKanal.SMS) }
@@ -70,8 +78,7 @@ class BrukernotifikasjonService(
             )
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             log.info(
-                "Opprettet brukernotifikasjon for sykmelding med id $sykmeldingId {}",
-                StructuredArguments.fields(loggingMeta),
+                "Opprettet brukernotifikasjon for sykmelding med id ${brukernotifikasjon.sykmeldingId}"
             )
             BRUKERNOT_OPPRETTET.inc()
         }

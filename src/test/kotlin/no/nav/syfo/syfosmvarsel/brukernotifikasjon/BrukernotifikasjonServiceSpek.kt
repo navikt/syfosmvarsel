@@ -12,7 +12,6 @@ import no.nav.brukernotifikasjon.schemas.input.DoneInput
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.syfosmvarsel.Environment
-import no.nav.syfo.syfosmvarsel.LoggingMeta
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
@@ -124,11 +123,12 @@ class BrukernotifikasjonServiceSpek :
                 "opprettBrukernotifikasjon oppretter ny rad i databasen for oppretting av notifikasjon"
             ) {
                 brukernotifikasjonService.opprettBrukernotifikasjon(
-                    sykmeldingId = sykmeldingId.toString(),
-                    mottattDato = timestampOpprettetLocalDateTime,
-                    tekst = "tekst",
-                    fnr = "12345678912",
-                    loggingMeta = LoggingMeta("mottakId", "12315", "", ""),
+                    Brukernotifikasjon(
+                        sykmeldingId = sykmeldingId.toString(),
+                        mottattDato = timestampOpprettetLocalDateTime,
+                        tekst = "tekst",
+                        fnr = "12345678912"
+                    )
                 )
 
                 val brukernotifikasjoner =
@@ -149,11 +149,12 @@ class BrukernotifikasjonServiceSpek :
                 database.registrerBrukernotifikasjon(brukernotifikasjonDB)
 
                 brukernotifikasjonService.opprettBrukernotifikasjon(
-                    sykmeldingId = sykmeldingId.toString(),
-                    mottattDato = timestampOpprettetLocalDateTime,
-                    tekst = "tekst",
-                    fnr = "fnr",
-                    loggingMeta = LoggingMeta("mottakId", "12315", "", ""),
+                    Brukernotifikasjon(
+                        sykmeldingId = sykmeldingId.toString(),
+                        mottattDato = timestampOpprettetLocalDateTime,
+                        tekst = "tekst",
+                        fnr = "fnr"
+                    )
                 )
 
                 val brukernotifikasjoner =
@@ -226,11 +227,12 @@ class BrukernotifikasjonServiceSpek :
         context("Ende til ende-test oppgave") {
             test("Oppretter brukernotifikasjon-oppgave korrekt") {
                 brukernotifikasjonService.opprettBrukernotifikasjon(
-                    sykmeldingId = sykmeldingId.toString(),
-                    mottattDato = timestampOpprettetLocalDateTime,
-                    tekst = "tekst",
-                    fnr = "12345678912",
-                    loggingMeta = LoggingMeta("mottakId", "12315", "", ""),
+                    Brukernotifikasjon(
+                        sykmeldingId = sykmeldingId.toString(),
+                        mottattDato = timestampOpprettetLocalDateTime,
+                        tekst = "tekst",
+                        fnr = "12345678912"
+                    ),
                 )
 
                 val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()
