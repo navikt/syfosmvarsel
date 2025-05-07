@@ -34,8 +34,6 @@ class StatusendringServiceSpek :
                         sykmeldingId = sykmeldingId,
                         timestamp = timestamp,
                         statusEvent = STATUS_SENDT,
-                        arbeidsgiver = null,
-                        sporsmals = null,
                     ),
                 kafkaMetadata =
                     KafkaMetadataDTO(
