@@ -104,8 +104,6 @@ class BrukernotifikasjonServiceSpek :
                         sykmeldingId = sykmeldingId.toString(),
                         timestamp = timestampFerdig,
                         statusEvent = STATUS_SENDT,
-                        arbeidsgiver = null,
-                        sporsmals = null,
                     ),
                 kafkaMetadata =
                     KafkaMetadataDTO(

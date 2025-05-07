@@ -26,17 +26,10 @@ class KafkaFactory private constructor() {
                     )
                     .also {
                         it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
                     }
             val consumer = KafkaConsumer<String, String>(consumerProperties)
-            consumer.subscribe(
-                listOf(
-                    environment.okSykmeldingTopicAiven,
-                    environment.avvistSykmeldingTopicAiven,
-                    environment.manuellSykmeldingTopicAiven,
-                    environment.sykmeldingNotifikasjon
-                )
-            )
+            consumer.subscribe(listOf(environment.sykmeldingNotifikasjon))
             return consumer
         }
 
