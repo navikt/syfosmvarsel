@@ -5,37 +5,37 @@ version = "1.0.0"
 
 val javaVersion = JvmTarget.JVM_21
 
-val coroutinesVersion = "1.10.1"
+val coroutinesVersion = "1.10.2"
 val kluentVersion = "1.73"
-val ktorVersion = "3.1.1"
-val logbackVersion = "1.5.17"
+val ktorVersion = "3.2.1"
+val logbackVersion = "1.5.18"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.9.1"
-val logstashEncoderVersion = "8.0"
-val kafkaVersion = "3.9.0"
-val jacksonVersion = "2.18.3"
+val logstashEncoderVersion = "8.1"
+val kafkaVersion = "3.9.1"
+val jacksonVersion = "2.19.1"
 val avroVersion = "1.12.0"
-val confluentVersion = "7.9.0"
-val postgresVersion = "42.7.5"
-val flywayVersion = "11.4.0"
-val hikariVersion = "6.2.1"
+val confluentVersion = "8.0.0"
+val postgresVersion = "42.7.7"
+val flywayVersion = "11.10.1"
+val hikariVersion = "6.3.0"
 val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
-val mockkVersion = "1.13.17"
-val kotlinVersion = "2.1.10"
-val testContainerVersion = "1.20.6"
+val mockkVersion = "1.14.4"
+val kotlinVersion = "2.2.0"
+val testContainerVersion = "1.21.3"
 val ktfmtVersion = "0.44"
-val opentelemetryVersion = "2.14.0"
+val opentelemetryVersion = "2.17.0"
 
 //Added due to vulnerabilities
 val snappyJavaVersion = "1.1.10.7"
-val nettycommonVersion = "4.1.119.Final"
+val nettycommonVersion = "4.2.2.Final"
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.1.10"
-    id("com.diffplug.spotless") version "7.0.2"
-    id("com.gradleup.shadow") version "8.3.6"
+    kotlin("jvm") version "2.2.0"
+    id("com.diffplug.spotless") version "7.0.4"
+    id("com.gradleup.shadow") version "8.3.8"
 }
 
 application {
