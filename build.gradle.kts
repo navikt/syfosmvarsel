@@ -14,18 +14,15 @@ val kotestVersion = "5.9.1"
 val logstashEncoderVersion = "8.1"
 val kafkaVersion = "3.9.1"
 val jacksonVersion = "2.19.1"
-val avroVersion = "1.12.0"
-val confluentVersion = "8.0.0"
 val postgresVersion = "42.7.7"
 val flywayVersion = "11.10.1"
 val hikariVersion = "6.3.0"
-val brukernotifikasjonAvroVersion = "1.2022.04.13-12.09-292ce6d359bd"
 val mockkVersion = "1.14.4"
 val kotlinVersion = "2.2.0"
 val testContainerVersion = "1.21.3"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.17.0"
-
+val varselVersion = "2.1.1"
 //Added due to vulnerabilities
 val snappyJavaVersion = "1.1.10.7"
 val nettycommonVersion = "4.2.2.Final"
@@ -80,9 +77,6 @@ dependencies {
             because("override transient from org.apache.kafka:kafka_2.12")
         }
     }
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
-    implementation("org.apache.avro:avro:$avroVersion")
-    implementation("com.github.navikt:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
@@ -95,7 +89,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
-
+    implementation("no.nav.tms.varsel:kotlin-builder:$varselVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")

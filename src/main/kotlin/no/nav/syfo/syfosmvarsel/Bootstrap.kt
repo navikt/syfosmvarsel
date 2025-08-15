@@ -73,6 +73,7 @@ fun main() {
             database = database,
             brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
             dittSykefravaerUrl = env.dittSykefravaerUrl,
+            env.cluster
         )
 
     val statusendringService = StatusendringService(brukernotifikasjonService)

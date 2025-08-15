@@ -68,4 +68,5 @@ fun Properties.toProducerConfig(
         it[ConsumerConfig.GROUP_ID_CONFIG] = groupId
         it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = valueSerializer.java
         it[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = keySerializer.java
+        it[ProducerConfig.COMPRESSION_TYPE_CONFIG] = "gzip"
     }
