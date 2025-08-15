@@ -1,18 +1,19 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
-import java.net.URI
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder
-import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder
-import no.nav.brukernotifikasjon.schemas.builders.OppgaveInputBuilder
-import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_FERDIG
 import no.nav.syfo.syfosmvarsel.metrics.BRUKERNOT_OPPRETTET
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
+import no.nav.tms.varsel.action.EksternKanal
+import no.nav.tms.varsel.action.Produsent
+import no.nav.tms.varsel.action.Sensitivitet
+import no.nav.tms.varsel.action.Tekst
+import no.nav.tms.varsel.action.Varseltype
+import no.nav.tms.varsel.builder.VarselActionBuilder
 
 data class Brukernotifikasjon(
     val sykmeldingId: String,
@@ -25,6 +26,7 @@ class BrukernotifikasjonService(
     private val database: DatabaseInterface,
     private val brukernotifikasjonKafkaProducer: BrukernotifikasjonKafkaProducer,
     private val dittSykefravaerUrl: String,
+    private val cluster: String,
 ) {
     companion object {
         private const val NAMESPACE = "teamsykmelding"
@@ -49,32 +51,32 @@ class BrukernotifikasjonService(
                     brukernotifikasjon.sykmeldingId,
                     brukernotifikasjon.mottattDato
                 )
-            val nokkelInput =
-                NokkelInputBuilder()
-                    .withAppnavn(APP)
-                    .withNamespace(NAMESPACE)
-                    .withEventId(opprettBrukernotifikasjon.grupperingsId.toString())
-                    .withFodselsnummer(brukernotifikasjon.fnr)
-                    .withGrupperingsId(opprettBrukernotifikasjon.grupperingsId.toString())
-                    .build()
-            val oppgaveInput =
-                OppgaveInputBuilder()
-                    .withTidspunkt(opprettBrukernotifikasjon.timestamp.toLocalDateTime())
-                    .withTekst(brukernotifikasjon.tekst)
-                    .withLink(
-                        URI.create(
-                                lagOppgavelenke(dittSykefravaerUrl, brukernotifikasjon.sykmeldingId)
-                            )
-                            .toURL()
-                    )
-                    .withSikkerhetsnivaa(4)
-                    .withEksternVarsling(true)
-                    .apply { withPrefererteKanaler(PreferertKanal.SMS) }
-                    .build()
+            val newVarselId = brukernotifikasjon.sykmeldingId
+            val varsel =
+                VarselActionBuilder.opprett {
+                    type = Varseltype.Oppgave
+                    varselId = newVarselId
+                    sensitivitet = Sensitivitet.High
+                    ident = brukernotifikasjon.fnr
+                    tekst =
+                        Tekst(
+                            spraakkode = "nb",
+                            tekst = brukernotifikasjon.tekst,
+                            default = true,
+                        )
+                    link = lagOppgavelenke(dittSykefravaerUrl, brukernotifikasjon.sykmeldingId)
+                    eksternVarsling { preferertKanal = EksternKanal.SMS }
+                    produsent =
+                        Produsent(
+                            namespace = NAMESPACE,
+                            appnavn = APP,
+                            cluster = cluster,
+                        )
+                }
 
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
-                nokkelInput,
-                oppgaveInput,
+                varselId = newVarselId,
+                varsel = varsel,
             )
             database.registrerBrukernotifikasjon(opprettBrukernotifikasjon)
             log.info(
@@ -103,21 +105,19 @@ class BrukernotifikasjonService(
                     sykmeldingStatusKafkaMessageDTO,
                     apenBrukernotifikasjon
                 )
-            val nokkelInput =
-                NokkelInputBuilder()
-                    .withAppnavn(APP)
-                    .withNamespace(NAMESPACE)
-                    .withEventId(ferdigstiltBrukernotifikasjon.grupperingsId.toString())
-                    .withGrupperingsId(ferdigstiltBrukernotifikasjon.grupperingsId.toString())
-                    .withFodselsnummer(sykmeldingStatusKafkaMessageDTO.kafkaMetadata.fnr)
-                    .build()
-            val doneInput =
-                DoneInputBuilder()
-                    .withTidspunkt(ferdigstiltBrukernotifikasjon.timestamp.toLocalDateTime())
-                    .build()
+            val inaktiverVarsel =
+                VarselActionBuilder.inaktiver {
+                    varselId = sykmeldingId
+                    produsent =
+                        Produsent(
+                            namespace = NAMESPACE,
+                            appnavn = APP,
+                            cluster = cluster,
+                        )
+                }
             brukernotifikasjonKafkaProducer.sendDonemelding(
-                nokkel = nokkelInput,
-                done = doneInput,
+                varselId = sykmeldingId,
+                varsel = inaktiverVarsel
             )
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
             database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)

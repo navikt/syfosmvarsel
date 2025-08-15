@@ -1,16 +1,11 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializer
-import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.kotest.core.spec.style.FunSpec
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.brukernotifikasjon.schemas.input.DoneInput
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput
-import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.dropData
@@ -22,10 +17,18 @@ import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.syfosmvarsel.util.KafkaTest
+import no.nav.tms.varsel.action.EksternKanal
+import no.nav.tms.varsel.action.Produsent
+import no.nav.tms.varsel.action.Sensitivitet
+import no.nav.tms.varsel.action.Tekst
+import no.nav.tms.varsel.action.Varseltype
+import no.nav.tms.varsel.builder.VarselActionBuilder
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 
 class BrukernotifikasjonServiceSpek :
     FunSpec({
@@ -33,52 +36,45 @@ class BrukernotifikasjonServiceSpek :
         val config =
             Environment(
                 dittSykefravaerUrl = "https://dittsykefravaer",
-                brukernotifikasjonOpprettTopic = "opprett-topic",
-                brukernotifikasjonDoneTopic = "done-topic",
-                kafkaSchemaRegistryPassword = "",
-                kafkaSchemaRegistryUrl = "",
-                kafkaSchemaRegistryUsername = "",
+                brukernotifikasjonTopic = "min-side.varsel-topic",
                 databaseUsername = "user",
                 databasePassword = "pwd",
                 dbHost = "host",
                 dbName = "smvarsel",
                 dbPort = "5089",
+                cluster = "cluster",
             )
 
         val kafkaBrukernotifikasjonProducerConfig =
             kafkaConfig.toProducerConfig(
                 "syfosmvarsel",
-                valueSerializer = KafkaAvroSerializer::class,
-                keySerializer = KafkaAvroSerializer::class,
+                valueSerializer = StringSerializer::class,
+                keySerializer = StringSerializer::class,
             )
 
-        val kafkaproducerOpprett =
-            KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerConfig)
-        val kafkaproducerDone =
-            KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerConfig)
+        val producer = KafkaProducer<String, String>(kafkaBrukernotifikasjonProducerConfig)
         val brukernotifikasjonKafkaProducer =
             BrukernotifikasjonKafkaProducer(
-                kafkaproducerOpprett = kafkaproducerOpprett,
-                kafkaproducerDone = kafkaproducerDone,
-                brukernotifikasjonOpprettTopic = config.brukernotifikasjonOpprettTopic,
-                brukernotifikasjonDoneTopic = config.brukernotifikasjonDoneTopic,
+                kafkaProducer = producer,
+                brukernotifikasjonTopic = config.brukernotifikasjonTopic,
             )
 
         val consumerProperties =
             kafkaConfig.toConsumerConfig(
                 "spek.integration-consumer",
-                keyDeserializer = KafkaAvroDeserializer::class,
-                valueDeserializer = KafkaAvroDeserializer::class
+                keyDeserializer = StringDeserializer::class,
+                valueDeserializer = StringDeserializer::class
             )
-        val kafkaConsumerOppgave = KafkaConsumer<NokkelInput, OppgaveInput>(consumerProperties)
-        kafkaConsumerOppgave.subscribe(listOf("opprett-topic"))
+        val kafkaConsumerOppgave = KafkaConsumer<String, String>(consumerProperties)
+        kafkaConsumerOppgave.subscribe(listOf("min-side.varsel-topic"))
 
         val database = TestDB()
         val brukernotifikasjonService =
             BrukernotifikasjonService(
                 database,
                 brukernotifikasjonKafkaProducer,
-                "https://dittsykefravar"
+                config.dittSykefravaerUrl,
+                config.cluster
             )
 
         val sykmeldingId = UUID.randomUUID()
@@ -235,19 +231,45 @@ class BrukernotifikasjonServiceSpek :
 
                 val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()
 
+                val newTimestamp = OffsetDateTime.now(ZoneOffset.UTC)
+
                 messages.size shouldBeEqualTo 1
-                val nokkel: NokkelInput = messages[0].key()
+                val key: String = messages[0].key()
+                val varsel: String = messages[0].value()
+                key shouldBeEqualTo sykmeldingId.toString()
 
-                val oppgave: OppgaveInput = messages[0].value()
+                val expectedVarsel =
+                    VarselActionBuilder.opprett {
+                        type = Varseltype.Oppgave
+                        varselId = sykmeldingId.toString()
+                        sensitivitet = Sensitivitet.High
+                        ident = "12345678912"
 
-                nokkel.getAppnavn() shouldBeEqualTo "syfosmvarsel"
-                nokkel.getEventId() shouldBeEqualTo sykmeldingId.toString()
-                nokkel.getFodselsnummer() shouldBeEqualTo "12345678912"
-                oppgave.getLink() shouldBeEqualTo
-                    "https://dittsykefravar/syk/sykmeldinger/$sykmeldingId"
-                oppgave.getSikkerhetsnivaa() shouldBeEqualTo 4
-                oppgave.getTekst() shouldBeEqualTo "tekst"
-                oppgave.getTidspunkt() shouldBeEqualTo timestampOpprettet.toInstant().toEpochMilli()
+                        tekst =
+                            Tekst(
+                                spraakkode = "nb",
+                                tekst = "tekst",
+                                default = true,
+                            )
+                        link = "${config.dittSykefravaerUrl}/syk/sykmeldinger/$sykmeldingId"
+                        eksternVarsling { preferertKanal = EksternKanal.SMS }
+                        produsent =
+                            Produsent(
+                                namespace = "teamsykmelding",
+                                appnavn = "syfosmvarsel",
+                                cluster = config.cluster,
+                            )
+                        metadata
+                    }
+
+                varsel.replace(
+                    Regex(""""built_at"\s*:\s*"[^"]*""""),
+                    """"built_at":"$newTimestamp""""
+                ) shouldBeEqualTo
+                    expectedVarsel.replace(
+                        Regex(""""built_at"\s*:\s*"[^"]*""""),
+                        """"built_at":"$newTimestamp""""
+                    )
             }
         }
     })

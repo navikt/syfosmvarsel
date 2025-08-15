@@ -1,40 +1,27 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
-import no.nav.brukernotifikasjon.schemas.input.DoneInput
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput
-import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.syfosmvarsel.log
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
 class BrukernotifikasjonKafkaProducer(
-    private val kafkaproducerOpprett: KafkaProducer<NokkelInput, OppgaveInput>,
-    private val kafkaproducerDone: KafkaProducer<NokkelInput, DoneInput>,
-    private val brukernotifikasjonOpprettTopic: String,
-    private val brukernotifikasjonDoneTopic: String,
+    private val kafkaProducer: KafkaProducer<String, String>,
+    private val brukernotifikasjonTopic: String,
 ) {
-    fun sendOpprettmelding(nokkel: NokkelInput, oppgave: OppgaveInput) {
+    fun sendOpprettmelding(varselId: String, varsel: String) {
         try {
-            kafkaproducerOpprett
-                .send(ProducerRecord(brukernotifikasjonOpprettTopic, nokkel, oppgave))
-                .get()
+            kafkaProducer.send(ProducerRecord(brukernotifikasjonTopic, varselId, varsel)).get()
         } catch (e: Exception) {
-            log.error(
-                "Noe gikk galt ved sending av oppgave med id {}: ${e.message}",
-                nokkel.getEventId()
-            )
+            log.error("Noe gikk galt ved sending av oppgave med id $varselId:", e)
             throw e
         }
     }
 
-    fun sendDonemelding(nokkel: NokkelInput, done: DoneInput) {
+    fun sendDonemelding(varselId: String, varsel: String) {
         try {
-            kafkaproducerDone.send(ProducerRecord(brukernotifikasjonDoneTopic, nokkel, done)).get()
+            kafkaProducer.send(ProducerRecord(brukernotifikasjonTopic, varselId, varsel)).get()
         } catch (e: Exception) {
-            log.error(
-                "Noe gikk galt ved ferdigstilling av oppgave med id {}: ${e.message}",
-                nokkel.getEventId()
-            )
+            log.error("Noe gikk galt ved ferdigstilling av oppgave med id $varselId", e)
             throw e
         }
     }
