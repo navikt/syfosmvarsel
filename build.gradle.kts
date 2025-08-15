@@ -7,32 +7,32 @@ val javaVersion = JvmTarget.JVM_21
 
 val coroutinesVersion = "1.10.2"
 val kluentVersion = "1.73"
-val ktorVersion = "3.2.1"
+val ktorVersion = "3.2.3"
 val logbackVersion = "1.5.18"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.9.1"
 val logstashEncoderVersion = "8.1"
 val kafkaVersion = "3.9.1"
-val jacksonVersion = "2.19.1"
+val jacksonVersion = "2.19.2"
 val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.1"
-val hikariVersion = "6.3.0"
-val mockkVersion = "1.14.4"
-val kotlinVersion = "2.2.0"
+val flywayVersion = "11.11.1"
+val hikariVersion = "7.0.1"
+val mockkVersion = "1.14.5"
+val kotlinVersion = "2.2.10"
 val testContainerVersion = "1.21.3"
 val ktfmtVersion = "0.44"
-val opentelemetryVersion = "2.17.0"
+val opentelemetryVersion = "2.18.1"
 val varselVersion = "2.1.1"
 //Added due to vulnerabilities
-val snappyJavaVersion = "1.1.10.7"
-val nettycommonVersion = "4.2.2.Final"
+val snappyJavaVersion = "1.1.10.8"
+val nettycommonVersion = "4.2.4.Final"
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.0"
-    id("com.diffplug.spotless") version "7.0.4"
-    id("com.gradleup.shadow") version "8.3.8"
+    kotlin("jvm") version "2.2.10"
+    id("com.diffplug.spotless") version "7.2.1"
+    id("com.gradleup.shadow") version "9.0.2"
 }
 
 application {
