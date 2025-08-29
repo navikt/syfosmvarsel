@@ -19,8 +19,16 @@ class JacksonKafkaDeserializer<T : Any>(private val type: KClass<T>) : Deseriali
 
     override fun configure(configs: MutableMap<String, *>, isKey: Boolean) {}
 
-    override fun deserialize(topic: String?, data: ByteArray): T {
-        return objectMapper.readValue(data, type.java)
+    override fun deserialize(topic: String?, data: ByteArray): T? {
+        try {
+            return objectMapper.readValue(data, type.java)
+        } catch (e: Exception) {
+            val string = String(data)
+            if (string == "null") {
+                return null
+            }
+            throw RuntimeException("Could not deserialize json", e)
+        }
     }
 
     override fun close() {}
