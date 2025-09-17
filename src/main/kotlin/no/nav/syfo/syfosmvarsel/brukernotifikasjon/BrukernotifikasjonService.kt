@@ -153,6 +153,6 @@ class BrukernotifikasjonService(
         )
 
     private fun lagOppgavelenke(dittSykefravaerUrl: String, sykmeldingId: String): String {
-        return "$dittSykefravaerUrl/syk/sykmeldinger/$sykmeldingId"
+        return "$dittSykefravaerUrl/syk/sykefravaer/sykmeldinger/$sykmeldingId"
     }
 }
