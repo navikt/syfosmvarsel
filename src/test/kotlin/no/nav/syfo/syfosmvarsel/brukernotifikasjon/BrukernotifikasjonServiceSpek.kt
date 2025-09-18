@@ -251,7 +251,8 @@ class BrukernotifikasjonServiceSpek :
                                 tekst = "tekst",
                                 default = true,
                             )
-                        link = "${config.dittSykefravaerUrl}/syk/sykmeldinger/$sykmeldingId"
+                        link =
+                            "${config.dittSykefravaerUrl}/syk/sykefravaer/sykmeldinger/$sykmeldingId"
                         eksternVarsling { preferertKanal = EksternKanal.SMS }
                         produsent =
                             Produsent(
