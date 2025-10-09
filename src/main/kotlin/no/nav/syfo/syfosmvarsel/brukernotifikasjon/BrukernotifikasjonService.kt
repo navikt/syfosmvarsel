@@ -2,6 +2,7 @@ package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.log
@@ -14,8 +15,6 @@ import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 data class Brukernotifikasjon(
     val sykmeldingId: String,

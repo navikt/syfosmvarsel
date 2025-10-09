@@ -5,6 +5,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.TestDB
@@ -253,7 +254,10 @@ class BrukernotifikasjonServiceSpek :
                             )
                         link =
                             "${config.dittSykefravaerUrl}/syk/sykefravaer/sykmeldinger/$sykmeldingId"
-                        eksternVarsling { preferertKanal = EksternKanal.SMS }
+                        eksternVarsling {
+                            utsettSendingTil = ZonedDateTime.now().plusMinutes(5)
+                            preferertKanal = EksternKanal.SMS
+                        }
                         produsent =
                             Produsent(
                                 namespace = "teamsykmelding",
@@ -263,14 +267,24 @@ class BrukernotifikasjonServiceSpek :
                         metadata
                     }
 
-                varsel.replace(
-                    Regex(""""built_at"\s*:\s*"[^"]*""""),
-                    """"built_at":"$newTimestamp""""
-                ) shouldBeEqualTo
-                    expectedVarsel.replace(
+                varsel
+                    .replace(
                         Regex(""""built_at"\s*:\s*"[^"]*""""),
                         """"built_at":"$newTimestamp""""
                     )
+                    .replace(
+                        Regex(""""utsettSendingTil"\s*:\s*"[^"]*""""),
+                        """"utsettSendingTil":"$newTimestamp""""
+                    ) shouldBeEqualTo
+                    expectedVarsel
+                        .replace(
+                            Regex(""""built_at"\s*:\s*"[^"]*""""),
+                            """"built_at":"$newTimestamp""""
+                        )
+                        .replace(
+                            Regex(""""utsettSendingTil"\s*:\s*"[^"]*""""),
+                            """"utsettSendingTil":"$newTimestamp""""
+                        )
             }
         }
     })
