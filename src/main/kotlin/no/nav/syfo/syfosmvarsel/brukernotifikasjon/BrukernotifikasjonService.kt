@@ -14,6 +14,8 @@ import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 data class Brukernotifikasjon(
     val sykmeldingId: String,
@@ -54,6 +56,7 @@ class BrukernotifikasjonService(
             val newVarselId = brukernotifikasjon.sykmeldingId
             val varsel =
                 VarselActionBuilder.opprett {
+
                     type = Varseltype.Oppgave
                     varselId = newVarselId
                     sensitivitet = Sensitivitet.High
@@ -65,7 +68,10 @@ class BrukernotifikasjonService(
                             default = true,
                         )
                     link = lagOppgavelenke(dittSykefravaerUrl, brukernotifikasjon.sykmeldingId)
-                    eksternVarsling { preferertKanal = EksternKanal.SMS }
+                    eksternVarsling {
+                        utsettSendingTil = ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(5)
+                        preferertKanal = EksternKanal.SMS
+                    }
                     produsent =
                         Produsent(
                             namespace = NAMESPACE,
