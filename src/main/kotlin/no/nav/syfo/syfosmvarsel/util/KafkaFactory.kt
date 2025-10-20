@@ -14,7 +14,9 @@ import org.apache.kafka.common.serialization.StringSerializer
 
 class KafkaFactory private constructor() {
     companion object {
-        fun getNyKafkaAivenConsumer(environment: Environment): KafkaConsumer<String, String> {
+        fun getSykmeldingnotifikasjonKafkaConsumer(
+            environment: Environment
+        ): KafkaConsumer<String, String> {
             val consumerProperties =
                 KafkaUtils.getAivenKafkaConfig("ny-consumer")
                     .toConsumerConfig(
@@ -26,7 +28,7 @@ class KafkaFactory private constructor() {
                         it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
                     }
             val consumer = KafkaConsumer<String, String>(consumerProperties)
-            consumer.subscribe(listOf(environment.sykmeldingNotifikasjon))
+            consumer.subscribe(listOf(environment.sykmeldingnotifikasjon))
             return consumer
         }
 

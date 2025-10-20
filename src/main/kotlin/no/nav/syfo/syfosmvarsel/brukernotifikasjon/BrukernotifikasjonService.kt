@@ -55,7 +55,6 @@ class BrukernotifikasjonService(
             val newVarselId = brukernotifikasjon.sykmeldingId
             val varsel =
                 VarselActionBuilder.opprett {
-
                     type = Varseltype.Oppgave
                     varselId = newVarselId
                     sensitivitet = Sensitivitet.High

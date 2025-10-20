@@ -10,7 +10,7 @@ data class Environment(
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
     val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
     val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
-    val sykmeldingNotifikasjon: String = "teamsykmelding.sykmeldingnotifikasjon",
+    val sykmeldingnotifikasjon: String = "teamsykmelding.sykmeldingnotifikasjon",
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) {
     fun jdbcUrl(): String {

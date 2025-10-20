@@ -28,7 +28,7 @@ import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaMess
 import no.nav.syfo.syfosmvarsel.statusendring.StatusendringService
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getBrukernotifikasjonKafkaProducer
 import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getKafkaStatusConsumerAiven
-import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getNyKafkaAivenConsumer
+import no.nav.syfo.syfosmvarsel.util.KafkaFactory.Companion.getSykmeldingnotifikasjonKafkaConsumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
@@ -43,7 +43,7 @@ val objectMapper: ObjectMapper =
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
-data class SykmeldingNotifikasjon(
+data class Sykmeldingnotifikasjon(
     val sykmeldingId: String,
     val status: Status,
     val mottattDato: LocalDateTime,
@@ -65,7 +65,7 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
     val kafkaStatusConsumerAiven = getKafkaStatusConsumerAiven(env)
-    val nySykmeldingConsumerAiven = getNyKafkaAivenConsumer(env)
+    val sykmeldingnotifikasjonConsumer = getSykmeldingnotifikasjonKafkaConsumer(env)
     val brukernotifikasjonKafkaProducer = getBrukernotifikasjonKafkaProducer(env)
 
     val brukernotifikasjonService =
@@ -83,7 +83,7 @@ fun main() {
         brukernotifikasjonService = brukernotifikasjonService,
         kafkaStatusConsumerAiven = kafkaStatusConsumerAiven,
         statusendringService = statusendringService,
-        nyKafkaConsumerAiven = nySykmeldingConsumerAiven,
+        sykmeldingnotifikasjonConsumer = sykmeldingnotifikasjonConsumer,
     )
     applicationServer.start()
 }
@@ -114,12 +114,12 @@ fun launchListeners(
     brukernotifikasjonService: BrukernotifikasjonService,
     kafkaStatusConsumerAiven: KafkaConsumer<String, SykmeldingStatusKafkaMessageDTO>,
     statusendringService: StatusendringService,
-    nyKafkaConsumerAiven: KafkaConsumer<String, String>,
+    sykmeldingnotifikasjonConsumer: KafkaConsumer<String, String>,
 ) {
     createListener(applicationState) {
-        blockingApplicationLogicNySykmelding(
+        blockingApplicationLogicSykmeldingnotifikasjon(
             applicationState,
-            nyKafkaConsumerAiven,
+            sykmeldingnotifikasjonConsumer,
             brukernotifikasjonService,
         )
     }
@@ -133,7 +133,7 @@ fun launchListeners(
     }
 }
 
-suspend fun blockingApplicationLogicNySykmelding(
+suspend fun blockingApplicationLogicSykmeldingnotifikasjon(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
     brukernotifikasjonService: BrukernotifikasjonService,
@@ -142,24 +142,24 @@ suspend fun blockingApplicationLogicNySykmelding(
         kafkaConsumer
             .poll(Duration.ofMillis(1000))
             .filterNot { it.value() == null }
-            .forEach { handleNySykmelding(it, brukernotifikasjonService) }
+            .forEach { handleSykmeldingnotifikasjon(it, brukernotifikasjonService) }
     }
 }
 
-private suspend fun getBrukernotifikasjon(
+private fun getBrukernotifikasjon(
     record: ConsumerRecord<String, String>,
 ): Brukernotifikasjon {
 
-    val sykmeldingNotifikasjon: SykmeldingNotifikasjon = objectMapper.readValue(record.value())
+    val sykmeldingnotifikasjon: Sykmeldingnotifikasjon = objectMapper.readValue(record.value())
     val brukernotifikasjon =
         Brukernotifikasjon(
-            sykmeldingId = sykmeldingNotifikasjon.sykmeldingId,
-            mottattDato = sykmeldingNotifikasjon.mottattDato,
-            tekst = getNotifikasjonsTekst(sykmeldingNotifikasjon.status),
-            fnr = sykmeldingNotifikasjon.fnr,
+            sykmeldingId = sykmeldingnotifikasjon.sykmeldingId,
+            mottattDato = sykmeldingnotifikasjon.mottattDato,
+            tekst = getNotifikasjonsTekst(sykmeldingnotifikasjon.status),
+            fnr = sykmeldingnotifikasjon.fnr,
         )
     log.info(
-        "creating brukernotfikasjon from ${record.topic()} for status: ${sykmeldingNotifikasjon.status} brukernotfikasjon: ${brukernotifikasjon.copy(fnr = "xxxxxxxxxxx")}"
+        "creating brukernotfikasjon from ${record.topic()} for status: ${sykmeldingnotifikasjon.status} brukernotfikasjon: ${brukernotifikasjon.copy(fnr = "xxxxxxxxxxx")}"
     )
     return brukernotifikasjon
 }
@@ -171,7 +171,7 @@ private fun getNotifikasjonsTekst(status: Status) =
     }
 
 @WithSpan
-private suspend fun handleNySykmelding(
+private suspend fun handleSykmeldingnotifikasjon(
     message: ConsumerRecord<String, String>,
     brukernotifikasjonService: BrukernotifikasjonService
 ) {

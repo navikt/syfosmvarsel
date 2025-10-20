@@ -1,7 +1,11 @@
 package no.nav.syfo.syfosmvarsel.brukernotifikasjon
 
 import io.kotest.core.spec.style.FunSpec
-import java.time.Duration
+import io.mockk.CapturingSlot
+import io.mockk.clearMocks
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.verify
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -11,8 +15,6 @@ import no.nav.syfo.syfosmvarsel.Environment
 import no.nav.syfo.syfosmvarsel.TestDB
 import no.nav.syfo.syfosmvarsel.dropData
 import no.nav.syfo.syfosmvarsel.hentBrukernotifikasjonListe
-import no.nav.syfo.syfosmvarsel.kafka.toConsumerConfig
-import no.nav.syfo.syfosmvarsel.kafka.toProducerConfig
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.KafkaMetadataDTO
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.syfosmvarsel.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
@@ -26,10 +28,6 @@ import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.common.serialization.StringSerializer
 
 class BrukernotifikasjonServiceSpek :
     FunSpec({
@@ -46,28 +44,7 @@ class BrukernotifikasjonServiceSpek :
                 cluster = "cluster",
             )
 
-        val kafkaBrukernotifikasjonProducerConfig =
-            kafkaConfig.toProducerConfig(
-                "syfosmvarsel",
-                valueSerializer = StringSerializer::class,
-                keySerializer = StringSerializer::class,
-            )
-
-        val producer = KafkaProducer<String, String>(kafkaBrukernotifikasjonProducerConfig)
-        val brukernotifikasjonKafkaProducer =
-            BrukernotifikasjonKafkaProducer(
-                kafkaProducer = producer,
-                brukernotifikasjonTopic = config.brukernotifikasjonTopic,
-            )
-
-        val consumerProperties =
-            kafkaConfig.toConsumerConfig(
-                "spek.integration-consumer",
-                keyDeserializer = StringDeserializer::class,
-                valueDeserializer = StringDeserializer::class
-            )
-        val kafkaConsumerOppgave = KafkaConsumer<String, String>(consumerProperties)
-        kafkaConsumerOppgave.subscribe(listOf("min-side.varsel-topic"))
+        val brukernotifikasjonKafkaProducer = mockk<BrukernotifikasjonKafkaProducer>(relaxed = true)
 
         val database = TestDB()
         val brukernotifikasjonService =
@@ -111,7 +88,10 @@ class BrukernotifikasjonServiceSpek :
                     ),
             )
 
-        afterTest { database.connection.dropData() }
+        afterTest {
+            clearMocks(brukernotifikasjonKafkaProducer)
+            database.connection.dropData()
+        }
 
         context("Test av opprettBrukernotifikasjon") {
             test(
@@ -155,6 +135,41 @@ class BrukernotifikasjonServiceSpek :
                 val brukernotifikasjoner =
                     database.connection.hentBrukernotifikasjonListe(sykmeldingId)
                 brukernotifikasjoner.size shouldBeEqualTo 1
+            }
+
+            test(
+                "Opprett bare en brukernotifikasjon ved mottak av flere sykmeldingnotifikasjoner med samme sykmeldingId"
+            ) {
+                brukernotifikasjonService.opprettBrukernotifikasjon(
+                    Brukernotifikasjon(
+                        sykmeldingId = sykmeldingId.toString(),
+                        mottattDato = timestampOpprettetLocalDateTime,
+                        tekst = "tekst",
+                        fnr = "12345678912"
+                    )
+                )
+                brukernotifikasjonService.ferdigstillBrukernotifikasjon(
+                    sykmeldingStatusKafkaMessageDTO
+                )
+
+                for (i in 1..10) {
+                    brukernotifikasjonService.opprettBrukernotifikasjon(
+                        Brukernotifikasjon(
+                            sykmeldingId = sykmeldingId.toString(),
+                            mottattDato = timestampOpprettetLocalDateTime,
+                            tekst = "tekst",
+                            fnr = "12345678912"
+                        )
+                    )
+                }
+
+                coVerify(exactly = 1) {
+                    brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), any())
+                }
+
+                val brukernotifikasjoner =
+                    database.connection.hentBrukernotifikasjonListe(sykmeldingId)
+                brukernotifikasjoner.size shouldBeEqualTo 2
             }
         }
 
@@ -230,14 +245,11 @@ class BrukernotifikasjonServiceSpek :
                     ),
                 )
 
-                val messages = kafkaConsumerOppgave.poll(Duration.ofMillis(5000)).toList()
-
+                val cap = CapturingSlot<String>()
+                verify(exactly = 1) {
+                    brukernotifikasjonKafkaProducer.sendOpprettmelding(any(), capture(cap))
+                }
                 val newTimestamp = OffsetDateTime.now(ZoneOffset.UTC)
-
-                messages.size shouldBeEqualTo 1
-                val key: String = messages[0].key()
-                val varsel: String = messages[0].value()
-                key shouldBeEqualTo sykmeldingId.toString()
 
                 val expectedVarsel =
                     VarselActionBuilder.opprett {
@@ -267,7 +279,7 @@ class BrukernotifikasjonServiceSpek :
                         metadata
                     }
 
-                varsel
+                cap.captured
                     .replace(
                         Regex(""""built_at"\s*:\s*"[^"]*""""),
                         """"built_at":"$newTimestamp""""
