@@ -8,28 +8,28 @@ val javaVersion = JvmTarget.JVM_21
 val coroutinesVersion = "1.10.2"
 val kluentVersion = "1.73"
 val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.26"
+val logbackVersion = "1.5.27"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.9.1"
-val logstashEncoderVersion = "8.1"
-val kafkaVersion = "3.9.1"
-val jacksonVersion = "2.20.2"
-val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.1"
-val hikariVersion = "6.3.0"
-val mockkVersion = "1.14.4"
-val kotlinVersion = "2.2.0"
-val testcontainerVersion = "2.0.1"
+val kotestVersion = "6.1.2"
+val logstashEncoderVersion = "9.0"
+val kafkaVersion = "4.1.1"
+val jacksonVersion = "2.21.0"
+val postgresVersion = "42.7.9"
+val flywayVersion = "12.0.0"
+val hikariVersion = "7.0.2"
+val mockkVersion = "1.14.9"
+val kotlinVersion = "2.3.0"
+val testcontainerVersion = "2.0.3"
 val ktfmtVersion = "0.44"
-val opentelemetryVersion = "2.17.0"
+val opentelemetryVersion = "2.24.0"
 val varselVersion = "2.1.1"
 //Added due to vulnerabilities
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.0"
-    id("com.diffplug.spotless") version "7.0.4"
+    kotlin("jvm") version "2.3.0"
+    id("com.diffplug.spotless") version "8.2.1"
 }
 
 application {
