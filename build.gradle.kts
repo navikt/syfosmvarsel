@@ -8,7 +8,7 @@ val javaVersion = JvmTarget.JVM_21
 val coroutinesVersion = "1.10.2"
 val kluentVersion = "1.73"
 val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.18"
+val logbackVersion = "1.5.26"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.9.1"
 val logstashEncoderVersion = "8.1"
@@ -19,12 +19,11 @@ val flywayVersion = "11.10.1"
 val hikariVersion = "6.3.0"
 val mockkVersion = "1.14.4"
 val kotlinVersion = "2.2.0"
-val testContainerVersion = "1.21.3"
+val testcontainerVersion = "2.0.1"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.17.0"
 val varselVersion = "2.1.1"
 //Added due to vulnerabilities
-val snappyJavaVersion = "1.1.10.7"
 
 
 plugins {
@@ -64,12 +63,7 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    constraints {
-        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
-            because("override transient from org.apache.kafka:kafka_2.12")
-        }
-    }
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
@@ -92,8 +86,8 @@ dependencies {
         exclude(group = "commons-codec")
     }
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
-    testImplementation("org.testcontainers:kafka:$testContainerVersion")
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersion")
+    testImplementation("org.testcontainers:testcontainers-kafka:$testcontainerVersion")
 }
 
 
