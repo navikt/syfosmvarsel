@@ -54,7 +54,7 @@ spec:
       memory: 3Gi
     requests:
       cpu: 100m
-      memory: 750Mi
+      memory: 1024Mi
   kafka:
     pool: nav-prod
   env:
