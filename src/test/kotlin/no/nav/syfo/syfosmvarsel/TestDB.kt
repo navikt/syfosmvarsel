@@ -9,14 +9,14 @@ import no.nav.syfo.syfosmvarsel.application.db.DatabaseInterface
 import no.nav.syfo.syfosmvarsel.application.db.toList
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonDB
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.tilBrukernotifikasjon
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 
-class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
+class PsqlContainer : PostgreSQLContainer("postgres:12")
 
 class TestDB : DatabaseInterface {
     companion object {
         var database: DatabaseInterface
-        private val psqlContainer: PsqlContainer =
+        private val psqlContainer: PostgreSQLContainer =
             PsqlContainer()
                 .withExposedPorts(5432)
                 .withUsername("username")
@@ -60,7 +60,7 @@ fun Connection.hentBrukernotifikasjonListe(sykmeldingId: UUID): List<Brukernotif
                  SELECT *
                    FROM brukernotifikasjon
                   WHERE sykmelding_id = ?
-            """,
+            """
             )
             .use {
                 it.setObject(1, sykmeldingId)

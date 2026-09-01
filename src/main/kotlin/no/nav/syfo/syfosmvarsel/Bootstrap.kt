@@ -1,10 +1,5 @@
 package no.nav.syfo.syfosmvarsel
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
@@ -33,15 +28,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.readValue
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smvarsel")
 
-val objectMapper: ObjectMapper =
-    ObjectMapper().apply {
-        registerKotlinModule()
-        registerModule(JavaTimeModule())
-        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    }
+val jsonMapper: JsonMapper = jacksonMapperBuilder().build()
 
 data class Sykmeldingnotifikasjon(
     val sykmeldingId: String,
@@ -56,11 +49,7 @@ fun main() {
     val database = Database(env)
 
     val applicationState = ApplicationState()
-    val applicationEngine =
-        createApplicationEngine(
-            env,
-            applicationState,
-        )
+    val applicationEngine = createApplicationEngine(env, applicationState)
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -73,7 +62,7 @@ fun main() {
             database = database,
             brukernotifikasjonKafkaProducer = brukernotifikasjonKafkaProducer,
             dittSykefravaerUrl = env.dittSykefravaerUrl,
-            env.cluster
+            env.cluster,
         )
 
     val statusendringService = StatusendringService(brukernotifikasjonService)
@@ -91,7 +80,7 @@ fun main() {
 @DelicateCoroutinesApi
 fun createListener(
     applicationState: ApplicationState,
-    applicationLogic: suspend CoroutineScope.() -> Unit
+    applicationLogic: suspend CoroutineScope.() -> Unit,
 ): Job =
     GlobalScope.launch(Dispatchers.IO) {
         try {
@@ -146,11 +135,9 @@ suspend fun blockingApplicationLogicSykmeldingnotifikasjon(
     }
 }
 
-private fun getBrukernotifikasjon(
-    record: ConsumerRecord<String, String>,
-): Brukernotifikasjon {
+private fun getBrukernotifikasjon(record: ConsumerRecord<String, String>): Brukernotifikasjon {
 
-    val sykmeldingnotifikasjon: Sykmeldingnotifikasjon = objectMapper.readValue(record.value())
+    val sykmeldingnotifikasjon: Sykmeldingnotifikasjon = jsonMapper.readValue(record.value())
     val brukernotifikasjon =
         Brukernotifikasjon(
             sykmeldingId = sykmeldingnotifikasjon.sykmeldingId,
@@ -173,7 +160,7 @@ private fun getNotifikasjonsTekst(status: Status) =
 @WithSpan
 private suspend fun handleSykmeldingnotifikasjon(
     message: ConsumerRecord<String, String>,
-    brukernotifikasjonService: BrukernotifikasjonService
+    brukernotifikasjonService: BrukernotifikasjonService,
 ) {
     val brukernotifikasjon = getBrukernotifikasjon(message)
     brukernotifikasjonService.opprettBrukernotifikasjon(brukernotifikasjon)
@@ -196,7 +183,7 @@ fun blockingApplicationLogicStatusendringAiven(
 @WithSpan
 private fun handleStatusEndring(
     it: ConsumerRecord<String, SykmeldingStatusKafkaMessageDTO>,
-    statusendringService: StatusendringService
+    statusendringService: StatusendringService,
 ) {
     val sykmeldingStatusKafkaMessageDTO: SykmeldingStatusKafkaMessageDTO = it.value()
 
@@ -205,7 +192,7 @@ private fun handleStatusEndring(
 
     try {
         log.info(
-            "Mottatt statusmelding fra aiven ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}",
+            "Mottatt statusmelding fra aiven ${sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId}"
         )
         statusendringService.handterStatusendring(sykmeldingStatusKafkaMessageDTO)
     } catch (e: Exception) {
@@ -222,7 +209,7 @@ fun String.erUuid(): Boolean {
         UUID.fromString(this)
         true
     } catch (e: Exception) {
-        log.warn("Sykmeldingid $this er ikke uuid, ignorerer melding")
+        log.warn("Sykmeldingid $this er ikke uuid, ignorerer melding, ${e.message}")
         false
     }
 }

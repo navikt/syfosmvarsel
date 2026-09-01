@@ -52,7 +52,7 @@ class BrukernotifikasjonServiceSpek :
                 database,
                 brukernotifikasjonKafkaProducer,
                 config.dittSykefravaerUrl,
-                config.cluster
+                config.cluster,
             )
 
         val sykmeldingId = UUID.randomUUID()
@@ -102,7 +102,7 @@ class BrukernotifikasjonServiceSpek :
                         sykmeldingId = sykmeldingId.toString(),
                         mottattDato = timestampOpprettetLocalDateTime,
                         tekst = "tekst",
-                        fnr = "12345678912"
+                        fnr = "12345678912",
                     )
                 )
 
@@ -128,7 +128,7 @@ class BrukernotifikasjonServiceSpek :
                         sykmeldingId = sykmeldingId.toString(),
                         mottattDato = timestampOpprettetLocalDateTime,
                         tekst = "tekst",
-                        fnr = "fnr"
+                        fnr = "fnr",
                     )
                 )
 
@@ -145,7 +145,7 @@ class BrukernotifikasjonServiceSpek :
                         sykmeldingId = sykmeldingId.toString(),
                         mottattDato = timestampOpprettetLocalDateTime,
                         tekst = "tekst",
-                        fnr = "12345678912"
+                        fnr = "12345678912",
                     )
                 )
                 brukernotifikasjonService.ferdigstillBrukernotifikasjon(
@@ -158,7 +158,7 @@ class BrukernotifikasjonServiceSpek :
                             sykmeldingId = sykmeldingId.toString(),
                             mottattDato = timestampOpprettetLocalDateTime,
                             tekst = "tekst",
-                            fnr = "12345678912"
+                            fnr = "12345678912",
                         )
                     )
                 }
@@ -241,8 +241,8 @@ class BrukernotifikasjonServiceSpek :
                         sykmeldingId = sykmeldingId.toString(),
                         mottattDato = timestampOpprettetLocalDateTime,
                         tekst = "tekst",
-                        fnr = "12345678912"
-                    ),
+                        fnr = "12345678912",
+                    )
                 )
 
                 val cap = CapturingSlot<String>()
@@ -258,12 +258,7 @@ class BrukernotifikasjonServiceSpek :
                         sensitivitet = Sensitivitet.High
                         ident = "12345678912"
 
-                        tekst =
-                            Tekst(
-                                spraakkode = "nb",
-                                tekst = "tekst",
-                                default = true,
-                            )
+                        tekst = Tekst(spraakkode = "nb", tekst = "tekst", default = true)
                         link =
                             "${config.dittSykefravaerUrl}/syk/sykefravaer/sykmeldinger/$sykmeldingId"
                         eksternVarsling {
@@ -282,20 +277,20 @@ class BrukernotifikasjonServiceSpek :
                 cap.captured
                     .replace(
                         Regex(""""built_at"\s*:\s*"[^"]*""""),
-                        """"built_at":"$newTimestamp""""
+                        """"built_at":"$newTimestamp"""",
                     )
                     .replace(
                         Regex(""""utsettSendingTil"\s*:\s*"[^"]*""""),
-                        """"utsettSendingTil":"$newTimestamp""""
+                        """"utsettSendingTil":"$newTimestamp"""",
                     ) shouldBeEqualTo
                     expectedVarsel
                         .replace(
                             Regex(""""built_at"\s*:\s*"[^"]*""""),
-                            """"built_at":"$newTimestamp""""
+                            """"built_at":"$newTimestamp"""",
                         )
                         .replace(
                             Regex(""""utsettSendingTil"\s*:\s*"[^"]*""""),
-                            """"utsettSendingTil":"$newTimestamp""""
+                            """"utsettSendingTil":"$newTimestamp"""",
                         )
             }
         }

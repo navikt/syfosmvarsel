@@ -14,5 +14,5 @@ data class BrukernotifikasjonDB(
 
 enum class Notifikasjonstatus {
     OPPRETTET,
-    FERDIG
+    FERDIG,
 }

@@ -34,23 +34,21 @@ class BrukernotifikasjonService(
         private const val APP = "syfosmvarsel"
     }
 
-    fun opprettBrukernotifikasjon(
-        brukernotifikasjon: Brukernotifikasjon,
-    ) {
+    fun opprettBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon) {
         val brukernotifikasjonFinnesFraFor =
             database.brukernotifikasjonFinnesFraFor(
                 sykmeldingId = UUID.fromString(brukernotifikasjon.sykmeldingId),
-                event = "APEN"
+                event = "APEN",
             )
         if (brukernotifikasjonFinnesFraFor) {
             log.info(
-                "Notifikasjon for ny sykmelding med id ${brukernotifikasjon.sykmeldingId} finnes fra før, ignorerer",
+                "Notifikasjon for ny sykmelding med id ${brukernotifikasjon.sykmeldingId} finnes fra før, ignorerer"
             )
         } else {
             val opprettBrukernotifikasjon =
                 mapTilOpprettetBrukernotifikasjon(
                     brukernotifikasjon.sykmeldingId,
-                    brukernotifikasjon.mottattDato
+                    brukernotifikasjon.mottattDato,
                 )
             val newVarselId = brukernotifikasjon.sykmeldingId
             val varsel =
@@ -60,22 +58,13 @@ class BrukernotifikasjonService(
                     sensitivitet = Sensitivitet.High
                     ident = brukernotifikasjon.fnr
                     tekst =
-                        Tekst(
-                            spraakkode = "nb",
-                            tekst = brukernotifikasjon.tekst,
-                            default = true,
-                        )
+                        Tekst(spraakkode = "nb", tekst = brukernotifikasjon.tekst, default = true)
                     link = lagOppgavelenke(dittSykefravaerUrl, brukernotifikasjon.sykmeldingId)
                     eksternVarsling {
                         utsettSendingTil = ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(5)
                         preferertKanal = EksternKanal.SMS
                     }
-                    produsent =
-                        Produsent(
-                            namespace = NAMESPACE,
-                            appnavn = APP,
-                            cluster = cluster,
-                        )
+                    produsent = Produsent(namespace = NAMESPACE, appnavn = APP, cluster = cluster)
                 }
 
             brukernotifikasjonKafkaProducer.sendOpprettmelding(
@@ -107,21 +96,16 @@ class BrukernotifikasjonService(
             val ferdigstiltBrukernotifikasjon =
                 mapTilFerdigstiltBrukernotifikasjon(
                     sykmeldingStatusKafkaMessageDTO,
-                    apenBrukernotifikasjon
+                    apenBrukernotifikasjon,
                 )
             val inaktiverVarsel =
                 VarselActionBuilder.inaktiver {
                     varselId = sykmeldingId
-                    produsent =
-                        Produsent(
-                            namespace = NAMESPACE,
-                            appnavn = APP,
-                            cluster = cluster,
-                        )
+                    produsent = Produsent(namespace = NAMESPACE, appnavn = APP, cluster = cluster)
                 }
             brukernotifikasjonKafkaProducer.sendDonemelding(
                 varselId = sykmeldingId,
-                varsel = inaktiverVarsel
+                varsel = inaktiverVarsel,
             )
             log.info("Ferdigstilt brukernotifikasjon for sykmelding med id $sykmeldingId")
             database.registrerBrukernotifikasjon(ferdigstiltBrukernotifikasjon)

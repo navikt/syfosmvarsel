@@ -48,7 +48,7 @@ fun Properties.envOverrides() = apply {
 fun Properties.toConsumerConfig(
     groupId: String,
     valueDeserializer: KClass<out Deserializer<out Any>>,
-    keyDeserializer: KClass<out Deserializer<out Any>> = StringDeserializer::class
+    keyDeserializer: KClass<out Deserializer<out Any>> = StringDeserializer::class,
 ): Properties =
     Properties().also {
         it.putAll(this)
@@ -61,7 +61,7 @@ fun Properties.toConsumerConfig(
 fun Properties.toProducerConfig(
     groupId: String,
     valueSerializer: KClass<out Serializer<out Any>>,
-    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class
+    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class,
 ): Properties =
     Properties().also {
         it.putAll(this)
