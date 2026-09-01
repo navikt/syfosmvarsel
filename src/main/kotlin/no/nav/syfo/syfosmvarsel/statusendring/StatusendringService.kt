@@ -19,7 +19,7 @@ class StatusendringService(private val brukernotifikasjonService: Brukernotifika
             log.info(
                 "Ignorerer statusendring for sykmelding {}, status {}",
                 sykmeldingStatusKafkaMessageDTO.kafkaMetadata.sykmeldingId,
-                sykmeldingStatusKafkaMessageDTO.event.statusEvent
+                sykmeldingStatusKafkaMessageDTO.event.statusEvent,
             )
         }
     }

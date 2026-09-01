@@ -39,7 +39,7 @@ class KafkaFactory private constructor() {
             val properties =
                 kafkaBaseConfigAiven.toConsumerConfig(
                     "syfosmvarsel-consumer",
-                    JacksonKafkaDeserializer::class
+                    JacksonKafkaDeserializer::class,
                 )
             properties.let {
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
@@ -49,7 +49,7 @@ class KafkaFactory private constructor() {
                 KafkaConsumer(
                     properties,
                     StringDeserializer(),
-                    JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class)
+                    JacksonKafkaDeserializer(SykmeldingStatusKafkaMessageDTO::class),
                 )
             kafkaStatusConsumer.subscribe(listOf(environment.sykmeldingStatusAivenTopic))
             return kafkaStatusConsumer
@@ -66,10 +66,7 @@ class KafkaFactory private constructor() {
                         keySerializer = StringSerializer::class,
                     )
             val producer = KafkaProducer<String, String>(kafkaBrukernotifikasjonProducerConfig)
-            return BrukernotifikasjonKafkaProducer(
-                producer,
-                environment.brukernotifikasjonTopic,
-            )
+            return BrukernotifikasjonKafkaProducer(producer, environment.brukernotifikasjonTopic)
         }
     }
 }

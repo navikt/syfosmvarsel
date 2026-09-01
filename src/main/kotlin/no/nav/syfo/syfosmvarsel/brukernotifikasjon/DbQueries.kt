@@ -16,7 +16,7 @@ fun DatabaseInterface.brukernotifikasjonFinnesFraFor(sykmeldingId: UUID, event: 
 
 fun DatabaseInterface.hentApenBrukernotifikasjon(
     sykmeldingId: UUID,
-    event: String
+    event: String,
 ): BrukernotifikasjonDB? =
     connection.use { connection ->
         if (connection.finnesFraFor(sykmeldingId, event)) {
@@ -37,7 +37,7 @@ private fun Connection.finnesFraFor(sykmeldingId: UUID, event: String): Boolean 
     this.prepareStatement(
             """
                 SELECT 1 FROM brukernotifikasjon WHERE sykmelding_id=? AND event=?;
-                """,
+                """
         )
         .use {
             it.setObject(1, sykmeldingId)
@@ -49,7 +49,7 @@ fun Connection.registrerBrukernotifikasjon(brukernotifikasjonDB: Brukernotifikas
     this.prepareStatement(
             """
                 INSERT INTO brukernotifikasjon(sykmelding_id, timestamp, event, grupperingsId, eventId, notifikasjonstatus) VALUES (?, ?, ?, ?, ?, ?)
-                """,
+                """
         )
         .use {
             it.setObject(1, brukernotifikasjonDB.sykmeldingId)
@@ -68,7 +68,7 @@ private fun Connection.hentApenBrukernotifikasjon(sykmeldingId: UUID): List<Bruk
                  SELECT *
                    FROM brukernotifikasjon
                   WHERE sykmelding_id = ? AND event = 'APEN'
-            """,
+            """
         )
         .use {
             it.setObject(1, sykmeldingId)
