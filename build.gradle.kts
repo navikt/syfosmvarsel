@@ -14,21 +14,21 @@ val kotestVersion = "6.2.4"
 val logstashEncoderVersion = "9.0"
 val kafkaVersion = "4.3.1"
 val jacksonVersion = "3.2.2"
-val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.1"
-val hikariVersion = "6.3.0"
-val mockkVersion = "1.14.4"
-val kotlinVersion = "2.4.10"
-val testcontainerVersion = "2.0.3"
+val postgresVersion = "42.7.13"
+val flywayVersion = "13.5.0"
+val hikariVersion = "7.1.0"
+val mockkVersion = "1.14.11"
+val kotlinVersion = "2.4.20"
+val testcontainerVersion = "2.0.5"
 val ktfmtVersion = "0.56"
-val opentelemetryVersion = "2.17.0"
-val varselVersion = "2.1.1"
+val opentelemetryVersion = "2.31.1"
+val varselVersion = "2.2.0"
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.4.10"
-    id("com.diffplug.spotless") version "8.10.1"
+    kotlin("jvm") version "2.4.20"
+    id("com.diffplug.spotless") version "8.10.2"
 }
 
 application {
