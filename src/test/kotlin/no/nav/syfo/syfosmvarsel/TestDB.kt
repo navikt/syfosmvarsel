@@ -11,7 +11,7 @@ import no.nav.syfo.syfosmvarsel.brukernotifikasjon.BrukernotifikasjonDB
 import no.nav.syfo.syfosmvarsel.brukernotifikasjon.tilBrukernotifikasjon
 import org.testcontainers.postgresql.PostgreSQLContainer
 
-class PsqlContainer : PostgreSQLContainer("postgres:12")
+class PsqlContainer : PostgreSQLContainer("postgres:16")
 
 class TestDB : DatabaseInterface {
     companion object {
