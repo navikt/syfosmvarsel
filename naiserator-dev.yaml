@@ -9,7 +9,7 @@ spec:
   gcp:
     sqlInstances:
       - name: smvarsel-instance
-        type: POSTGRES_14
+        type: POSTGRES_16
         diskSize: 10
         databases:
           - name: smvarsel
