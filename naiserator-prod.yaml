@@ -10,7 +10,7 @@ spec:
     sqlInstances:
       - name: smvarsel-instance
         type: POSTGRES_16
-        diskSize: 100
+        diskSize: 10
         databases:
           - name: smvarsel
             envVarPrefix: NAIS_DATABASE
